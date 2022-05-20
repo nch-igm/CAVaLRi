@@ -1,0 +1,7 @@
+*.pickle
+*.snakemake*
+*__pycache__*
+*logging*
+*DS_Store*
+*run_apps/spliceAI/*
+

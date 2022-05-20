@@ -1,0 +1,60 @@
+[
+    {
+      "Classification": "spark-defaults",
+      "Properties": {
+	      "spark.executor.extraClassPath": "/home/hadoop/postgresql-42.2.2.jar:/home/hadoop/AthenaJDBC41-1.1.0.jar:/etc/hadoop/conf:/etc/hive/conf:/usr/lib/hadoop-lzo/lib/*:/usr/share/aws/aws-java-sdk/*:/usr/share/aws/emr/emrfs/conf:/usr/share/aws/emr/emrfs/lib/*:/usr/share/aws/emr/emrfs/auxlib/*",
+    		  "spark.driver.extraClassPath": "/home/hadoop/postgresql-42.2.2.jar:/home/hadoop/AthenaJDBC41-1.1.0.jar:/etc/hadoop/conf:/etc/hive/conf:/usr/lib/hadoop-lzo/lib/*:/usr/share/aws/aws-java-sdk/*:/usr/share/aws/emr/emrfs/conf:/usr/share/aws/emr/emrfs/lib/*:/usr/share/aws/emr/emrfs/auxlib/*",
+		  "spark.varhouse.database.url":"jdbc:postgresql://igm-comp-genomics-instance.cugdmcnze705.us-east-1.rds.amazonaws.com:5432/varhouse_dev_db",
+		  "spark.varhouse.database.user":"varhouse_dev",
+		  "spark.varhouse.database.password":"wildandcrazyguys",
+		  "spark.varhouse.database.driver":"org.postgresql.Driver",
+		  "spark.varhouse.snpeff.jarpath":"/home/hadoop/snpEff.jar"
+      }
+    },
+    {
+      "Classification": "hbase-site",
+      "Properties": {
+	      "phoenix.schema.isNamespaceMappingEnabled": "true",
+	      "hbase.client.primaryCallTimeout.get":"10",
+	      "hbase.client.primaryCallTimeout.multiget":"10",
+	      "hbase.rpc.timeout":"1200000",
+	      "hbase.client.scanner.timeout.period":"1200000",
+	      "hbase.snapshot.master.timeoutMillis":"65000",
+	      "hbase.snapshot.region.timeout":"66000",
+	      "hbase.snapshot.master.timeout.millis":"67000",
+	      "zookeeper.session.timeout":"1200000",
+	      "hbase.ipc.client.socket.timeout.connect":"68000",
+	      "hbase.ipc.client.socket.timeout.read":"69000",	      
+	      "hbase.ipc.client.socket.timeout.write":"70000",
+	      "phoenix.query.keepAliveMs":"1200000"	      	      
+      }
+    },
+	{
+      "Classification": "hdfs-site",
+      "Properties": {
+	      "dfs.namenode.datanode.registration.ip-hostname-check": "false"
+      }
+	},
+    {
+      "Classification":"spark",
+      "Properties": {
+        "maximizeResourceAllocation": "true"
+      }
+    },
+    {
+       "Classification": "mapred-site",
+       "Properties": {
+		  "mapreduce.task.timeout":"7200000"	
+       }
+    },
+	{
+       "Classification":"emrfs-site",
+       "Properties": {
+           "fs.s3.consistent.retryPeriodSeconds":"10",
+           "fs.s3.consistent":"true",
+           "fs.s3.consistent.retryCount":"5",
+           "fs.s3.consistent.metadata.tableName":"EmrFSMetadata"
+       }
+	}
+]
+

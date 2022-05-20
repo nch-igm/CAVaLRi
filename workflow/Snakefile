@@ -1,0 +1,76 @@
+import os
+sys.path.append('../..')
+from config import *
+
+# Get configuration settings
+configfile: "../../config/config.yaml"
+if config['optimization']:
+    configfile: "../config/optimization_config.yaml"
+
+# Set up a temp folder to store pickles
+temp_dir = os.path.join(config['project_root'], 'cavalri', 'workflow', 'temp')
+temp_case_dir = os.path.join(temp_dir, 'cases')
+for d in [temp_dir, temp_case_dir]:
+    os.system('rm -r {}'.format(d))
+    os.mkdir(d)
+
+# Generate file path variables
+vcf_dir = os.path.join(config['project_root'], config['vcf_input'])
+output_dir = os.path.join(config['project_root'], config['output_root'])
+
+# Define cases
+VCFS, = glob_wildcards(os.path.join(vcf_dir, "{case}.vcf")),
+# CASES = ['M17-1102', 'M17-1167', 'M18-1075', 'M18-3396', 'M18-6117', 'M19-4649', 'M20-521']
+CASES = ['M17-1102', 'M17-1167', 'M18-1075', 'M18-3396', 'M18-6117']
+# CASES = list(set(CASES) ^ set(VCFS))
+CASES = set(CASES).intersection(set(VCFS.case))
+# CASES = ['diagnostic_hg38']
+# CASES = ['M17-158', 'M17-180', 'M17-215']
+CASES = ['combined_sorted_unique']
+print(CASES)
+
+rule all:
+    input:
+        expand(os.path.join(temp_dir, "cases", "{case}.summary.tsv"), case = CASES)
+
+rule build_cohort:
+    input:
+        expand(os.path.join(vcf_dir, "{case}.vcf"), case = CASES)
+    params:
+        cases = '"{}"'.format(str(list(CASES)))
+    output:
+        os.path.join(temp_dir, 'cohort.pickle')
+    shell:
+        'python3 build_cohort.py --cases {params.cases} -o {output}'
+
+
+rule read_case_variants:
+    input:
+        os.path.join(temp_dir, 'cohort.pickle')
+    output:
+        temp(os.path.join(temp_dir, 'cases', "{case}.variants.pickle"))
+    shell:
+        'python read_case_variants.py --cohort {input} --case {wildcards.case} -o {output}'
+
+
+rule run_cohort:
+    input:
+        expand(os.path.join(temp_dir, 'cases', "{case}.variants.pickle"), case = CASES)
+    params:
+        case_pickle_dir = os.path.join(temp_dir, 'cases'),
+        cohort = os.path.join(temp_dir, 'cohort.pickle')
+    output:
+        temp(os.path.join(temp_dir, 'cohort_annotated.txt'))
+    shell:
+        'python3 run_cohort.py -i {params.case_pickle_dir} --cohort {params.cohort} -o {output}'
+
+
+rule run_case:
+    input:
+        os.path.join(temp_dir, 'cohort_annotated.txt')
+    params:
+        cohort = os.path.join(temp_dir, 'cohort.pickle')
+    output:
+        os.path.join(temp_dir, "cases", "{case}.summary.tsv")
+    shell:
+        'python3 run_case.py --cohort {params.cohort} --case {wildcards.case} -o {output}'
