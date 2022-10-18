@@ -9,7 +9,7 @@ from .calculate_moiLR import *
 from .calculate_genotypeLR import *
 from .calculate_phenotypeLR import *
 from .calculate_compositeLR import *
-from .score_phenotypes import *
+# from .score_phenotypes import *
 from .add_rankings import *
 from .add_tp import *
 from .build_case_summary import *
@@ -47,8 +47,8 @@ class Case:
     def calculate_phenotypeLR(self):
         self.case_data = calculate_phenotypeLR(self)
 
-    def score_phenotypes(self):
-        self = score_phenotypes(self)
+    # def score_phenotypes(self):
+    #     self = score_phenotypes(self)
 
     def calculate_compositeLR(self):
         self.case_data = calculate_compositeLR(self.case_data)

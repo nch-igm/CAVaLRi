@@ -5,8 +5,8 @@ import pandas as pd
 import json
 
 sys.path.append('..')
-from hpo_walk import ontology
-from hpo_walk.annotations import get_phenotype_disease_gene_df, build_propagated_frequency_map
+# from hpo_walk import ontology
+# from hpo_walk.annotations import get_phenotype_disease_gene_df, build_propagated_frequency_map
 from config import *
 
 # Intialize HPO frequency map

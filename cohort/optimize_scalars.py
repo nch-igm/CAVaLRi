@@ -11,7 +11,7 @@ from sklearn.model_selection import StratifiedShuffleSplit
 # Import local packages
 sys.path.append('..')
 sys.path.append('../../workflow')
-from utils import get_diagnostic_df
+from utils import get_diagnostic_df, get_extended_diagnostic_df
 from config import *
 
 # Start a seed
@@ -24,7 +24,7 @@ def get_cases(path):
     """
     
     # Read in all cases in selected output directory
-    path = '../output/2021-10-06_clinphen/summary'
+    # path = '../output/2021-10-06_clinphen/summary'
     cases = []
     for entry in os.scandir(path):
         if entry.name.endswith('.lr.tsv'):
@@ -38,13 +38,22 @@ def get_cases(path):
     # Merge in true positive values
     diag_df = get_diagnostic_df()
     case_df = case_df.merge(diag_df, how = 'left', left_on = 'copath', right_on = 'subjectId')
-
+    
     # Calculate is true positive row
     def istp(row):
         return True if not pd.isna(row['gene']) else False
 
     case_df['isTp'] = case_df.apply(istp, axis = 1)
-    case_df = case_df.drop(columns = ['subjectId'])
+    demo_df = pd.read_excel(os.path.join(config['project_root'], config['demographic_data']))
+    diag_df = pd.read_excel(os.path.join(config['project_root'], config['diagnostic_source']))
+    demo_df = demo_df.merge(diag_df, right_on = 'MRN', left_on = 'MRN')[['CoPath.Number', 'MRN', 'RACE', 'ETHNICITY']].drop_duplicates().reset_index(drop = True)
+    for col in ['RACE', 'ETHNICITY']:
+        for nv in ['No Information', '<null>', 'Refuse to answer', pd.NA, np.NaN, 'nan']:
+            demo_df.loc[demo_df[col] == nv, col] = 'Unknown'
+    case_df = case_df.merge(demo_df, right_on = 'CoPath.Number', left_on = 'copath', how = 'left')
+    for col in ['RACE', 'ETHNICITY']:
+        case_df.loc[case_df[col].isna(), col] = 'Unknown'
+    case_df = case_df.drop(columns = ['MRN', 'subjectId', 'CoPath.Number'])
 
     return case_df
 
@@ -53,11 +62,15 @@ def split_train_validation(case_df):
     """
     Set aside 30% of the data as a validation set
     """
-    
+    def get_cat(row):
+        # return f"{row['isTp']}{row['RACE']}{row['ETHNICITY']}"
+        return f"{row['isTp']}{row['RACE']}"
+
     # Parition training and validation data
     sss = StratifiedShuffleSplit(n_splits=1, test_size=0.3, random_state=seed)
     X = case_df[['copath', 'gene']]
-    Y = case_df[['isTp']]
+    case_df['cat'] = case_df.apply(get_cat, axis = 1)
+    Y = case_df[['cat']]
     for train_idx, val_idx in sss.split(X, Y):
         X_train, X_val = X.loc[train_idx], X.loc[val_idx]
         Y_train, Y_val = Y.loc[train_idx], Y.loc[val_idx]
@@ -149,9 +162,13 @@ def get_rank_improvement(current_df: pd.DataFrame, original_rankings: pd.DataFra
     # Get count of number one rankings
     number_ones = len(comp_df[comp_df['rank_new'] == 1].index)
 
+    # Get average rank
+    # avg_rank = comp_df['rank_new'].mean()
+
     # Return the p-value and comparison data frame
-    # return comp_df['rank_difference'].sum(), comp_df
-    return number_ones, comp_df
+    return comp_df['rank_difference'].sum(), comp_df
+    # return number_ones, comp_df
+
 
 
 def get_wilcoxon(current_df: pd.DataFrame, original_rankings: pd.DataFrame):
@@ -224,10 +241,10 @@ def get_successors(current_pos, array, step_length):
 
 def build_integer_map(base_df, baseline_tp_ranks):
 
-    path = '/Users/rsrxs003/Downloads/optimal_map.csv'
+    path = '/Users/rsrxs003/Downloads/optimal_rank11.csv'
     if os.path.exists(path):
         return pd.read_csv(path)
-
+    print('Building Grid')
     # Run the pipeline for each value
     # optimize_df = pd.DataFrame(columns = ['geneLR_scalar', 'moiLR_scalar', 'roc_auc', 'wilcoxon_pvalue'])
     optimize_df = pd.DataFrame(columns = ['geneLR_scalar', 'moiLR_scalar', 'roc_auc', 'rank_improvement'])
@@ -265,8 +282,8 @@ def greedy_search(data: pd.DataFrame, res_dir: str, a: float):
     base_df = get_cohort_data(data, res_dir)
     
     # Adjust LR scaled values to be unscaled, creating a baseline data frame
-    base_df['geneLR'] = base_df['geneLR']/4
-    base_df['moiLR'] = base_df['moiLR']/5
+    # base_df['geneLR'] = base_df['geneLR']/config['geneLR_scalar']
+    # base_df['moiLR'] = base_df['moiLR']/config['moiLR_scalar']
     base_df['compositeLR'] = base_df['phenoLR'] + base_df['geneLR']
 
     # Obtain base rankings for wilcoxon comparison calculations
@@ -288,7 +305,9 @@ def greedy_search(data: pd.DataFrame, res_dir: str, a: float):
     space = np.empty([dim_length] * dim_count)
 
     # Get integer values of space to determine AUC ROC and Wilcoxon ranges
+    # print(f'Building Integer Map (a={a})')
     range_df = build_integer_map(base_df, baseline_tp_ranks)
+    range_df.to_csv(f'~/Downloads/avg_rank_map{a}.csv')
     minimax = {
         'roc_min': range_df['roc_auc'].min(),
         'roc_max': range_df['roc_auc'].max(),
@@ -413,11 +432,13 @@ def optimize_scalars(path: str):
 
     # Split data into a training and validation set
     X_train, X_val, Y_train, Y_val = split_train_validation(case_df)
+    # return Y_train, case_df
 
     # Partition the training data (5 iterrations)
     sss = StratifiedShuffleSplit(n_splits=5, test_size=0.2, random_state=seed)
     optimal_positions = []
-    for a in [0, 0.5, 1]:
+    # for a in [0, 0.5, 1]:
+    for a in [0.5]:
         print(f'ALPHA: {a}')
         current_fold = 1
         positions = []
