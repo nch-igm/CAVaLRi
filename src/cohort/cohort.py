@@ -1,24 +1,22 @@
-from .aggregate_variants import *
-from .aws_commands import *
-from .score_variants import *
-from.optimize_scalars import *
-# from .hpo_walk import *
+from ..workflow import Workflow
+from .methods import *
+# # from .hpo_walk import *
+import os
+# import vcf
 
-import sys
-sys.path.append('../..')
-from config import * 
 
 class Cohort:
     """
-    This class is meant to summarize a cohort consisting of cases
+    This class is meant to summarize a cohort consisting of cases inputted by
+    the user
     """
 
-    def __init__(self, vcf_path, pheno_path, genome_build = 'hg38'):
+    def __init__(self, input_dir, output_dir, config):
         self.cases = set()
-        self.vcf_path = vcf_path
-        self.pheno_path = pheno_path
-        self.genome_build = genome_build
-        self.output_root = os.path.join(config['project_root'], config['output_root'])
+        self.input_path = input_dir
+        self.output_path = output_dir
+        self.root_path = os.getcwd()
+        self.config = config
 
         # Read in big data files
         # 1) HPO
@@ -27,10 +25,7 @@ class Cohort:
         
 
     def add_case(self, case):
-        if case.genome_build != self.genome_build:
-            raise 'Incompatible genome build'
-        else:
-            self.cases.add(case)
+       self.cases.add(case)
     
     def remove_case(self, case):
         self.cases.remove(case)
@@ -62,3 +57,14 @@ class Cohort:
     def stop_cluster(self):
         stop_cluster(self.active_cluster)
         self.active_cluster = ''
+    
+    def get_cases(self):
+        if not get_cases(self):
+            print('No input files found!')
+            sys.exit(1)
+
+    def run(self):
+        self.get_cases()
+        print([case.case_id for case in self.cases])
+        wf = Workflow(self)
+        wf.run()

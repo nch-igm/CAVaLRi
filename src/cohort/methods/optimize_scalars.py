@@ -9,15 +9,16 @@ from sklearn.metrics import roc_curve, roc_auc_score
 from sklearn.model_selection import StratifiedShuffleSplit
 
 # Import local packages
-sys.path.append('..')
-sys.path.append('../../workflow')
-from utils import get_diagnostic_df, get_extended_diagnostic_df
-from config import *
+# sys.path.append('..')
+# sys.path.append('../../workflow')
+# from utils import get_diagnostic_df, get_extended_diagnostic_df
+# from config import *
+from .get_diagnostic import *
 
 # Start a seed
 seed = 44
 
-def get_cases(path):
+def get_case_output(path):
     """
     Iterate through the provided path to collect all subject IDs, return
     data frame containing true positive infomration
@@ -428,7 +429,7 @@ def optimize_scalars(path: str):
     """
 
     # Get cases
-    case_df = get_cases(path)
+    case_df = get_case_output(path)
 
     # Split data into a training and validation set
     X_train, X_val, Y_train, Y_val = split_train_validation(case_df)

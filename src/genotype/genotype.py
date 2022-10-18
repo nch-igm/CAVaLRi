@@ -1,6 +1,4 @@
-from .read_variants import *
-from .annotate_variants import *
-from .filter_variants import *
+from .methods import *
 
 class Genotype:
     """
