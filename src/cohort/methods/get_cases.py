@@ -1,6 +1,5 @@
 import os
 import json
-from wsgiref import validate
 from ...case import Case
 
 def validate_case(inputs):

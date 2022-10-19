@@ -1,5 +1,8 @@
 from .methods import *
 import os
+import uuid
+import subprocess
+import pickle
 
 class Workflow:
     """
@@ -9,5 +12,38 @@ class Workflow:
     def __init__(self, cohort):
         self.cohort = cohort
 
+    def worker(self, cmd):
+        p = subprocess.Popen(cmd,  stdout=subprocess.PIPE, shell = True, env={'LANGUAGE':'en_US.en', 'LC_ALL':'en_US.UTF-8'})
+        p.wait()
+        out, err = p.communicate()
+        try:
+            return out.decode()
+        except:
+            return err.decode()
+        #   cmd)
+
     def run(self):
-        print([case.case_id for case in self.cohort.cases])
+        
+        # Set up temporary directory
+        temp_folder = os.path.join(self.cohort.root_path, str(uuid.uuid4()))
+        if not os.path.exists(temp_folder):
+            os.mkdir(temp_folder)
+
+        # Add temp directory to a snakemake yaml file
+        snakemake_yaml_path = os.path.join(os.getcwd(), 'src/workflow', 'config.yaml')
+        with open(snakemake_yaml_path,'w') as f:
+            print(f'tmp_dir: {temp_folder}', file = f)
+
+        # Create smlinks for input files
+        for case in self.cohort.cases:
+            case_plan_path = os.path.join(temp_folder, f'{case.case_id}.pickle')
+            with open(case_plan_path, 'wb') as f:
+                pickle.dump(case, file = f)
+                # self.worker(f'ln {e} {case_plan_path}')
+
+        # Copy output files and remove temporary directory
+        res = self.worker(f"bash {os.path.join(os.getcwd(), 'src/workflow/sm.bash')}")
+        print(res)
+        # for case in self.cohort.cases:
+        #     self.worker(f"cp {os.path.join(temp_folder, f'{case.case_id}.full.pickle')} {self.cohort.output_path}")
+        self.worker(f'rm -Rf {temp_folder}')

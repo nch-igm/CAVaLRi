@@ -65,6 +65,6 @@ class Cohort:
 
     def run(self):
         self.get_cases()
-        print([case.case_id for case in self.cases])
+        # print([case.case_id for case in self.cases])
         wf = Workflow(self)
         wf.run()
