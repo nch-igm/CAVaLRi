@@ -7,3 +7,4 @@ from .calculate_compositeLR import *
 from .add_rankings import *
 from .add_tp import *
 from .build_case_summary import *
+from .run_lirical import *

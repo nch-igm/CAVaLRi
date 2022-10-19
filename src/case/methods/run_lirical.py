@@ -2,81 +2,142 @@ import pandas as pd
 import os
 import sys
 import yaml
-import json
-import argparse
+import subprocess
 
-sys.path.append('..')
-sys.path.append('.')
 
-from config import *
-from utils import *
+def worker(cmd):
+    p = subprocess.Popen(cmd,  stdout=subprocess.PIPE, shell = True, env={'LANGUAGE':'en_US.en', 'LC_ALL':'en_US.UTF-8'})
+    p.wait()
+    out, err = p.communicate()
+    try:
+        return out.decode()
+    except:
+        return err.decode()
+    # print(cmd)
+
+# def build_yaml(template_path, case_id, vcf, hpo_ids, output_dir, tsv=True):
+def build_yaml(case, hpo_ids, tsv=True):
+
+    config = case.cohort.config
+
+    # extract HPO ID#s from the HPO ID column
+    with open(os.path.join(case.cohort.root_path, config['lirical_yaml_template'])) as template:
+        result = yaml.full_load(template)
+
+    # split template into two pieces
+    result1 = dict(result)
+    result2 = dict(result)
+
+    # trim each piece
+    del result1['hpoIds']
+    del result1['negatedHpoIds']
+    del result1['prefix']
+    del result2['analysis']
+
+    # update "analysis" component
+    result1['analysis']['datadir'] = os.path.join(case.cohort.root_path, config['lirical_data_path'])
+    result1['analysis']['vcf'] = case.genotype.processed_genotype_path
+    result1['analysis']['exomiser'] = case.exomiser
+    result1['analysis']['mindiff'] = config['lirical_mindiff']
+
+    # update the rest
+    result2['hpoIds'] = hpo_ids
+    result2['prefix'] = os.path.join(case.temp_dir, case.case_id)
+
+    # set tsv parameter
+    result1['analysis']['tsv'] = "true" if tsv else "false"
+
+    if tsv:
+        yaml_path = os.path.join(case.temp_dir, f'{case.case_id}.tsv.yaml')
+        with open(yaml_path,'w') as file:
+            yaml.dump(result1, file)
+        with open(yaml_path, 'a') as file:
+            yaml.dump(result2, file, default_flow_style=None)
+
+    else:
+        yaml_path = os.path.join(case.temp_dir, f'{case.case_id}.html.yaml')
+        with open(yaml_path,'w') as file:
+            yaml.dump(result1, file)
+        with open(yaml_path,'a') as file:
+            yaml.dump(result2, file, default_flow_style=None)
+
+    return yaml_path
 
 # def run_lirical(case_id, clinphen_df, vcf, hpo_total, output_dir, tsv=True):
 def run_lirical(case):
+
+    # Bring in cohort configuration settings
+    config = case.cohort.config
     
     # Filter ClinPhen tsv
-    filtered_df = clinphen_df.head(hpo_total)
+    filtered_df = case.phenotype.pheno_df.head(config['hpo_upper_bound'])
 
     # Isolate HPO IDs
     hpo_ids = filtered_df['HPO ID'].to_list()
 
     # Set temp and final filenames
-    if tsv:
-        temp_filename = os.path.join(config['project_root'], output_dir, case_id + '.tsv')
-        output_filename = os.path.join(config['project_root'], output_dir, case_id + ".lirical.tsv")
-    
-    else:
-        temp_filename = os.path.join(config['project_root'], output_dir, case_id + '.html')
-        output_filename = os.path.join(config['project_root'], output_dir, case_id + ".lirical.html")
+    tsv_temp_filename = os.path.join(case.temp_dir, f'{case.case_id}.tsv')
+    tsv_output_filename = os.path.join(case.temp_dir, f'{case.case_id}.lirical.tsv')
+    html_temp_filename = os.path.join(case.temp_dir, f'{case.case_id}.html')
+    html_output_filename = os.path.join(case.temp_dir, f'{case.case_id}.lirical.html')
     
     try:
+
+        # Download LIRICAL data
+        worker(f"cd {case.cohort.root_path} && java -jar {case.lirical} download -d {config['lirical_data_path']}")
         
         # Write filtered df
-        filtered_df.to_csv(os.path.join(config['project_root'], output_dir, case_id + "." + str(hpo_total)  + "TOTAL_filtered.clinphen.tsv"), sep='\t', index=False)
+        # filtered_hpo_path = os.path.join(case.cohort.root_path, output_dir, f'{case.case_id}.{config["hpo_upper_bound"]}TOTAL_filtered.clinphen.tsv')
+        # filtered_df.to_csv(filtered_hpo_path, sep='\t', index=False)
 
         # Build YAML
-        yaml = build_yaml(template_path = os.path.join(config['project_root'], 'example', "template.yaml"), case_id = case_id, vcf = vcf, hpo_ids = hpo_ids, output_dir = output_dir, tsv=tsv)
+        tsv_yaml = build_yaml(case = case, hpo_ids = hpo_ids, tsv=True)
+        html_yaml = build_yaml(case = case, hpo_ids = hpo_ids, tsv=False)
 
-        if not(os.path.exists(output_filename)):
+        for yml in [[tsv_yaml,tsv_temp_filename,tsv_output_filename],
+                    [html_yaml,html_temp_filename,html_output_filename]]:
 
-            # Run LIRICAL
-            os.system('cd ' + config['project_root'] + ' && java -jar LIRICAL.jar yaml -y ' + yaml)
-            
-            # Rename results files
-            os.rename(temp_filename, output_filename)
+            if not(os.path.exists(yml[2])):
 
-        return output_filename
+                # Run LIRICAL
+                worker(f'cd {case.cohort.root_path} && java -jar {case.lirical} yaml -y {yml[0]}')
+                
+                # Rename results files
+                worker(f'cp {yml[1]} {yml[2]}')
+
+        return tsv_output_filename, html_output_filename
     
-    except:
+    except Exception as err:
+        print(f'{err}')
         print("Unable to run lirical, file reading error")
         sys.exit(1)
 
 
 
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
 
-    # Intialize parser
-    parser = argparse.ArgumentParser(description='')
-    parser.add_argument('--hpo_list', '-hl', type=str, help='Path to the ordered list of HPO IDs.')
-    parser.add_argument('--output', '-o', type=str, help='Path to a directory where the raw LIRICAL output data will be written.')
-    parser.add_argument('--case_id', '-c', type=str, help='Case ID of the subject')
-    parser.add_argument('--vcf', type=str, help='Path to case vcf')
+#     # Intialize parser
+#     parser = argparse.ArgumentParser(description='')
+#     parser.add_argument('--hpo_list', '-hl', type=str, help='Path to the ordered list of HPO IDs.')
+#     parser.add_argument('--output', '-o', type=str, help='Path to a directory where the raw LIRICAL output data will be written.')
+#     parser.add_argument('--case_id', '-c', type=str, help='Case ID of the subject')
+#     parser.add_argument('--vcf', type=str, help='Path to case vcf')
 
-    args = parser.parse_args()
+#     args = parser.parse_args()
 
-    # Set variables
-    case_id = args.case_id
-    output_dir = args.output
-    hpo_total = config['hpo_total_upper_bound']
+#     # Set variables
+#     case_id = args.case_id
+#     output_dir = args.output
+#     hpo_total = config['hpo_total_upper_bound']
 
-    # Read in ClinPhen results
-    clinphen_df = pd.read_csv(args.hpo_list, sep='\t', header=0)
+#     # Read in ClinPhen results
+#     clinphen_df = pd.read_csv(args.hpo_list, sep='\t', header=0)
 
-    # Run html LIRICAL
-    # run_lirical(case_id=case_id, clinphen_df=clinphen_df, hpo_total=hpo_total, output_dir=output_dir, tsv=False)
-    run_lirical(case_id=case_id, clinphen_df=clinphen_df, vcf=args.vcf, hpo_total=len(clinphen_df.index), output_dir=output_dir, tsv=False)
+#     # Run html LIRICAL
+#     # run_lirical(case_id=case_id, clinphen_df=clinphen_df, hpo_total=hpo_total, output_dir=output_dir, tsv=False)
+#     run_lirical(case_id=case_id, clinphen_df=clinphen_df, vcf=args.vcf, hpo_total=len(clinphen_df.index), output_dir=output_dir, tsv=False)
 
-    # Run tsv LIRICAL
-    # run_lirical(case_id=case_id, clinphen_df=clinphen_df, hpo_total=hpo_total, output_dir=output_dir, tsv=True)
-    run_lirical(case_id=case_id, clinphen_df=clinphen_df, vcf=args.vcf, hpo_total=len(clinphen_df.index), output_dir=output_dir, tsv=True)
+#     # Run tsv LIRICAL
+#     # run_lirical(case_id=case_id, clinphen_df=clinphen_df, hpo_total=hpo_total, output_dir=output_dir, tsv=True)
+#     run_lirical(case_id=case_id, clinphen_df=clinphen_df, vcf=args.vcf, hpo_total=len(clinphen_df.index), output_dir=output_dir, tsv=True)

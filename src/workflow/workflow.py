@@ -20,7 +20,7 @@ class Workflow:
             return out.decode()
         except:
             return err.decode()
-        #   cmd)
+        # print(cmd)
 
     def run(self):
         
@@ -36,6 +36,7 @@ class Workflow:
 
         # Create smlinks for input files
         for case in self.cohort.cases:
+            case.temp_dir = temp_folder
             case_plan_path = os.path.join(temp_folder, f'{case.case_id}.pickle')
             with open(case_plan_path, 'wb') as f:
                 pickle.dump(case, file = f)
@@ -43,7 +44,7 @@ class Workflow:
 
         # Copy output files and remove temporary directory
         res = self.worker(f"bash {os.path.join(os.getcwd(), 'src/workflow/sm.bash')}")
-        print(res)
+        # print(res)
         # for case in self.cohort.cases:
         #     self.worker(f"cp {os.path.join(temp_folder, f'{case.case_id}.full.pickle')} {self.cohort.output_path}")
-        self.worker(f'rm -Rf {temp_folder}')
+        # self.worker(f'rm -Rf {temp_folder}')

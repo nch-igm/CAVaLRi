@@ -8,15 +8,19 @@ from config import *
 def main(input, output):
 
     # Read in cohort
-    print(input)
-    print(config)
     with open(input, 'rb') as f:
         case = pickle.load(f)
 
-    # Run case level genotype commands
+    # Process variants
     case.genotype.read_variants()
     case.genotype.annotate_variants()
-    case.genotype.filter_variants()
+    # case.genotype.filter_variants()
+
+    # Process phenotypes
+    case.phenotype.read_phenotypes()
+
+    # Run LIRICAL
+    case.run_lirical()
 
     # Run case level mode of inheritance commands
     # case.build_case_data()
@@ -34,7 +38,7 @@ def main(input, output):
     # case.add_tp()
     # case.build_case_summary()
 
-    with open(args.output, 'wb') as f:
+    with open(output, 'wb') as f:
         pickle.dump(case, file = f)
 
 

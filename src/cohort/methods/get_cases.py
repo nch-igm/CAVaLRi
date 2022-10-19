@@ -4,7 +4,7 @@ from ...case import Case
 
 def validate_case(inputs):
 
-    path_variables = ['phenotype_path','vcf_path']
+    path_variables = ['phenotype','vcf','bcftools','conda_bin','reference_path']
     for pv in path_variables:
         if not os.path.exists(inputs[pv]):
             return pv
@@ -29,8 +29,14 @@ def get_cases(cohort):
                 cs = Case(
                     cohort = cohort, 
                     case_id = case,
-                    phenotype_path = inputs['phenotype_path'],
-                    genotype_path = inputs['vcf_path']
+                    phenotype_path = inputs['phenotype'],
+                    genotype_path = inputs['vcf'],
+                    bcftools = inputs['bcftools'],
+                    lirical = inputs['lirical'],
+                    exomiser = inputs['exomiser'],
+                    conda_bin = inputs['conda_bin'],
+                    reference_path = inputs['reference_path'],
+                    annotations_path = inputs['annotations_path']
                 )
                 cohort.add_case(cs)
     

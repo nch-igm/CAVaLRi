@@ -21,14 +21,13 @@ def read_phenotypes(case):
     for idx, row in pheno_df.iterrows():
         
         # Only keep the top n phenotypes (where n = phenotype set length upper limit)
-        if row['rank'] > config['hpo_total_upper_bound']:
-            break
+        # if row['rank'] > config['hpo_total_upper_bound']:
+        #     break
 
         # Add HPO ID to the result
         res[row['HPO ID']] = row['rank']
         
-    
-    return res
+    return res, pheno_df
 
 
 # def read_phenotype(case):

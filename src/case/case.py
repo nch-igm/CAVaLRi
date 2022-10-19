@@ -15,12 +15,24 @@ class Case:
     """
 
     # INITIALIZE
-    def __init__(self, cohort, case_id, genotype_path, phenotype_path, genome_build = 'hg38'):
+    def __init__(self, cohort, case_id, genotype_path, phenotype_path, bcftools,
+                 lirical, exomiser, conda_bin, reference_path, annotations_path,
+                 genome_build='hg38'):
+
         self.cohort = cohort
         self.case_id = case_id
         self.genome_build = genome_build
+        self.bcftools = bcftools
+        self.lirical = lirical
+        self.exomiser = exomiser
+        self.conda_bin = conda_bin
         self.genotype = Genotype(self, genotype_path)
         self.phenotype = Phenotype(self, phenotype_path)
+        self.reference_path = reference_path
+        self.annotations_path = annotations_path
+    
+    def run_lirical(self):
+        self.lirical_tsv_output, self.lirical_html_output = run_lirical(self)
 
     def build_case_data(self):
         self.case_data = build_case_data(self)

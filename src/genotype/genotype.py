@@ -18,14 +18,14 @@ class Genotype:
     """
     
     # INITIALIZE
-    def __init__(self, case, genotype_path, genome_build = 'hg38'):
-        self.genome_build = genome_build
+    def __init__(self, case, genotype_path):
+        # self.genome_build = genome_build
         self.genotype_path = genotype_path
         self.case = case
 
     # METHODS
     def read_variants(self):
-        self.variants = read_variants(self.genotype_path)
+        self.variants = read_variants(self)
     
     def annotate_variants(self):
         self.annotated_variants = annotate_variants(self)

@@ -1,7 +1,10 @@
 import os
+import re
 import shlex
 import subprocess
 import sys
+import json
+from numpy import column_stack
 import pandas as pd
 
 sys.path.append('../..')
@@ -31,19 +34,38 @@ def annovar_annotate_variants(input):
     return output, out
 
 
+def parse_annotations(annotations_path):
+    try:
+        if re.search('.csv', annotations_path):
+            return pd.read_csv(annotations_path)
+        elif re.search('.xl', annotations_path):
+            return pd.read_excel(annotations_path)
+        else:
+            return pd.read_parquet(annotations_path)
+
+    except Exception as err:
+        print(f"Unexpected file type {err=}, {type(err)=}")
+        raise
+
+
 def get_depth(row):
-    return row['PROBAND']['DP']
+    return json.loads(row['PROBAND'].replace("'", '"'))['DP']
 
 def get_gt(row):
-    return row['PROBAND']['GT']
+    return json.loads(row['PROBAND'].replace("'", '"'))['GT']
 
 def annotate_variants(genotype):
 
     # Read in annotated variants
     variant_df = genotype.variants
-    annotated_df = variant_df.merge(genotype.case.cohort.annotated_variants, on = ['CHROM', 'POS', 'REF', 'ALT'])
-    annotated_df['DP'] = annotated_df.apply(get_depth, axis = 1)
-    annotated_df['GT'] = annotated_df.apply(get_gt, axis = 1)
+    ann_df = parse_annotations(genotype.case.annotations_path)
 
-    return annotated_df
+    # Fill in frequency nulls
+    for col in ['gnomad_ex_faf95_popmax','gnomad_wg_faf95_popmax']:
+        ann_df[col] = ann_df[col].fillna(0)
+    ann_df = variant_df.merge(ann_df, on = ['CHROM', 'POS', 'REF', 'ALT'])
+    ann_df['DP'] = ann_df.apply(get_depth, axis = 1)
+    ann_df['GT'] = ann_df.apply(get_gt, axis = 1)
+
+    return ann_df
     

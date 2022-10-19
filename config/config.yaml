@@ -1,0 +1,5 @@
+hpo_lower_bound: 5
+hpo_upper_bound: 15
+lirical_yaml_template: data/template.yaml
+lirical_data_path: data/
+lirical_mindiff: 10000
