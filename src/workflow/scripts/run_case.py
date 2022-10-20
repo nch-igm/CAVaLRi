@@ -23,12 +23,11 @@ def main(input, output):
     case.run_lirical()
 
     # Run case level mode of inheritance commands
-    # case.build_case_data()
+    case.build_case_data()
     # case.calculate_moiLR()
 
     # # Run case level phenotype commands
     # case.calculate_genotypeLR()
-    # case.phenotype.read_phenotypes()
     # case.score_phenotypes()
     # case.calculate_phenotypeLR()
 

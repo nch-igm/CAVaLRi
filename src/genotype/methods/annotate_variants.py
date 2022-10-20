@@ -10,28 +10,26 @@ import pandas as pd
 sys.path.append('../..')
 from config import *
 
-def annovar_annotate_variants(input):
+# def worker(cmd):
+#     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell = True, env={'LANGUAGE':'en_US.en', 'LC_ALL':'en_US.UTF-8'})
+#     p.wait()
+#     out, err = p.communicate()
+#     try:
+#         return out.decode()
+#     except:
+#         return err.decode()
 
-    # Determine output path
-    output = input[:input.find('.vcf')] + '.annotated.vcf'
 
-    # Run annovar
-    command = """
-		perl {annovar}
-		-vcfinput {input}
-		{human_db}
-		-buildver {build}
-		--out {output}
-		-remove 
-		-protocol refGene
-		-operation g
-		-nastring . 
-    """.format(annovar = config["annovar_script"], input = input, output = output, human_db = config["human_db"], build = config["build"])
-    cmd = shlex.split(command)
-    p = subprocess.Popen(cmd,  stdout=subprocess.PIPE)
-    out, err = p.communicate()
-    os.system('mv {} {}'.format(output + '.hg38_multianno.vcf', output))
-    return output, out
+# def annovar_annotate_variants(input):
+
+#     # Determine output path
+#     output = f"{input[:input.find('.vcf.gz')]}.annotated.vcf"
+
+#     # Run annovar
+#     command = f"perl {os.path.join(annovar,'table_annovar.pl')} -vcfinput {input} {os.path.join(annovar,'table_annovar.pl')} humandb/ -buildver hg38 --out {output} -remove -protocol refGene -operation g -nastring ."
+#     worker(command)
+#     worker(f"mv {output}.hg38_multianno.vcf {output}")
+#     return output
 
 
 def parse_annotations(annotations_path):
@@ -51,10 +49,15 @@ def parse_annotations(annotations_path):
 def get_depth(row):
     return json.loads(row['PROBAND'].replace("'", '"'))['DP']
 
+
 def get_gt(row):
     return json.loads(row['PROBAND'].replace("'", '"'))['GT']
 
+
 def annotate_variants(genotype):
+
+    # Annotate with ANNOVAR
+    # annovar_annotate_variants(genotype.genotype_path)
 
     # Read in annotated variants
     variant_df = genotype.variants

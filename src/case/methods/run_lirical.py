@@ -15,6 +15,7 @@ def worker(cmd):
         return err.decode()
     # print(cmd)
 
+
 # def build_yaml(template_path, case_id, vcf, hpo_ids, output_dir, tsv=True):
 def build_yaml(case, hpo_ids, tsv=True):
 
@@ -62,6 +63,7 @@ def build_yaml(case, hpo_ids, tsv=True):
             yaml.dump(result2, file, default_flow_style=None)
 
     return yaml_path
+
 
 # def run_lirical(case_id, clinphen_df, vcf, hpo_total, output_dir, tsv=True):
 def run_lirical(case):

@@ -2,6 +2,7 @@ import sys
 import os
 import re
 import pandas as pd
+from pkg_resources import parse_version
 import vcf
 import subprocess
 # sys.path.append('../..')
@@ -18,6 +19,16 @@ def worker(cmd):
     except:
         return err.decode()
     # print(cmd)
+
+
+def parse_gene(row_info):
+    print(row_info)
+    parsed_values = row_info.split(';')
+    for pv in parsed_values:
+        k,v = pv.split('=')
+        if k == 'Gene.refGene':
+            return v
+
 
 def parse_samples(vcf_reader):
 
@@ -76,8 +87,9 @@ def read_variants(genotype):
         pos = var.POS
         ref = var.REF
         alt = ','.join([str(i) for i in var.ALT])
-        var_row = [chrom, pos, ref, alt]
-        columns = ['CHROM', 'POS', 'REF', 'ALT']
+        gene = var.INFO['Gene.refGene'][0]
+        var_row = [chrom, pos, ref, alt, gene]
+        columns = ['CHROM', 'POS', 'REF', 'ALT','GENE']
 
         # Sample specific
         for sample in samples.values():

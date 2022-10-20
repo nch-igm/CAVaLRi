@@ -3,3 +3,5 @@ hpo_upper_bound: 15
 lirical_yaml_template: data/template.yaml
 lirical_data_path: data/
 lirical_mindiff: 10000
+gene_info: data/Homo_sapiens_gene_info.tsv
+moi_db: data/moi.csv
