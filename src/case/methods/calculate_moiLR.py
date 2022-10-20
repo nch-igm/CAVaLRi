@@ -1,29 +1,9 @@
-from dataclasses import dataclass
-from itertools import dropwhile
-import sys
 import os
 import pandas as pd
-import yaml
-import json
-import argparse
-
-# Add package locations to sys.path
-sys.path.append('.')
-sys.path.append('..')
-
-
-# import local packages
-from config import *
-
 
 def calculate_moiLR(case):
 
-    # Get gender
-    gender_df = pd.read_csv(os.path.join(config['project_root'], config['gender_data']))
-    if len(gender_df.loc[gender_df['subjectId'] == case.case_id].index) != 0:
-        case.gender = gender_df.loc[gender_df['subjectId'] == case.case_id].reset_index(drop=True).loc[0, 'gender']
-    else:
-        case.gender = 'undefined'
+    config = case.cohort.config
 
     # Get available parental samples
     first_gene = list(case.case_data['genes'].keys())[0]
@@ -51,10 +31,10 @@ def calculate_moiLR(case):
                     gt_data[gt] = v[gt]['GT']
 
                 # Normalize GT by setting all | to /
-                for gt in samples:
-                    if gt_data[gt].find('|') != -1:
-                        g = gt_data[gt].split('|')
-                        gt_data[gt] = '/'.join(g)
+                # for gt in samples:
+                #     if gt_data[gt].find('|') != -1:
+                #         g = gt_data[gt].split('|')
+                #         gt_data[gt] = '/'.join(g)
 
                 # If both parents are present
                 if gt_data['MOTHER'] != 'Unavailable' and gt_data['FATHER'] != 'Unavailable':
@@ -119,7 +99,7 @@ def calculate_moiLR(case):
                     if d['moi'] == 'XLR':
 
                         # Female case
-                        if case.gender == 'F':
+                        if case.biological_sex == 'F':
                             
                             # De novo
                             if gt_data['PROBAND'] == '1/1' and gt_data['MOTHER'] in ('0/0','0/1') and gt_data['FATHER'] in ('0/0', '0/1'):
@@ -160,7 +140,7 @@ def calculate_moiLR(case):
                             
 
                         # Male case
-                        if case.gender == 'M':
+                        if case.biological_sex == 'M':
 
                             # If mother is heterozygous
                             if gt_data['MOTHER'] == '0/1':
@@ -225,7 +205,7 @@ def calculate_moiLR(case):
                     if d['moi'] == 'XLR':
 
                         # Female case
-                        if case.gender == 'F':
+                        if case.biological_sex == 'F':
                             
                             # If parent is heterozygous and the proband is homozygous
                             if gt_data['PROBAND'] == '1/1' and gt_data['MOTHER'] in ('0/0', '0/1'):
@@ -238,7 +218,7 @@ def calculate_moiLR(case):
 
 
                         # Male case
-                        if case.gender == 'M':
+                        if case.biological_sex == 'M':
 
                             # If mother is heterozygous
                             if gt_data['MOTHER'] == '0/1':
@@ -303,7 +283,7 @@ def calculate_moiLR(case):
                     if d['moi'] == 'XLR':
 
                         # Female case
-                        if case.gender == 'F':
+                        if case.biological_sex == 'F':
                             
                             # If parent is heterozygous and the proband is homozygous
                             if gt_data['PROBAND'] == '1/1' and gt_data['FATHER'] in ('0/0', '0/1'):
@@ -313,7 +293,7 @@ def calculate_moiLR(case):
 
 
                         # Male case
-                        if case.gender == 'M':
+                        if case.biological_sex == 'M':
 
                             # If father is heterozygous
                             if gt_data['FATHER'] == '0/1':

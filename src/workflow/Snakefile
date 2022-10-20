@@ -2,7 +2,7 @@ import os
 
 # Get configuration settings
 configfile: "config.yaml"
-shell.prefix('export PATH=$HOME/miniconda3/bin:$PATH; source activate cavalri;')
+shell.prefix('export PATH=$/igm/home/rsrxs003/miniconda3/bin:$PATH; source activate cavalri;')
 
 # Set up a temp folder to store pickles
 temp_dir = config['tmp_dir']
@@ -52,4 +52,4 @@ rule run_case:
     output:
         os.path.join(temp_dir, "{case}.full.pickle")
     shell:
-        'python3 scripts/run_case.py --input {input} -o {output}'
+        'python scripts/run_case.py --input {input} -o {output}'

@@ -36,7 +36,11 @@ def get_cases(cohort):
                     exomiser = inputs['exomiser'],
                     conda_bin = inputs['conda_bin'],
                     reference_path = inputs['reference_path'],
-                    annotations_path = inputs['annotations_path']
+                    annotations_path = inputs['annotations_path'],
+                    biological_sex = inputs['biological_sex'],
+                    proband = inputs['proband'],
+                    mother = inputs['mother'],
+                    father = inputs['father']
                 )
                 cohort.add_case(cs)
     

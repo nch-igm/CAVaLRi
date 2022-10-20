@@ -38,12 +38,14 @@ class Workflow:
         for case in self.cohort.cases:
             case.temp_dir = temp_folder
             case_plan_path = os.path.join(temp_folder, f'{case.case_id}.pickle')
+            print(f'Dump path: {os.getcwd()}')
             with open(case_plan_path, 'wb') as f:
                 pickle.dump(case, file = f)
                 # self.worker(f'ln {e} {case_plan_path}')
 
         # Copy output files and remove temporary directory
-        res = self.worker(f"bash {os.path.join(os.getcwd(), 'src/workflow/sm.bash')}")
+        # print(os.path.join(os.getcwd(), 'src/workflow/sm.bash'))
+        res = self.worker(f"/usr/bin/bash {os.path.join(os.getcwd(), 'src/workflow/sm.bash')}")
         # print(res)
         # for case in self.cohort.cases:
         #     self.worker(f"cp {os.path.join(temp_folder, f'{case.case_id}.full.pickle')} {self.cohort.output_path}")

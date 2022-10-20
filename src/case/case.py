@@ -1,6 +1,7 @@
 from ..genotype import Genotype
 from ..phenotype import Phenotype
-from .methods import *
+# from .methods import *
+from .lirical_methods import *
 
 class Case:
     """
@@ -17,7 +18,7 @@ class Case:
     # INITIALIZE
     def __init__(self, cohort, case_id, genotype_path, phenotype_path, bcftools,
                  lirical, exomiser, conda_bin, reference_path, annotations_path,
-                 genome_build='hg38'):
+                 biological_sex, proband, mother, father, genome_build='hg38'):
 
         self.cohort = cohort
         self.case_id = case_id
@@ -30,34 +31,32 @@ class Case:
         self.phenotype = Phenotype(self, phenotype_path)
         self.reference_path = reference_path
         self.annotations_path = annotations_path
+        self.biological_sex = biological_sex
+        self.proband = proband
+        self.mother = mother
+        self.father = father
     
     def run_lirical(self):
         self.lirical_tsv_output, self.lirical_html_output = run_lirical(self)
 
     def build_case_data(self):
         self.case_data = build_case_data(self)
+    
+    def calculate_genoLR(self):
+        self.genoLRs = calculate_genoLR(self)
 
     def calculate_moiLR(self):
-        self.case_data = calculate_moiLR(self)
+        self.moiLRs = calculate_moiLR(self)
+
+    # def calculate_compositeLR(self):
+    #     self.case_data = calculate_compositeLR(self.case_data)
     
-    def calculate_genotypeLR(self):
-        self.case_data = calculate_genotypeLR(self.case_data)
+    # def add_rankings(self):
+    #     self.case_data = add_rankings(self.case_data)
 
-    def calculate_phenotypeLR(self):
-        self.case_data = calculate_phenotypeLR(self)
+    # def add_tp(self):
+    #     self.case_data = add_tp(self)
 
-    # def score_phenotypes(self):
-    #     self = score_phenotypes(self)
-
-    def calculate_compositeLR(self):
-        self.case_data = calculate_compositeLR(self.case_data)
-    
-    def add_rankings(self):
-        self.case_data = add_rankings(self.case_data)
-
-    def add_tp(self):
-        self.case_data = add_tp(self)
-
-    def build_case_summary(self):
-        self.case_summary = build_case_summary(self.case_data)
+    # def build_case_summary(self):
+    #     self.case_summary = build_case_summary(self.case_data)
         

@@ -1,4 +1,4 @@
-from src.cohort import Cohort
+from src.cohort import *
 from config import *
 import argparse
 

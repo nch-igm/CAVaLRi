@@ -5,3 +5,6 @@ lirical_data_path: data/
 lirical_mindiff: 10000
 gene_info: data/Homo_sapiens_gene_info.tsv
 moi_db: data/moi.csv
+pheno_score_source: data/pheno_scores.csv
+pheno_score: IC
+max_population_frequency: 0.05
