@@ -63,6 +63,18 @@ class Cohort:
             print('No input files found!')
             sys.exit(1)
 
+    def build_cohort_summary(self):
+        self.cohort_summary = build_cohort_summary(self)
+
+    def compile_cohort_variants(self):
+        self.cohort_variants = compile_cohort_variants(self)
+
+    def calculate_statistics(self):
+        self.stats = calculate_statistics(self)
+
+    def plot_figures(self):
+        self.roc_fig, self.roc_data, self.topn_fig, self.topn_data = plot_figures(self)
+
     def run(self):
         self.get_cases()
         # print([case.case_id for case in self.cases])

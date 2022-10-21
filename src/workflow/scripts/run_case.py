@@ -48,10 +48,9 @@ def main(input, output):
     with open(os.path.join(case.temp_dir, 'moiLR.json'), 'w') as f:
         json.dump(case.moiLRs, f, indent = 4)
 
-    case.case_summary.to_csv(os.path.join(case.temp_dir, 'case_summary.csv'), index = False)
-
     with open(output, 'wb') as f:
-        pickle.dump(case, file = f)
+        pickle.dump(case.case_data, file = f)
+    case.case_summary.to_csv(os.path.join(case.temp_dir, f'{case.case_id}.summary.csv'), index = False)
 
 
 if __name__ == "__main__":

@@ -12,3 +12,6 @@ phenoLR_scalar: 1
 genoLR_scalar: 3.6
 moiLR_scalar: 6.8
 diagnostic_source: data/ddd_diagnostic.xlsx
+# comparator: 
+plot_label: TEST
+comparator_plot_label: TEST1
