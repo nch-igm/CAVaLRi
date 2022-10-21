@@ -13,7 +13,6 @@ def get_trio_genotype(case, chrom, pos):
             'mother': case.mother,
             'father': case.father
             }
-        print(parent_patterns)
         if re.search(parent_patterns['proband'].lower(), s.lower()):  
             proband = (i, s)
         if re.search(parent_patterns['mother'].lower(), s.lower()):

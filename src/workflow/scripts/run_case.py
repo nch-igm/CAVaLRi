@@ -31,10 +31,10 @@ def main(input, output):
     case.calculate_moiLR()
 
     # # Run case level summary commands
-    # case.calculate_compositeLR()
-    # case.add_rankings()
-    # case.add_tp()
-    # case.build_case_summary()
+    case.calculate_compositeLR()
+    case.add_rankings()
+    case.add_tp()
+    case.build_case_summary()
 
     with open(os.path.join(case.temp_dir, 'test.json'), 'w') as f:
         json.dump(case.case_data, f, indent = 4)
@@ -47,6 +47,8 @@ def main(input, output):
 
     with open(os.path.join(case.temp_dir, 'moiLR.json'), 'w') as f:
         json.dump(case.moiLRs, f, indent = 4)
+
+    case.case_summary.to_csv(os.path.join(case.temp_dir, 'case_summary.csv'), index = False)
 
     with open(output, 'wb') as f:
         pickle.dump(case, file = f)

@@ -48,15 +48,15 @@ class Case:
     def calculate_moiLR(self):
         self.moiLRs = calculate_moiLR(self)
 
-    # def calculate_compositeLR(self):
-    #     self.case_data = calculate_compositeLR(self.case_data)
+    def calculate_compositeLR(self):
+        self.case_data = calculate_compositeLR(self)
     
-    # def add_rankings(self):
-    #     self.case_data = add_rankings(self.case_data)
+    def add_rankings(self):
+        self.case_data = add_rankings(self)
 
-    # def add_tp(self):
-    #     self.case_data = add_tp(self)
+    def add_tp(self):
+        self.case_data = add_tp(self)
 
-    # def build_case_summary(self):
-    #     self.case_summary = build_case_summary(self.case_data)
+    def build_case_summary(self):
+        self.case_summary = build_case_summary(self)
         

@@ -47,18 +47,3 @@ def get_cases(cohort):
     if len(cohort.cases) == 0:
         return False
     return True
-
-
-# if __name__ == "__main__":
-    
-#     # Intialize parser
-#     parser = argparse.ArgumentParser(description='')
-#     parser.add_argument('--cases', '-c', type=str, help='Cases that should be included in the cohort')
-#     parser.add_argument('--output', '-o', type=str, help='Path to output cohort pickle')
-
-#     args = parser.parse_args()
-
-#     x = main(args.cases)
-
-#     with open(args.output, 'wb') as f:
-#         pickle.dump(x, file = f)

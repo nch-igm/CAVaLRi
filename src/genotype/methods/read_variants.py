@@ -22,7 +22,6 @@ def worker(cmd):
 
 
 def parse_gene(row_info):
-    print(row_info)
     parsed_values = row_info.split(';')
     for pv in parsed_values:
         k,v = pv.split('=')

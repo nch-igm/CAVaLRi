@@ -1,5 +1,3 @@
-import os
-print(os.system(f'which python'))
 from bs4 import BeautifulSoup
 
 def parse_prettest_probability(table):

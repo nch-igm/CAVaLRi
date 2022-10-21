@@ -1,11 +1,41 @@
 import math
+import json
 
-def calculate_compositeLR(case_data):
+def calculate_compositeLR(case):
 
-    for gene in case_data['genes']:
-         for d in case_data['genes'][gene]['diseases']:
+    config = case.cohort.config
 
-            # Sum likelihood ratios (allowed since we are in log space)
-            d['compositeLR_log10'] = d['moiLR_log10'] + d['phenoLR_log10'] + case_data['genes'][gene]['genotypeLR_log10']
+    # For each OMIM ID, calculate the compositeLR
+    for d in case.case_data['diseases']:
 
-    return case_data
+        # Append phenoLR
+        d.update({
+            'phenoLR': case.phenotype.phenoLRs[d['omimId']]['phenoLR'],
+            'hpoCount': case.phenotype.phenoLRs[d['omimId']]['hpoCount']
+        })
+
+        # Append genoLR
+        d.update({
+            'genoLR': case.genoLRs[d['omimId']]
+        })
+
+        # Append moiLR
+        d.update({
+            'moiLR': case.moiLRs[d['omimId']]
+        })
+
+        # Append compositeLR
+        d.update({
+            'compositeLR': d['phenoLR'] * config['phenoLR_scalar'] + d['gene_data']['scraped_geneLR'] * config['genoLR_scalar'] + d['moiLR'] * config['moiLR_scalar']
+        })
+
+        # Calculate post-test probability
+        numerator = d['pretest_probability'] * 10**d['compositeLR']
+        denominator = (1 - d['pretest_probability']) + d['pretest_probability'] * 10**d['compositeLR']
+        posttest_probability = numerator / denominator
+
+        # Append post test probability
+        d.update({'postTestProbability': posttest_probability})
+
+    # Return the result data frame
+    return case.case_data

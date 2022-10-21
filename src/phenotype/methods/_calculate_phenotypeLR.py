@@ -2,12 +2,10 @@ import sys
 import math
 import pandas as pd
 
-sys.path.append('..')
-# from hpo_walk import ontology
-# from hpo_walk.annotations import get_phenotype_disease_gene_df
-from config import *
 
 def calculate_phenotypeLR(case):
+
+    config = case.cohort.config
 
     for gene in case.case_data['genes']:
         for d in case.case_data['genes'][gene]['diseases']:

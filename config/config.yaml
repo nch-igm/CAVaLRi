@@ -8,3 +8,7 @@ moi_db: data/moi.csv
 pheno_score_source: data/pheno_scores.csv
 pheno_score: IC
 max_population_frequency: 0.05
+phenoLR_scalar: 1
+genoLR_scalar: 3.6
+moiLR_scalar: 6.8
+diagnostic_source: data/ddd_diagnostic.xlsx
