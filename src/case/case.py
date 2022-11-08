@@ -1,7 +1,8 @@
 from ..genotype import Genotype
 from ..phenotype import Phenotype
-# from .methods import *
 from .lirical_methods import *
+from .methods import *
+
 
 class Case:
     """

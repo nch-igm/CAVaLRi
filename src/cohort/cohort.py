@@ -74,6 +74,7 @@ class Cohort:
 
     def plot_figures(self):
         self.roc_fig, self.roc_data, self.topn_fig, self.topn_data = plot_figures(self)
+        # self.roc_fig, self.roc_data = plot_figures(self)
 
     def run(self):
         self.get_cases()

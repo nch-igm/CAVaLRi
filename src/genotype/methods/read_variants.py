@@ -69,7 +69,8 @@ def read_variants(genotype):
     p = worker(f'{genotype.case.bcftools} norm -f {genotype.case.reference_path} -Oz -o {norm_vcf} {genotype.case.genotype.genotype_path}')
 
     # Read in vcf
-    vcf_reader = vcf.Reader(filename = norm_vcf)
+    # print(norm_vcf)
+    vcf_reader = vcf.Reader(filename = norm_vcf, compressed=True, encoding='utf-8')
     # metadata = vcf_reader.metadata
 
     # Initialize list to capture variants

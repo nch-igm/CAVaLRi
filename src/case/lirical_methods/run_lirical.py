@@ -43,7 +43,10 @@ def build_yaml(case, hpo_ids, tsv=True):
 
     # update the rest
     result2['hpoIds'] = hpo_ids
-    result2['prefix'] = os.path.join(case.temp_dir, case.case_id)
+    # result2['prefix'] = os.path.join(case.temp_dir, case.case_id)
+    result2['prefix'] = case.case_id
+    result2['outdir'] = case.temp_dir
+
 
     # set tsv parameter
     result1['analysis']['tsv'] = "true" if tsv else "false"
@@ -72,7 +75,7 @@ def run_lirical(case):
     config = case.cohort.config
     
     # Filter ClinPhen tsv
-    filtered_df = case.phenotype.pheno_df.head(config['hpo_upper_bound'])
+    filtered_df = case.phenotype.pheno_df
 
     # Isolate HPO IDs
     hpo_ids = filtered_df['HPO ID'].to_list()

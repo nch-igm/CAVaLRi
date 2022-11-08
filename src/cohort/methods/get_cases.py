@@ -22,6 +22,14 @@ def get_cases(cohort):
             with open(path,'r') as d:
                 inputs = json.load(d)
 
+            # Check for parents
+            for parent in ['mother','father']:
+                if parent in inputs.keys():
+                    if inputs[parent] == '':
+                        inputs[parent] = 'Unavailable'
+                else:
+                    inputs[parent] = 'Unavailable'
+
             validated_input = validate_case(inputs)
             if validated_input != '':
                 print(f'Removed case: {case}, {inputs[validated_input]} not a valid path')

@@ -61,14 +61,19 @@ def annotate_variants(genotype):
 
     # Read in annotated variants
     variant_df = genotype.variants
-    ann_df = parse_annotations(genotype.case.annotations_path)
+    ann_df = variant_df.copy()
+    # for col in ['gnomad_ex_faf95_popmax','gnomad_wg_faf95_popmax']:
+    #     ann_df[col] = ann_df[col].fillna(0)
+    # print(ann_df.head(5))
 
-    # Fill in frequency nulls
-    for col in ['gnomad_ex_faf95_popmax','gnomad_wg_faf95_popmax']:
-        ann_df[col] = ann_df[col].fillna(0)
-    ann_df = variant_df.merge(ann_df, on = ['CHROM', 'POS', 'REF', 'ALT'])
-    ann_df['DP'] = ann_df.apply(get_depth, axis = 1)
-    ann_df['GT'] = ann_df.apply(get_gt, axis = 1)
+    # ann_df = parse_annotations(genotype.case.annotations_path)
+
+    # # Fill in frequency nulls
+    # for col in ['gnomad_ex_faf95_popmax','gnomad_wg_faf95_popmax']:
+    #     ann_df[col] = ann_df[col].fillna(0)
+    # ann_df = variant_df.merge(ann_df, on = ['CHROM', 'POS', 'REF', 'ALT'])
+    # ann_df['DP'] = ann_df.apply(get_depth, axis = 1)
+    # ann_df['GT'] = ann_df.apply(get_gt, axis = 1)
 
     return ann_df
     

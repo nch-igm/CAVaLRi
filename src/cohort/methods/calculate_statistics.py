@@ -31,14 +31,14 @@ def calculate_statistics(cohort):
     config = cohort.config
 
     try:
-        print(f"Comparing results stored in {config['comparator']}")
+        print(f"Comparing results stored in {config['comparator_results']}")
     except:
         print(f'No comparator indicated')
         return 'No comparator'
 
     # Read in comparator data set
     summ_data = cohort.cohort_summary.copy()
-    comp_data = pd.read_csv(os.path.join(config['comparator'], 'summary', 'cohort_summary.tsv'), sep='\t')
+    comp_data = pd.read_csv(os.path.join(config['comparator_results'], 'summary', 'cohort_summary.tsv'), sep='\t')
     assessed_cases = set(summ_data['subjectId']).intersection(set(comp_data['subjectId']))
 
     # Limit to shared cases

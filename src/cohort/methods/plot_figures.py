@@ -27,10 +27,7 @@ def build_roc(cohort, comp):
     # Big Title        
     fig.suptitle("Pathogenic Variant Classfier ROC", fontsize="30", y=.93)
 
-    # Show legend
-    ax.legend(loc="lower right", fontsize="20")
-
-    # Plot comparator
+    # Plot midline
     midline = pd.DataFrame([[0,0], [1,1]])
     midline.columns = ['True Positive Rate', 'False Positive Rate']
     sns.lineplot(ax=ax, data=midline, x='False Positive Rate', y='True Positive Rate', color = 'grey', linewidth = 3.0, linestyle='--')
@@ -51,6 +48,14 @@ def build_roc(cohort, comp):
                         linewidth = 3.0, markersize=5, marker='d', color = 'black', 
                         label='{} (AUC = {})'.format(config['comparator_plot_label'], round(comp_roc_auc, 4)))
 
+    # Show legend
+    ax.legend(loc="lower right", fontsize="20")
+
+    # Adjust font sizes
+    ax.set_xlabel('False Positive Rate',fontsize = 25)
+    ax.set_ylabel('True Positive Rate',fontsize = 25)
+    ax.tick_params(labelsize = 20)
+    
 
     return fig, roc_data
 
@@ -76,9 +81,11 @@ def build_topn(ax, **kwargs):
 
     # Iterate from 1-10 and populate plotting data frame
     d = d.loc[d['isTp'] == 1]
+    worst_rank = d[(d['rank'] != '') & (d['rank'].notna())]['rank'].max()
+    d.loc[(d['rank'] == '') | (d['rank'].isna()),'rank'] = worst_rank
     total_subjects = len(d.index)
     for i in range(1,51):
-        n_rank_subjects = len(d.loc[(d['rank'] <= i) & (d['rank'] != 'NaN')].index)
+        n_rank_subjects = len(d.loc[d['rank'] <= i].index)
         p_data = pd.concat([
             p_data,
             pd.DataFrame({
@@ -88,6 +95,7 @@ def build_topn(ax, **kwargs):
         ])
     p_data.loc[p_data['top_n'] == 50, 'percent_of_subjects'] = 100
     kwargs['data'] = p_data
+    kwargs['label'] = f"{kwargs['label']} (Average Rank: {round(d['rank'].mean(), 2)})"
     # Plot data
     sns.lineplot(ax=ax, x='top_n', y='percent_of_subjects', **kwargs)
 
@@ -111,6 +119,9 @@ def construct_topn(cohort, comp):
     # Create figure
     topn_fig, topn_ax = plt.subplots(figsize = (12,10), dpi = 300)
 
+    # Big Title        
+    topn_fig.suptitle("Diagnostic Variants Found in Top N", fontsize="30", y=.93)
+
     # Plot the TOP-N curves
     kwargs = {
         'data': cohort.cohort_summary,
@@ -131,22 +142,30 @@ def construct_topn(cohort, comp):
         }
         topn_comp_data = build_topn(topn_ax, **kwargs)
 
+        topn_data = topn_data.merge(topn_comp_data, on = 'top_n')
+
     # Style the plot
     # style(topn_fig, topn_ax)
 
-    legend = topn_ax.legend(loc="lower right")
+    # Add legend
+    legend = topn_ax.legend(loc="lower right", fontsize = 20)
+    
+    # Adjust font sizes
+    topn_ax.set_xlabel('Diagnostic Variant Rank',fontsize = 25)
+    topn_ax.set_ylabel('Percent of Subjects',fontsize = 25)
+    topn_ax.tick_params(labelsize = 20)
 
-    # Save the figure and roc data points
+    # Save the figure and topn data points
     return topn_fig, topn_data
     
 
 
-def build_lirical_plots(cohort):
+def plot_figures(cohort):
 
     config = cohort.config
 
     try:
-        x = config['comparator']
+        x = config['comparator_results']
         comp = True
     except:
         comp = False
