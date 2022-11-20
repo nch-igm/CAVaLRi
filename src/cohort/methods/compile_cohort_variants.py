@@ -7,6 +7,7 @@ def compile_cohort_variants(cohort):
     dfs = []
     for case in cohort.cases:
         df = case.case_summary.copy()
+        df['case'] = case.case_id
         df['result'] = df.apply(is_tp, hits = case.case_data['tpHits'], axis = 1)
         dfs.append(df)
     return pd.concat(dfs)

@@ -31,7 +31,11 @@ class Workflow:
         
         # Set up temporary directory
         # temp_folder = os.path.join(self.cohort.root_path, 'tmp', str(uuid.uuid4()))
-        temp_folder = '/igm/home/rsrxs003/CAVaLRi/tmp/47e0f754-68d8-4d2f-b29e-879f720460b7'
+        # temp_folder = '/igm/home/rsrxs003/CAVaLRi/tmp/97ba781d-c11e-4711-a7e5-a323167843ef' # IDN_IDV
+        # temp_folder = '/igm/home/rsrxs003/CAVaLRi/tmp/4c24ebb0-328c-4c9a-bd51-9970d1d9c289' # deIDN_deIDV
+        # temp_folder = '/igm/home/rsrxs003/CAVaLRi/tmp/0bffd2cf-d03a-4368-a03f-23a35125563d'# deIDN_IDV
+        temp_folder = '/igm/home/rsrxs003/CAVaLRi/tmp/14264214-7822-4ed7-b828-2a3c3d8770b4' # IDN_deIDV
+        
         if not os.path.exists(temp_folder):
             os.mkdir(temp_folder)
 

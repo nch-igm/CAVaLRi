@@ -6,7 +6,7 @@ import vcf
 def get_trio_genotype(case, chrom, pos):
 
     proband, mother, father = 0, 0, 0
-    vcf_reader = vcf.Reader(filename = case.genotype.genotype_path, compressed=True, encoding='utf-8')
+    vcf_reader = vcf.Reader(filename = case.genotype.processed_genotype_path, compressed=True, encoding='ISO-8859-1')
     for i, s in enumerate(vcf_reader.samples):
         parent_patterns = {
             'proband': case.proband,
@@ -76,7 +76,7 @@ def calculate_moiLR(case):
             gt_data = get_trio_genotype(case, chrom, int(pos))
 
             # Normalize GT by setting all | to /, we don't care about phasing for now
-            for gt in ['proband', 'mother', 'father']:
+            for gt in ['proband','mother','father']:
                 if chrom == 'chrX' or chrom == 'X':
                     if len(gt_data[gt]) == 1:
                         if gt_data[gt] == 0:
@@ -88,7 +88,11 @@ def calculate_moiLR(case):
                         gt_data[gt] = gt_data[gt][0] + '/' + gt_data[gt][2]
 
                 else:
-                    gt_data[gt] = gt_data[gt][0] + '/' + gt_data[gt][2]
+                    # print(case.genotype.processed_genotype_path, chrom_pos, gt_data[gt])
+                    if gt_data[gt] in ['.','1']:
+                        gt_data[gt] = '0/1'
+                    else:
+                        gt_data[gt] = gt_data[gt][0] + '/' + gt_data[gt][2]
 
             # Count alternate alleles
             for s in s_counts.keys():
