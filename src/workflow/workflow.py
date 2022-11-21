@@ -25,7 +25,6 @@ class Workflow:
             return out.decode()
         except:
             return err.decode()
-        # print(cmd)
 
     def run(self):
         

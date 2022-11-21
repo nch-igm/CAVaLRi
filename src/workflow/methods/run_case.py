@@ -2,7 +2,7 @@ import sys
 sys.path.append('..')
 sys.path.append('.')
 import pickle
-from cavalri import *
+from cavalri_cohort import *
 import argparse
 
 def main(input, case):
@@ -18,8 +18,8 @@ def main(input, case):
 
     # Run case level genotype commands
     c.genotype.read_variants()
+    # c.genotype.filter_variants()
     c.genotype.annotate_variants()
-    c.genotype.filter_variants()
 
     # Run case level mode of inheritance commands
     c.build_case_data()

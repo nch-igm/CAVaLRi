@@ -17,21 +17,14 @@ class Case:
     """
 
     # INITIALIZE
-    def __init__(self, cohort, case_id, genotype_path, phenotype_path, bcftools,
-                 lirical, exomiser, conda_bin, reference_path, annotations_path,
+    def __init__(self, cohort, case_id, genotype_path, phenotype_path, 
                  biological_sex, proband, mother, father, genome_build='hg38'):
 
         self.cohort = cohort
         self.case_id = case_id
         self.genome_build = genome_build
-        self.bcftools = bcftools
-        self.lirical = lirical
-        self.exomiser = exomiser
-        self.conda_bin = conda_bin
         self.genotype = Genotype(self, genotype_path)
         self.phenotype = Phenotype(self, phenotype_path)
-        self.reference_path = reference_path
-        self.annotations_path = annotations_path
         self.biological_sex = biological_sex
         self.proband = proband
         self.mother = mother

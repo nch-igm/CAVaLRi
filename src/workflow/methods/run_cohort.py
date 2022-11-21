@@ -3,7 +3,7 @@ sys.path.append('..')
 sys.path.append('.')
 import os
 import pickle
-from cavalri import *
+from cavalri_cohort import *
 import argparse
 
 def main(case_pickle_dir, cohort):

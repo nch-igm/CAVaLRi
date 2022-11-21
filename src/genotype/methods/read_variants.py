@@ -1,24 +1,17 @@
-import sys
 import os
 import re
+import shlex
 import pandas as pd
-from pkg_resources import parse_version
 import vcf
 import subprocess
-# sys.path.append('../..')
-# sys.path.append('..')
-# from config import *
+
 
 def worker(cmd):
-    # cmd = f'export PATH={conda_bin}:$PATH && source activate cavalri && {cmd}'
-    p = subprocess.Popen(cmd,  stdout=subprocess.PIPE, shell = True, env={'LANGUAGE':'en_US.en', 'LC_ALL':'en_US.UTF-8'})
+    parsed_cmd = shlex.split(cmd)
+    p = subprocess.Popen(parsed_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     p.wait()
     out, err = p.communicate()
-    try:
-        return out.decode()
-    except:
-        return err.decode()
-    # print(cmd)
+    return out.decode() if out else err.decode()
 
 
 def parse_gene(row_info):
@@ -61,13 +54,15 @@ def parse_samples(vcf_reader):
 
 def read_variants(genotype):
 
+    config = genotype.case.cohort.config
+
     # Normalize the vcf
     normalized_vcf_dir = os.path.join(genotype.case.cohort.root_path, genotype.case.temp_dir, 'normalized_vcfs')
     if not os.path.exists(normalized_vcf_dir):
         os.mkdir(normalized_vcf_dir)
     norm_vcf = os.path.join(normalized_vcf_dir, f'{genotype.case.case_id}.norm.vcf.gz')
-    p = worker(f'{genotype.case.bcftools} norm -f {genotype.case.reference_path} -Oz -o {norm_vcf} {genotype.case.genotype.genotype_path}')
-    p = worker(f'/igm/apps/htslib/htslib-1.4/bin/tabix {norm_vcf}')
+    p = worker(f"{os.path.join(config['htslib_bin'], 'bcftools')} norm -f {config['reference_path']} -Oz -o {norm_vcf} {genotype.case.genotype.genotype_path}")
+    p = worker(f"{os.path.join(config['htslib_bin'], 'tabix')} {norm_vcf}")
 
     # Read in vcf
     vcf_reader = vcf.Reader(filename = norm_vcf, compressed=True, encoding='ISO-8859-1')

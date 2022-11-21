@@ -38,8 +38,7 @@ def build_yaml(case, hpo_ids, tsv=True):
     # update "analysis" component
     result1['analysis']['datadir'] = os.path.join(case.cohort.root_path, config['lirical_data_path'])
     result1['analysis']['vcf'] = case.genotype.processed_genotype_path
-    result1['analysis']['exomiser'] = case.exomiser
-    result1['analysis']['mindiff'] = config['lirical_mindiff']
+    result1['analysis']['exomiser'] = config['exomiser_data']
 
     # update the rest
     result2['hpoIds'] = hpo_ids
@@ -88,13 +87,6 @@ def run_lirical(case):
     
     try:
 
-        # Download LIRICAL data
-        worker(f"cd {case.cohort.root_path} && java -jar {case.lirical} download -d {config['lirical_data_path']}")
-        
-        # Write filtered df
-        # filtered_hpo_path = os.path.join(case.cohort.root_path, output_dir, f'{case.case_id}.{config["hpo_upper_bound"]}TOTAL_filtered.clinphen.tsv')
-        # filtered_df.to_csv(filtered_hpo_path, sep='\t', index=False)
-
         # Build YAML
         tsv_yaml = build_yaml(case = case, hpo_ids = hpo_ids, tsv=True)
         html_yaml = build_yaml(case = case, hpo_ids = hpo_ids, tsv=False)
@@ -105,7 +97,7 @@ def run_lirical(case):
             if not(os.path.exists(yml[2])):
 
                 # Run LIRICAL
-                worker(f'cd {case.cohort.root_path} && java -jar {case.lirical} yaml -y {yml[0]}')
+                worker(f"cd {case.cohort.root_path} && java -jar {config['lirical_executable']} yaml -y {yml[0]}")
                 
                 # Rename results files
                 worker(f'cp {yml[1]} {yml[2]}')

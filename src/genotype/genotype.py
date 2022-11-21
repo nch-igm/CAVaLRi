@@ -24,11 +24,11 @@ class Genotype:
         self.case = case
 
     # METHODS
-    def read_variants(self):
-        self.variants = read_variants(self)
-    
     def annotate_variants(self):
-        self.annotated_variants = annotate_variants(self)
+        self.genotype_path = annotate_variants(self)
 
     def filter_variants(self):
-        self.filtered_variants = filter_variants(self)
+        self.genotype_path = filter_variants(self)
+    
+    def read_variants(self):
+        self.variants = read_variants(self)

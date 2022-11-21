@@ -10,61 +10,58 @@ import pandas as pd
 sys.path.append('../..')
 from config import *
 
-# def worker(cmd):
-#     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell = True, env={'LANGUAGE':'en_US.en', 'LC_ALL':'en_US.UTF-8'})
-#     p.wait()
-#     out, err = p.communicate()
-#     try:
-#         return out.decode()
-#     except:
-#         return err.decode()
+def worker(cmd):
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell = True)
+    p.wait()
+    out, err = p.communicate()
+    return out.decode() if out else err.decode()
 
 
-# def annovar_annotate_variants(input):
+def annovar_annotate_variants(genotype):
 
-#     # Determine output path
-#     output = f"{input[:input.find('.vcf.gz')]}.annotated.vcf"
+    # Get genotype path
+    genotype_basename = os.path.basename(genotype.genotype_path)
 
-#     # Run annovar
-#     command = f"perl {os.path.join(annovar,'table_annovar.pl')} -vcfinput {input} {os.path.join(annovar,'table_annovar.pl')} humandb/ -buildver hg38 --out {output} -remove -protocol refGene -operation g -nastring ."
-#     worker(command)
-#     worker(f"mv {output}.hg38_multianno.vcf {output}")
-#     return output
+    # Determine output path
+    output = os.path.join(genotype.case.temp_dir, f"{genotype_basename[:genotype_basename.find('.vcf.gz')]}.annotated")
+    temp_out = os.path.abspath(f'{output}.hg38_multianno.vcf')
+    unzipped_out = os.path.abspath(f'{output}.vcf')
 
-
-def parse_annotations(annotations_path):
-    try:
-        if re.search('.csv', annotations_path):
-            return pd.read_csv(annotations_path)
-        elif re.search('.xl', annotations_path):
-            return pd.read_excel(annotations_path)
-        else:
-            return pd.read_parquet(annotations_path)
-
-    except Exception as err:
-        print(f"Unexpected file type {err=}, {type(err)=}")
-        raise
-
-
-def get_depth(row):
-    return json.loads(row['PROBAND'].replace("'", '"'))['DP']
+    # Run annovar
+    command = f"""
+        perl {os.path.abspath(os.path.join(config['annovar_scripts'],'table_annovar.pl'))} \
+            -vcfinput {genotype.genotype_path} {os.path.abspath(config['annovar_db'])} \
+            -buildver {config['genome_build']} \
+            --out {output} \
+            -remove \
+            -protocol refGene,clinvar_20220320,gnomad30_genome \
+            -operation g,f,f -nastring . \
+            && mv {temp_out} {unzipped_out} \
+            && bgzip {unzipped_out} \
+            && tabix {unzipped_out}.gz
+    """
+    p = worker(command)
+    return f"{output}.vcf.gz"
 
 
-def get_gt(row):
-    return json.loads(row['PROBAND'].replace("'", '"'))['GT']
+# def get_depth(row):
+#     return json.loads(row['PROBAND'].replace("'", '"'))['DP']
+
+
+# def get_gt(row):
+#     return json.loads(row['PROBAND'].replace("'", '"'))['GT']
 
 
 def annotate_variants(genotype):
 
     # Annotate with ANNOVAR
-    # annovar_annotate_variants(genotype.genotype_path)
+    new_vcf_path = annovar_annotate_variants(genotype)
 
     # Read in annotated variants
-    variant_df = genotype.variants
-    ann_df = variant_df.copy()
+    # variant_df = genotype.variants
+    # ann_df = variant_df.copy()
     # for col in ['gnomad_ex_faf95_popmax','gnomad_wg_faf95_popmax']:
     #     ann_df[col] = ann_df[col].fillna(0)
-    # print(ann_df.head(5))
 
     # ann_df = parse_annotations(genotype.case.annotations_path)
 
@@ -75,5 +72,5 @@ def annotate_variants(genotype):
     # ann_df['DP'] = ann_df.apply(get_depth, axis = 1)
     # ann_df['GT'] = ann_df.apply(get_gt, axis = 1)
 
-    return ann_df
+    return new_vcf_path
     

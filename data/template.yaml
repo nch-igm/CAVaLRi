@@ -1,0 +1,12 @@
+analysis:
+    name: sample
+    mindiff: 10000
+    tsv: true
+    datadir: /igm/home/rsrxs003/rnb/input/BL-173/data_dir
+    orphanet: false
+    genomeAssembly: hg38
+    vcf: template.vcf
+    exomiser: exomiser_path
+hpoIds: ['HP:0000001','HP:0000002','HP:0000003']
+negatedHpoIds: []
+prefix: path/to/output

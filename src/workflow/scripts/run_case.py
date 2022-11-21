@@ -1,5 +1,6 @@
 import sys
-sys.path.append('../..')
+for path in ['.','../..']:
+    sys.path.append(path)
 import pickle
 import argparse
 import json
@@ -13,9 +14,9 @@ def main(input, output):
         case = pickle.load(f)
 
     # Process variants
-    case.genotype.read_variants()
     case.genotype.annotate_variants()
-    # case.genotype.filter_variants()
+    case.genotype.filter_variants()
+    case.genotype.read_variants()
 
     # Process phenotypes
     case.phenotype.read_phenotypes()

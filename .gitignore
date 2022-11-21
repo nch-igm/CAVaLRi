@@ -4,8 +4,14 @@
 *logging*
 *DS_Store*
 *run_apps/spliceAI/*
-data/*
+data/WES_common_variants.csv
 tmp/*
+input/*
+output/*
 *scheduler.o*
 *lirical.log
 *sub_logfiles*
+dependencies/*
+!dependencies/annovar
+!*/dependencies/annotate_variation.pl
+!dependencies/environment.yml
