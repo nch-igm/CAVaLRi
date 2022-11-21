@@ -1,0 +1,12 @@
+{
+    "phenotype": "/Users/rsrxs003/projects/CAVaLRi/input/test.pheno.tsv",
+    "vcf": "/Users/rsrxs003/projects/CAVaLRi/input/test.vcf.gz",
+    "bcftools": "/Users/rsrxs003/projects/rtk/bcftools-1.14/bcftools",
+    "lirical": "/Users/rsrxs003/projects/CAVaLRi/Downloads/LIRICAL.jar",
+    "exomiser": "/Users/rsrxs003/Documents/Exomiser/2102_hg38",
+    "reference_path": "/Users/rsrxs003/ref/hg38upper.fa",
+    "biological_sex": "F",
+    "proband": "799_M17-158_P_ST-00023454",
+    "mother": "799_M17-159_M_ST-00077744",
+    "father": "799_M17-160_F_ST-00077742"
+}
