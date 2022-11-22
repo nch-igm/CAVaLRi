@@ -1,13 +1,11 @@
 ## DEPENDICIES ##
 annovar_scripts: dependencies/annovar
 annovar_db: dependencies/human_db
-exomiser_data: dependencies/2209_hg38.zip
-htslib_bin: dependencies/bin
+exomiser_data: dependencies/lirical_data/2209_hg38
 lirical_executable: dependencies/LIRICAL.jar
 lirical_data_path: dependencies/lirical_data
 lirical_yaml_template: data/template.yaml
-reference_path: /Users/rsrxs003/ref/hg38upper.fa
-# lirical_data_path: /igm/home/rsrxs003/rnb/input/BL-173/data_dir
+reference_path: dependencies/hg38.fa
 
 ## DATA TABLES ##
 gene_info: data/Homo_sapiens_gene_info.tsv
@@ -16,7 +14,7 @@ pheno_score_source: data/pheno_scores_.csv
 diagnostic_source: data/wes_diagnostic.xlsx
 
 ## CAVaLRi SETTINGS ##
-genome_build: hg38  # hg19 or hg38
+genome_build: hg38 
 hpo_lower_bound: 5
 hpo_upper_bound: 15
 pheno_score: IC
@@ -24,5 +22,7 @@ max_population_frequency: 0.01
 phenoLR_scalar: 1
 genoLR_scalar: 3.6
 moiLR_scalar: 6.8
+
+## PLOT SETTINGS ##
 plot_label: ClinPhen
 comparator_plot_label: Clinician

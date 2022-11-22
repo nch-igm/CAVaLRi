@@ -61,12 +61,11 @@ def read_variants(genotype):
     if not os.path.exists(normalized_vcf_dir):
         os.mkdir(normalized_vcf_dir)
     norm_vcf = os.path.join(normalized_vcf_dir, f'{genotype.case.case_id}.norm.vcf.gz')
-    p = worker(f"{os.path.join(config['htslib_bin'], 'bcftools')} norm -f {config['reference_path']} -Oz -o {norm_vcf} {genotype.case.genotype.genotype_path}")
-    p = worker(f"{os.path.join(config['htslib_bin'], 'tabix')} {norm_vcf}")
+    p = worker(f"bcftools norm -f {config['reference_path']} -Oz -o {norm_vcf} {genotype.case.genotype.genotype_path}")
+    p = worker(f"tabix {norm_vcf}")
 
     # Read in vcf
     vcf_reader = vcf.Reader(filename = norm_vcf, compressed=True, encoding='ISO-8859-1')
-    # metadata = vcf_reader.metadata
 
     # Initialize list to capture variants
     var_list = []

@@ -63,14 +63,14 @@ def igm_common_filter(var, common_ids):
 def filter_variants(genotype):
 
     # Read in the vcf
-    vcf_reader = vcf.Reader(filename = genotype.genotype_path, compressed=True, encoding='utf-8')
+    vcf_reader = vcf.Reader(filename = genotype.genotype_path, compressed=True, encoding='ISO-8859-1')
     filtered_path = os.path.join(genotype.case.temp_dir, f"{genotype.case.case_id}.filtered.vcf")
     vcf_writer = vcf.Writer(open(filtered_path, 'w'), vcf_reader)
     pop_max_threshold = 0.01
     qual_threshold = 50
 
     # Read in IGM variant frequencies
-    igm_common_df = pd.read_csv('/Users/rsrxs003/projects/CAVaLRi/data/WES_common_variants.csv')
+    igm_common_df = pd.read_csv('/igm/home/rsrxs003/CAVaLRi/data/WES_common_variants.csv')
     def get_var_id(row):
         return f"chr{row['CHROM']}_{row['POS']}_{row['REF']}_{row['ALT']}"
     igm_common_df['var_id'] = igm_common_df.apply(get_var_id, axis = 1)
@@ -103,5 +103,7 @@ def filter_variants(genotype):
             vcf_writer.write_record(record)
     
     # Compress vcf
-    worker(f'bgzip {filtered_path} && tabix {filtered_path}.gz')
+    vcf_writer.close()
+    worker(f'bgzip {filtered_path}')
+    worker(f"tabix {filtered_path}.gz")
     return f"{filtered_path}.gz"

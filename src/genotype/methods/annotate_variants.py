@@ -23,14 +23,15 @@ def annovar_annotate_variants(genotype):
     genotype_basename = os.path.basename(genotype.genotype_path)
 
     # Determine output path
-    output = os.path.join(genotype.case.temp_dir, f"{genotype_basename[:genotype_basename.find('.vcf.gz')]}.annotated")
+    output = os.path.join(genotype.case.temp_dir, f"{genotype.case.case_id}.annotated")
     temp_out = os.path.abspath(f'{output}.hg38_multianno.vcf')
     unzipped_out = os.path.abspath(f'{output}.vcf')
 
     # Run annovar
     command = f"""
         perl {os.path.abspath(os.path.join(config['annovar_scripts'],'table_annovar.pl'))} \
-            -vcfinput {genotype.genotype_path} {os.path.abspath(config['annovar_db'])} \
+            -vcfinput {genotype.genotype_path} \
+            {os.path.abspath(config['annovar_db'])} \
             -buildver {config['genome_build']} \
             --out {output} \
             -remove \

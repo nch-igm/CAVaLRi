@@ -97,7 +97,7 @@ def run_lirical(case):
             if not(os.path.exists(yml[2])):
 
                 # Run LIRICAL
-                worker(f"cd {case.cohort.root_path} && java -jar {config['lirical_executable']} yaml -y {yml[0]}")
+                p = worker(f"cd {case.cohort.root_path} && java -jar {config['lirical_executable']} yaml -y {yml[0]}")
                 
                 # Rename results files
                 worker(f'cp {yml[1]} {yml[2]}')

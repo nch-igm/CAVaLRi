@@ -14,12 +14,12 @@ def worker(cmd):
     p = subprocess.Popen(parsed_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     p.wait()
     out, err = p.communicate()
-    return out.decode() if out else err.decode()
+    return err.decode() # out.decode() if out else err.decode()
 
 
 def validate_case(inputs):
 
-    path_variables = ['phenotype','vcf','bcftools','reference_path']
+    path_variables = ['phenotype','vcf']
     for pv in path_variables:
         if not os.path.exists(inputs[pv]):
             return pv
@@ -78,15 +78,16 @@ def main(input, output_dir):
         full_pickle_path = os.path.join(temp_folder, f'{cs.case_id}.full.pickle')
         script_path = os.path.join(os.getcwd(), 'src/workflow/scripts/run_case.py')
         p = worker(f'python {script_path} --input {case_pickle_path} -o {full_pickle_path}')
-        print(p)
 
         # Load result
         with open(full_pickle_path, 'rb') as f:
-            cs.case_data = pickle.load(f)
-        # cs.case_summary = pd.read_csv(os.path.join(case.temp_folder, f'{case.case_id}.summary.csv'))
-        with open(os.path.join(output_dir, f'{cs.case_id}.json'), 'w') as f:
+            cs = pickle.load(f)
+        with open(os.path.join(output_dir, f'{cs.case_id}.cavalri.json'), 'w') as f:
             json.dump(cs.case_data, f, indent = 4)
-        # case.case_summary.to_csv(os.path.join(output_dir, f'{case.case_id}.summary.tsv'), sep = '\t', index = False)
+        cs.case_summary.to_csv(os.path.join(output_dir, f'{cs.case_id}.cavalri.summary.csv'), index = False)
+
+        # Remove temporary directory
+        worker(f'rm -Rf {temp_folder}')
 
         
 

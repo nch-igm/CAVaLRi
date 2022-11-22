@@ -37,21 +37,8 @@ def main(input, output):
     case.add_tp()
     case.build_case_summary()
 
-    with open(os.path.join(case.temp_dir, 'test.json'), 'w') as f:
-        json.dump(case.case_data, f, indent = 4)
-    
-    with open(os.path.join(case.temp_dir, 'phenoLR.json'), 'w') as f:
-        json.dump(case.phenotype.phenoLRs, f, indent = 4)
-        
-    with open(os.path.join(case.temp_dir, 'genoLR.json'), 'w') as f:
-        json.dump(case.genoLRs, f, indent = 4)
-
-    with open(os.path.join(case.temp_dir, 'moiLR.json'), 'w') as f:
-        json.dump(case.moiLRs, f, indent = 4)
-
     with open(output, 'wb') as f:
-        pickle.dump(case.case_data, file = f)
-    case.case_summary.to_csv(os.path.join(case.temp_dir, f'{case.case_id}.summary.csv'), index = False)
+        pickle.dump(case, file = f)
 
 
 if __name__ == "__main__":
