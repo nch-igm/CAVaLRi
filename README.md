@@ -64,13 +64,16 @@ NOTE: Validation logic will be applied to the filed indicated in the input field
 
 ### Run a single case
 To run CAVaLRi on a single case, the cavalri_case.py script should be utilized. To learn more about the inputs to this file run:
+```
 python cavalri_case.py -h
-
+```
 Two arguments are available, --input and --output_dir. The --input argument is required, and should indicate the CAVaLRi json input file for the case. The --output_dir argument is optional. If provided, the output files from the case will be redirected to the indicated directory. Otherwise, the output will be saved in the same directory that houses the input file.
 
 ### Run multiple cases
 To run CAVaLRi on multiple subjects at once, the cavalri.py script should be utilized. To learn more about the inputs to this file run:
+```
 python cavalri_cohort.py -h
+```
 
 Two arguments are available, --input_dir and --output_dir. The --input_dir argument is required, and should indicate a path where multiple CAVaLRi json input files are located. The --output_dir argument is optional. If provided, the output files from the case will be redirected to the indicated directory. Otherwise, the output will be saved in the same directory indicated by the --input_dir argument.
 
