@@ -2,16 +2,13 @@ import os
 import glob
 import logging
 import argparse
-
-from s3 import download_s3_file, flex_input, flex_output
 from utils import system_exec, excel_to_vcf
 
 
 def run_mutpred_argparser():
     parser = argparse.ArgumentParser(prog=run_mutpred.__name__, description="")
-    parser.add_argument('--input_excel', help="S3 path to varhouse output parquet", required=True)
-    parser.add_argument('--reference', help="Path to reference", required=True)
-    parser.add_argument('--annotation_file', help="Gene annotation file, uses package files when 'grch37' or 'grch38' is passed", required=True)
+    parser.add_argument('--input', help="Path to a .vcf file containing non-frameshift three nucleotide indels", required=True)
+    parser.add_argument('--output', help="Name of output file, in the form of an annotated .vcf", required=True)
     return parser
 
 

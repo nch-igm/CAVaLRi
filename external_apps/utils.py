@@ -3,19 +3,6 @@ import vcf
 import pandas as pd
 import copy
 
-def system_exec(cmd: str, show_cmd: bool = False, warn: bool = False):
-    if show_cmd is True:
-        print(cmd)
-    status = os.system(cmd)
-    if status != 0:
-        if warn is True:
-            print(f"WARNING: Command '{cmd}' did not complete successfully: ({status}).")
-        else:
-            print(f"ERROR: Command '{cmd}' did not complete successfully ({status}).")
-            raise RuntimeError
-
-    return None
-
 
 def excel_to_vcf(excel_path, vcf_template, output_folder): 
     """
@@ -39,14 +26,11 @@ def excel_to_vcf(excel_path, vcf_template, output_folder):
     for idx, row in df.iterrows():
 
         # Make a copy of the rec and reassign attributes
-        print(row)
         rec_current = copy.copy(rec)
-        print(rec)
         rec_current.CHROM = f'chr{row["Chr"]}'
         rec_current.POS = row['Start']
         rec_current.REF = row['Ref']
         rec_current.ALT = row['Alt']
-        print(rec_current)
 
         # Send to a line in the vcf
         vcf_writer.write_record(rec_current)

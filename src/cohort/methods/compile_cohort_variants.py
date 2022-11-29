@@ -10,5 +10,5 @@ def compile_cohort_variants(cohort):
         df['case'] = case.case_id
         df['result'] = df.apply(is_tp, hits = case.case_data['tpHits'], axis = 1)
         dfs.append(df)
-    return pd.concat(dfs)
+    return pd.concat(dfs).sort_values('compositeLR', ascending = False)
     

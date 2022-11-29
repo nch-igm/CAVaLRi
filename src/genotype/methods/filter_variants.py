@@ -62,12 +62,13 @@ def igm_common_filter(var, common_ids):
 
 def filter_variants(genotype):
 
+    config = genotype.case.cohort.config
+
     # Read in the vcf
     vcf_reader = vcf.Reader(filename = genotype.genotype_path, compressed=True, encoding='ISO-8859-1')
     filtered_path = os.path.join(genotype.case.temp_dir, f"{genotype.case.case_id}.filtered.vcf")
     vcf_writer = vcf.Writer(open(filtered_path, 'w'), vcf_reader)
-    pop_max_threshold = 0.01
-    qual_threshold = 50
+
 
     # Read in IGM variant frequencies
     igm_common_df = pd.read_csv('/igm/home/rsrxs003/CAVaLRi/data/WES_common_variants.csv')
@@ -84,17 +85,17 @@ def filter_variants(genotype):
         if (
             proband_alt_filter(record, proband_pos)
                 and
+            record.QUAL >= config['quality_minimum']
+                and
+            not multiallelic_filter(record)
+                and
                 (
                     (
-                        not multiallelic_filter(record)
-                            and
                         exonic_filter(record)
                             and
-                        popmax_filter(record, pop_max_threshold)
+                        popmax_filter(record, config['gnomAD_popmax'])
                             and
                         not igm_common_filter(record, igm_common_ids)
-                            and
-                        record.QUAL >= qual_threshold
                     )
                         or 
                     clinvar_filter(record)

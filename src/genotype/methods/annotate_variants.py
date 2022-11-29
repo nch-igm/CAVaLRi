@@ -14,7 +14,8 @@ def worker(cmd):
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell = True)
     p.wait()
     out, err = p.communicate()
-    return out.decode() if out else err.decode()
+    return err.decode(), out.decode()
+    # return out.decode() if out else err.decode()
 
 
 def annovar_annotate_variants(genotype):
@@ -29,9 +30,9 @@ def annovar_annotate_variants(genotype):
 
     # Run annovar
     command = f"""
-        perl {os.path.abspath(os.path.join(config['annovar_scripts'],'table_annovar.pl'))} \
+        perl {os.path.join(os.path.join(genotype.case.cohort.root_path, config['annovar_scripts']),'table_annovar.pl')} \
             -vcfinput {genotype.genotype_path} \
-            {os.path.abspath(config['annovar_db'])} \
+            {os.path.join(genotype.case.cohort.root_path, config['annovar_db'])} \
             -buildver {config['genome_build']} \
             --out {output} \
             -remove \
@@ -41,7 +42,7 @@ def annovar_annotate_variants(genotype):
             && bgzip {unzipped_out} \
             && tabix {unzipped_out}.gz
     """
-    p = worker(command)
+    e,o = worker(command)
     return f"{output}.vcf.gz"
 
 

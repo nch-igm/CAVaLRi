@@ -6,6 +6,7 @@ import pickle
 import pandas as pd
 import json
 import time
+import shlex
 import re
 import sys
 
@@ -18,22 +19,21 @@ class Workflow:
         self.cohort = cohort
 
     def worker(self, cmd):
-        p = subprocess.Popen(cmd,  stdout=subprocess.PIPE, shell = True, env={'LANGUAGE':'en_US.en', 'LC_ALL':'en_US.UTF-8'})
+        parsed_cmd = shlex.split(cmd)
+        cwd = os.path.join(self.cohort.root_path, 'src/workflow')
+        p = subprocess.Popen(parsed_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
         p.wait()
         out, err = p.communicate()
-        try:
-            return out.decode()
-        except:
-            return err.decode()
+        # return err.decode()
+        return out.decode() if out else err.decode()
 
     def run(self):
+
+        config = self.cohort.config
         
         # Set up temporary directory
-        # temp_folder = os.path.join(self.cohort.root_path, 'tmp', str(uuid.uuid4()))
-        # temp_folder = '/igm/home/rsrxs003/CAVaLRi/tmp/97ba781d-c11e-4711-a7e5-a323167843ef' # IDN_IDV
-        # temp_folder = '/igm/home/rsrxs003/CAVaLRi/tmp/4c24ebb0-328c-4c9a-bd51-9970d1d9c289' # deIDN_deIDV
-        # temp_folder = '/igm/home/rsrxs003/CAVaLRi/tmp/0bffd2cf-d03a-4368-a03f-23a35125563d'# deIDN_IDV
-        temp_folder = '/igm/home/rsrxs003/CAVaLRi/tmp/14264214-7822-4ed7-b828-2a3c3d8770b4' # IDN_deIDV
+        temp_folder = os.path.join(os.path.dirname(self.cohort.input_path), str(uuid.uuid4()))
+        # temp_folder = '/igm/home/rsrxs003/rnb/output/2f992fdb-ec7d-4c98-94d4-9c92a8d56859/'
         
         if not os.path.exists(temp_folder):
             os.mkdir(temp_folder)
@@ -51,34 +51,27 @@ class Workflow:
                 pickle.dump(case, file = f)
 
         # Run CAVaLRi case pipeline
-        # sys.exit(1)
-        # res = self.worker(f"/usr/bin/bash {os.path.join(os.getcwd(), 'src/workflow/sm.bash')}")
-        
-        
-        # res = self.worker(f"""
-        #     export SGE_ROOT=/igm/apps/sge/sge-8.1.9_install && \
-        #     /igm/apps/sge/sge-8.1.9_install/bin/lx-amd64/qsub \
-        #         {os.path.join(os.getcwd(), 'src/workflow/sm_qsub.bash')}
-        #         """)
-        # print(res)
-        # job_id = res.split(' ')[2]
-        # while True:
-        #     res = self.worker(f"""
-        #     export SGE_ROOT=/igm/apps/sge/sge-8.1.9_install && \
-        #     /igm/apps/sge/sge-8.1.9_install/bin/lx-amd64/qstat
-        #     """)
-        #     if not re.search(job_id, res):
-        #         break
-        #     time.sleep(5)
+        # res = self.worker(f"snakemake --cores {config['cores']} -pk")
+        res = self.worker(f"qsub {os.path.join(self.cohort.root_path, 'src/workflow/sm_qsub.bash')} {config['cores']}")
 
+        def parse_qstat():
+            while True:
+                res = self.worker(f"qstat -r")
+                if not re.search('cavalri_scheduler', res):
+                    break
+                time.sleep(10)
+                
+        
+        time.sleep(1)
+        parse_qstat()
 
         # Read in populated case data
         for case in self.cohort.cases:
-            # if case.case_id in ['DDDP102005', 'DDDP111619', 'DDDP106875', 'DDDP111151', 'DDDP103048', 'DDDP107286', 'DDDP108067', 'DDDP111262', 'DDDP110896', 'DDDP105431', 'DDDP111242', 'DDDP102820', 'DDDP103122', 'DDDP110713', 'DDDP102547', 'DDDP102051', 'DDDP110961', 'DDDP102251', 'DDDP101839', 'DDDP110800', 'DDDP106745', 'DDDP111468', 'DDDP101866', 'DDDP105451', 'DDDP108103', 'DDDP110753', 'DDDP110872', 'DDDP108406', 'DDDP102297', 'DDDP108441', 'DDDP103710', 'DDDP106936', 'DDDP100281', 'DDDP101854', 'DDDP111096', 'DDDP103071', 'DDDP100285', 'DDDP111178', 'DDDP111286', 'DDDP111390', 'DDDP111249', 'DDDP104617', 'DDDP105999', 'DDDP110983', 'DDDP109995', 'DDDP100091', 'DDDP111187', 'DDDP105140', 'DDDP102114', 'DDDP108896', 'DDDP106414', 'DDDP111106', 'DDDP111322', 'DDDP111516', 'DDDP111219', 'DDDP100213', 'DDDP109352', 'DDDP109893', 'DDDP105767', 'DDDP110890', 'DDDP108836', 'DDDP102111', 'DDDP110970', 'DDDP100264', 'DDDP111217', 'DDDP105394', 'DDDP110776', 'DDDP100030', 'DDDP102294', 'DDDP105825', 'DDDP105942', 'DDDP108492', 'DDDP110796', 'DDDP111027', 'DDDP102680', 'DDDP102389', 'DDDP110748', 'DDDP101852', 'DDDP102594', 'DDDP102110', 'DDDP111190', 'DDDP102497', 'DDDP111119', 'DDDP101867', 'DDDP102726', 'DDDP105749', 'DDDP104795', 'DDDP102052', 'DDDP111265', 'DDDP110784', 'DDDP111487', 'DDDP111515', 'DDDP111703', 'DDDP111227', 'DDDP111271', 'DDDP109873', 'DDDP102206', 'DDDP111266', 'DDDP102589', 'DDDP102140', 'DDDP102221', 'DDDP111350', 'DDDP111459', 'DDDP101224', 'DDDP112652', 'DDDP102138', 'DDDP111317', 'DDDP111423', 'DDDP108234', 'DDDP103666', 'DDDP111596', 'DDDP111428', 'DDDP111250', 'DDDP109404', 'DDDP105217', 'DDDP108415', 'DDDP103044', 'DDDP110962', 'DDDP111211', 'DDDP101100', 'DDDP105223', 'DDDP112690', 'DDDP107978', 'DDDP106981', 'DDDP107416', 'DDDP111513', 'DDDP110760', 'DDDP101851', 'DDDP107364', 'DDDP104896', 'DDDP107459', 'DDDP111081', 'DDDP100284', 'DDDP100161', 'DDDP111198', 'DDDP110825']:
             case.temp_folder = temp_folder
             with open(os.path.join(case.temp_folder, f'{case.case_id}.full.pickle'), 'rb') as f:
-                case.case_data = pickle.load(f)
-            case.case_summary = pd.read_csv(os.path.join(case.temp_folder, f'{case.case_id}.summary.csv'))
+                c = pickle.load(f)
+            case.case_data = c.case_data
+            case.case_summary = c.case_summary
         
         # Run CAVaLRi cohort summary commands
         self.cohort.build_cohort_summary()
@@ -105,4 +98,5 @@ class Workflow:
         self.cohort.topn_data.to_csv(os.path.join(summary_dir, 'topn_data.csv'), index=False)
             
         # Remove temporary directory
-        # self.worker(f'rm -Rf {temp_folder}')
+        self.worker(f'rm -Rf {temp_folder}')
+        self.worker(f"rm {os.path.join(self.cohort.root_path, 'src/workflow/cavalri/cavalri_scheduler.o*')}")

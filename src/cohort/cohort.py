@@ -30,33 +30,14 @@ class Cohort:
     def remove_case(self, case):
         self.cases.remove(case)
     
-    def aggregate_variants(self):
-        self.unique_variants = aggregate_variants(self.cases)
-    
-    def send_unique_variants(self):
-        send_unique_variants(self)
-    
     def retrieve_annotated_variants(self):
         self.annotated_variants = retrieve_annotated_variants(self)
-
-    def run_annotation_notebook(self):
-        run_annotation_notebook(self)
-
-    def run_snpeff(self):
-        run_snpeff(self)
 
     def score_variants(self):
         self.scored_variants = score_variants(self)
 
     def optimize_scalars(self):
         self.optimal_positions = optimize_scalars(os.path.join(self.output_root, 'summary'))
-        
-    def start_cluster(self):
-        self.active_cluster = start_cluster()
-
-    def stop_cluster(self):
-        stop_cluster(self.active_cluster)
-        self.active_cluster = ''
     
     def get_cases(self):
         if not get_cases(self):

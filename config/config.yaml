@@ -18,7 +18,6 @@ genome_build: hg38
 hpo_lower_bound: 5
 hpo_upper_bound: 15
 pheno_score: IC
-max_population_frequency: 0.01
 phenoLR_scalar: 1
 genoLR_scalar: 3.6
 moiLR_scalar: 6.8
@@ -26,3 +25,10 @@ moiLR_scalar: 6.8
 ## PLOT SETTINGS ##
 plot_label: ClinPhen
 comparator_plot_label: Clinician
+
+## VARIANT FILTERING SETTINGS ##
+gnomAD_popmax: 0.005
+quality_minimum: 150
+
+## BANDWIDTH SETTINGS ##
+cores: 50

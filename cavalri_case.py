@@ -1,6 +1,8 @@
 from src.cohort import Cohort
 from src.cohort import Case
 from config import *
+import sys
+import os
 import pandas as pd
 import json
 import subprocess
@@ -9,12 +11,12 @@ import argparse
 import pickle
 import uuid
 
-def worker(cmd):
+def worker(cmd, err = False):
     parsed_cmd = shlex.split(cmd)
     p = subprocess.Popen(parsed_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     p.wait()
     out, err = p.communicate()
-    return err.decode() # out.decode() if out else err.decode()
+    return err.decode() if err else out.decode()
 
 
 def validate_case(inputs):
@@ -77,7 +79,11 @@ def main(input, output_dir):
         # Run case
         full_pickle_path = os.path.join(temp_folder, f'{cs.case_id}.full.pickle')
         script_path = os.path.join(os.getcwd(), 'src/workflow/scripts/run_case.py')
-        p = worker(f'python {script_path} --input {case_pickle_path} -o {full_pickle_path}')
+        p = worker(f'python {script_path} --input {case_pickle_path} -o {full_pickle_path}', err=True)
+
+        if not os.path.exists(full_pickle_path):
+            print(p)
+            sys.exit(1)
 
         # Load result
         with open(full_pickle_path, 'rb') as f:
@@ -89,14 +95,28 @@ def main(input, output_dir):
         # Remove temporary directory
         worker(f'rm -Rf {temp_folder}')
 
+        # Get LIRICAL and HPOA version
+        lirical_version = worker(f"java -jar {os.path.join(cs.cohort.root_path,  config['lirical_executable'])} --version")
+        hpo_version = worker(f"grep #date: {os.path.join(cs.cohort.root_path,  config['lirical_data_path'], 'phenotype.hpoa')}")
+        config['LIRICAL version'] = lirical_version.strip()
+        config['HPOA version'] = hpo_version.split(' ')[-1].strip()
+
+        # Create run log
+        log_path = os.path.join(output_dir,'config.json')
+        with open(log_path, 'w') as f:
+            json.dump(config, f, indent=4)
+
         
 
 if __name__ == '__main__':
 
     # Intialize parser
     parser = argparse.ArgumentParser(description='')
-    parser.add_argument('--input', '-i', type=str, help='Directory where CAVaLRi subject input files are stored')
-    parser.add_argument('--output_dir', '-o', type=str, help='Directory where CAVaLRi output files are written')
-    args = parser.parse_args()
 
+    parser.add_argument('--input', '-i', type=str, 
+        help='Directory where CAVaLRi subject input files are stored')
+    parser.add_argument('--output_dir', '-o', type=str, 
+        help='Directory where CAVaLRi output files are written')
+    
+    args = parser.parse_args()
     main(args.input, args.output_dir)

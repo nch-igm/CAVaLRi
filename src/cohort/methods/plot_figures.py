@@ -9,7 +9,7 @@ def get_roc_data(data):
 
     # Generate ROC curve metrics
     true_positives = data['result'].to_list()
-    scores = data['postTestProbability'].to_list()
+    scores = data['postTestProbability'].fillna(0).to_list()
     fpr, tpr, thresholds = roc_curve(true_positives, scores, pos_label=1)
     roc_data = pd.DataFrame(list(zip(fpr, tpr, thresholds)), columns=['fpr', 'tpr', 'thresholds'])
     roc_auc = roc_auc_score(true_positives, scores)

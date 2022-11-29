@@ -17,16 +17,10 @@ def calculate_genoLR(case):
     # For each disease, access gene data and calculate genotype likelihood ratio
 
     for d in case.case_data['diseases']:
-
-        # Only keep variants where the maximum GNOMAD frequencies are below the indicated config value
-        filtered_variants = []
-        for variant in d['gene_data']['variants']:
-            if variant['popFreq'] <= config['max_population_frequency'] and variant['popFreq'] <= config['max_population_frequency']:
-                filtered_variants.append(variant)
         
         # Get maximum pathogenicity score
         max_path_score = 0
-        for variant in filtered_variants:
+        for variant in d['gene_data']['variants']:
             if variant['pathScore'] > max_path_score:
                 max_path_score = variant['pathScore']
 

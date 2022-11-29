@@ -4,7 +4,7 @@ from ...case import Case
 
 def validate_case(inputs):
 
-    path_variables = ['phenotype','vcf','bcftools','conda_bin','reference_path']
+    path_variables = ['phenotype','vcf']
     for pv in path_variables:
         if not os.path.exists(inputs[pv]):
             return pv
@@ -30,21 +30,21 @@ def get_cases(cohort):
                 else:
                     inputs[parent] = 'Unavailable'
 
+            blacklist = ['M17-2917', 'M17-326', 'M19-7871', 'M19-5147', 'M17-2603', 'M19-1819', 'M19-1602', 'M18-5236', 'M18-3212', 'M18-5107', 'M17-3055', 'M20-2011']
+
             validated_input = validate_case(inputs)
             if validated_input != '':
                 print(f'Removed case: {case}, {inputs[validated_input]} not a valid path')
+
+            elif case in blacklist:
+                print(f'Removed case: {case}, was on the blacklist')
+
             else:
                 cs = Case(
                     cohort = cohort, 
                     case_id = case,
                     phenotype_path = inputs['phenotype'],
                     genotype_path = inputs['vcf'],
-                    bcftools = inputs['bcftools'],
-                    lirical = inputs['lirical'],
-                    exomiser = inputs['exomiser'],
-                    conda_bin = inputs['conda_bin'],
-                    reference_path = inputs['reference_path'],
-                    annotations_path = inputs['annotations_path'],
                     biological_sex = inputs['biological_sex'],
                     proband = inputs['proband'],
                     mother = inputs['mother'],
