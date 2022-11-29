@@ -87,3 +87,14 @@ CAVaLRi outputs two files per case,
 2. A csv summary file ranking the candidate disease genes by diagnostic post-test probability. This file is meant for variant scientists and clinicians to prioritize likely diagnostic variants.
 
 When running cavalri_cohort.py, additional summary files are provided, including a cohort_summary.csv file. If any known diagnostic variants are provided, plots are generated to visualize CAVaLRi performance.
+
+## Examples
+To get familiarized with CAVaLRi case output
+```
+python cavalri_case.py --input example/case/example.json
+```
+
+To get familiarized with CAVaLRi cohort output
+```
+python cavalri_cohort.py --input_dir example/cohort/
+```
