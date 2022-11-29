@@ -6,14 +6,16 @@ CAVaLRi requries a series of python packages, variant annotation, and LIRICAL de
 
 ### Conda
 CAVaLRi utilizes a conda environment to manage Python packages. The following code will download and run the most recent installer for Miniconda. If conda is already installed on your machine, skip this step.
-
+```
 wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
 chmod +x Miniconda3-latest-Linux-x86_64.sh
 Miniconda3-latest-Linux-x86_64.sh
+```
 
 Be sure that the conda binary has been added to your path. To create the CAVaLRi conda environment, run the following command from the repository root:
-
+```
 conda env create -f dependencies/conda_environment.yml
+```
 
 Once this is created, you can activate the conda environment with the following command:
 
@@ -21,8 +23,9 @@ NOTE: CAVaLRi will not run to completion of the cavalri conda environment is not
 
 ### Variant Annotation Databases
 CAVaLRi utilizes the ANNOVAR variant annotation library to functionally annotate inputted genetic variants. The RefSeq, gnomAD, and clinvar databases are required. These databases can be downloaded by running the following command:
-
+```
 bash get_dependencies.sh
+```
 
 This script will download not only the ANNOVAR required databases, but all LIRICAL dependencies as well.
 
@@ -40,7 +43,7 @@ NOTE: These LIRICAL dependencies require ~50GB of storage
 
 ## Running CAVaLRi
 Once the necessary dependencies are installed, CAVaLRi can be run via two wrapper scripts that create the necessary CAVaLRi objects to process the inputted cases. Inputted cases are represented via a JSON file with the following structure (see example/example.json).
-
+```
 {
     "phenotype":"example.pheno.tsv",
     "vcf":"example.vcf.gz",
@@ -49,6 +52,7 @@ Once the necessary dependencies are installed, CAVaLRi can be run via two wrappe
     "mother":"example_mother",
     "father":"example_father",
 }
+```
 
 The "phenotype" file is a one-column csv file with the header "HPO ID" that contains a list of all phenotypes associated with the patient (or proband).
 
