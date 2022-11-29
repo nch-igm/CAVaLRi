@@ -1,5 +1,6 @@
 # CAVaLRi
 CAVaLRi (Clinical Assessment of Variants by Likelihood Ratios) was designed to better prioritize clinically actionable variants in genetic disease. For information regarding the architecture and motivation behind CAVaLRi, please refer to our publication: {link}
+![figure1](https://user-images.githubusercontent.com/72405035/204615195-6b28be5c-64de-4c59-a27e-bb7aea0c3cb1.png)
 
 ## Dependencies
 CAVaLRi requries a series of python packages, variant annotation, and LIRICAL dependencies in order to run properly.
