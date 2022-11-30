@@ -1,6 +1,6 @@
 {
-    "phenotype": "/igm/home/rsrxs003/rnb/input/BL-173/clinician_phenotypes/M17-1117.clinphen.tsv",
-    "vcf": "/igm/home/rsrxs003/rnb/output/BL-173/vcfs_/M17-1117.filtered.vcf.gz",
+    "phenotype": "/igm/projects/CAVaLRi_example/example1.clinphen.tsv",
+    "vcf": "/igm/projects/CAVaLRi_example/example1.filtered.vcf.gz",
     "biological_sex": "M",
     "proband": "837_M17-1117_P_ST-00075345",
     "mother": "837_M17-1118_M_ST-00075344",
