@@ -71,11 +71,11 @@ def filter_variants(genotype):
 
 
     # Read in IGM variant frequencies
-    igm_common_df = pd.read_csv('/igm/home/rsrxs003/CAVaLRi/data/WES_common_variants.csv')
-    def get_var_id(row):
-        return f"chr{row['CHROM']}_{row['POS']}_{row['REF']}_{row['ALT']}"
-    igm_common_df['var_id'] = igm_common_df.apply(get_var_id, axis = 1)
-    igm_common_ids = igm_common_df['var_id'].to_list()
+    # igm_common_df = pd.read_csv('/igm/home/rsrxs003/CAVaLRi/data/WES_common_variants.csv')
+    # def get_var_id(row):
+    #     return f"chr{row['CHROM']}_{row['POS']}_{row['REF']}_{row['ALT']}"
+    # igm_common_df['var_id'] = igm_common_df.apply(get_var_id, axis = 1)
+    # igm_common_ids = igm_common_df['var_id'].to_list()
 
     # Get proband position
     proband_pos = get_proband_pos(vcf_reader.samples, genotype.case.proband)
@@ -94,8 +94,8 @@ def filter_variants(genotype):
                         exonic_filter(record)
                             and
                         popmax_filter(record, config['gnomAD_popmax'])
-                            and
-                        not igm_common_filter(record, igm_common_ids)
+                        #     and
+                        # not igm_common_filter(record, igm_common_ids)
                     )
                         or 
                     clinvar_filter(record)
