@@ -51,19 +51,19 @@ class Workflow:
                 pickle.dump(case, file = f)
 
         # Run CAVaLRi case pipeline
-        # res = self.worker(f"snakemake --cores {config['cores']} -pk")
-        res = self.worker(f"qsub {os.path.join(self.cohort.root_path, 'src/workflow/sm_qsub.bash')} {config['cores']}")
+        res = self.worker(f"snakemake --cores {config['cores']} -pk")
+        # res = self.worker(f"qsub {os.path.join(self.cohort.root_path, 'src/workflow/sm_qsub.bash')} {config['cores']}")
 
-        def parse_qstat():
-            while True:
-                res = self.worker(f"qstat -r")
-                if not re.search('cavalri_scheduler', res):
-                    break
-                time.sleep(10)
+        # def parse_qstat():
+        #     while True:
+        #         res = self.worker(f"qstat -r")
+        #         if not re.search('cavalri_scheduler', res):
+        #             break
+        #         time.sleep(10)
                 
         
-        time.sleep(1)
-        parse_qstat()
+        # time.sleep(1)
+        # parse_qstat()
 
         # Read in populated case data
         for case in self.cohort.cases:
