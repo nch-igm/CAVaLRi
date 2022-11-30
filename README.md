@@ -83,7 +83,7 @@ To run CAVaLRi on multiple subjects at once, the cavalri.py script should be uti
 python cavalri_cohort.py -h
 ```
 
-Two arguments are available, --input_dir and --output_dir. The --input_dir argument is required, and should indicate a path where multiple CAVaLRi json input files are located. The --output_dir argument is optional. If provided, the output files from the case will be redirected to the indicated directory. Otherwise, the output will be saved in the same directory indicated by the --input_dir argument.
+Three arguments are available, --input_dir, --output_dir, and --diagnostic_data. The --input_dir argument is required, and should indicate a path where multiple CAVaLRi json input files are located. The --output_dir argument is optional. If provided, the output files from the case will be redirected to the indicated directory. Otherwise, the output will be saved in the same directory indicated by the --input_dir argument. The --diagnostic_data is optional, and is meant to provide diagnostic data in cases where the diagnostic gene is known. This file is to be formatted as a csv file with two columns with headers 'CASE' and 'DIAGNOSTIC_GENE'. This diagnostic data will be used to build accuracy metrics and plots at the end of the cohort pipeline.
 
 ## Interpreting the output
 CAVaLRi outputs two files per case,
@@ -100,5 +100,5 @@ python cavalri_case.py --input example/case/example.json
 
 To get familiarized with CAVaLRi cohort output
 ```
-python cavalri_cohort.py --input_dir example/cohort/
+python cavalri_cohort.py --input_dir example/cohort/ --diagnostic_data example/cohort/example_diagnostic.csv
 ```

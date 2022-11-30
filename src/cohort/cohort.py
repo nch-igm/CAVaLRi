@@ -11,10 +11,11 @@ class Cohort:
     the user
     """
 
-    def __init__(self, input_dir, output_dir, config):
+    def __init__(self, input_dir, output_dir, diagnostic_data, config):
         self.cases = set()
         self.input_path = input_dir
         self.output_path = output_dir
+        self.diagnostic_data = diagnostic_data
         self.root_path = os.getcwd()
         self.config = config
 

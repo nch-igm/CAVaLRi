@@ -31,7 +31,7 @@ def main(input, output_dir):
 
     # Parse the input file
     output_dir = os.path.dirname(input) if not output_dir else output_dir
-    cohort = Cohort(os.path.dirname(input), output_dir, config)
+    cohort = Cohort(os.path.dirname(input), output_dir, '', config)
 
     # Add case
     with open(input,'r') as d:

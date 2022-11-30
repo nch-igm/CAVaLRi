@@ -4,13 +4,16 @@ import pandas as pd
 def get_diagnostic_df(case):
 
     config = case.cohort.config
+    
+    if case.cohort.diagnostic_data != '':
+        wes_diagnostic_df = pd.read_csv(case.cohort.diagnostic_data)
+        wes_diagnostic_df = wes_diagnostic_df[['CASE', 'DIAGNOSTIC_GENE']]
+        wes_diagnostic_df = wes_diagnostic_df.rename(columns=({'CASE':'case_id', 'DIAGNOSTIC_GENE':'gene'}))
+        wes_diagnostic_df = wes_diagnostic_df.drop_duplicates().reset_index(drop=True)
 
-    wes_diagnostic_df = pd.read_excel(os.path.join(case.cohort.root_path, config['diagnostic_source']))
-    wes_diagnostic_df = wes_diagnostic_df.loc[wes_diagnostic_df['Section'] == 1]
-    # wes_diagnostic_df = wes_diagnostic_df.loc[wes_diagnostic_df['Section'].notna()]
-    wes_diagnostic_df = wes_diagnostic_df[['CoPath.Number', 'Disease.Gene.and.Transcript']]
-    wes_diagnostic_df = wes_diagnostic_df.rename(columns=({'CoPath.Number':'case_id', 'Disease.Gene.and.Transcript':'gene'}))
-    wes_diagnostic_df = wes_diagnostic_df.drop_duplicates().reset_index(drop=True)
+    else:
+        wes_diagnostic_df = pd.DataFrame(columns = ['case_id', 'gene'])
+
     return wes_diagnostic_df
 
 

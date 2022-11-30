@@ -46,7 +46,7 @@ def get_case_output(path):
 
     case_df['isTp'] = case_df.apply(istp, axis = 1)
     demo_df = pd.read_excel(os.path.join(config['project_root'], config['demographic_data']))
-    diag_df = pd.read_excel(os.path.join(config['project_root'], config['diagnostic_source']))
+    diag_df = pd.read_csv(case.cohort.diagnostic_data).rename(columns = {'CASE':'CoPath.Number'})
     demo_df = demo_df.merge(diag_df, right_on = 'MRN', left_on = 'MRN')[['CoPath.Number', 'MRN', 'RACE', 'ETHNICITY']].drop_duplicates().reset_index(drop = True)
     for col in ['RACE', 'ETHNICITY']:
         for nv in ['No Information', '<null>', 'Refuse to answer', pd.NA, np.NaN, 'nan']:
