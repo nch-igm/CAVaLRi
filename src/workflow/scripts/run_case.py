@@ -9,6 +9,11 @@ import os
 
 def main(input, output):
 
+    # Add source path
+    root_path = os.path.abspath(os.path.dirname(__file__))
+    root_path = root_path[:root_path.find('/src')]
+    sys.path.append(root_path)
+
     # Read in cohort
     with open(input, 'rb') as f:
         case = pickle.load(f)

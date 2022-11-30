@@ -16,7 +16,8 @@ class Cohort:
         self.input_path = input_dir
         self.output_path = output_dir
         self.diagnostic_data = diagnostic_data
-        self.root_path = os.getcwd()
+        self.root_path = os.path.abspath(os.path.dirname(__file__))
+        self.root_path = self.root_path[:self.root_path.find('/src')]
         self.config = config
 
         # Read in big data files

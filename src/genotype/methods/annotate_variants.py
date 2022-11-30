@@ -7,8 +7,6 @@ import json
 from numpy import column_stack
 import pandas as pd
 
-sys.path.append('../..')
-from config import *
 
 def worker(cmd):
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell = True)
@@ -19,6 +17,9 @@ def worker(cmd):
 
 
 def annovar_annotate_variants(genotype):
+
+    config = genotype.case.cohort.config
+    print(config)
 
     # Get genotype path
     genotype_basename = os.path.basename(genotype.genotype_path)
