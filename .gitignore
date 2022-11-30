@@ -26,3 +26,4 @@ example/cohort/*
 !example/cohort/example1.pheno.tsv
 !example/cohort/example2.json
 !example/cohort/example2.pheno.tsv
+.vscode
