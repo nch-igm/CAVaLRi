@@ -65,7 +65,7 @@ def filter_variants(genotype):
     config = genotype.case.cohort.config
 
     # Read in the vcf
-    vcf_reader = vcf.Reader(filename = genotype.genotype_path, compressed=True, encoding='ISO-8859-1')
+    vcf_reader = vcf.Reader(filename = os.path.join(genotype.case.cohort.root_path, genotype.genotype_path), compressed=True, encoding='ISO-8859-1')
     filtered_path = os.path.join(genotype.case.temp_dir, f"{genotype.case.case_id}.filtered.vcf")
     vcf_writer = vcf.Writer(open(filtered_path, 'w'), vcf_reader)
 

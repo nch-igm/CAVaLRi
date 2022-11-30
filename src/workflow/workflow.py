@@ -32,7 +32,7 @@ class Workflow:
         config = self.cohort.config
         
         # Set up temporary directory
-        temp_folder = os.path.join(os.path.dirname(self.cohort.input_path), str(uuid.uuid4()))
+        temp_folder = os.path.join(os.path.abspath(os.path.dirname(self.cohort.input_path)), str(uuid.uuid4()))
         # temp_folder = '/igm/home/rsrxs003/rnb/output/2f992fdb-ec7d-4c98-94d4-9c92a8d56859/'
         
         if not os.path.exists(temp_folder):
@@ -41,7 +41,7 @@ class Workflow:
         # Add temp directory to a snakemake yaml file
         snakemake_yaml_path = os.path.join(os.getcwd(), 'src/workflow', 'config.yaml')
         with open(snakemake_yaml_path,'w') as f:
-            print(f'tmp_dir: {temp_folder}', file = f)
+            print(f'tmp_dir: {os.path.abspath(temp_folder)}', file = f)
 
         # Create case pickle input files
         for case in self.cohort.cases:
