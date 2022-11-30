@@ -14,7 +14,7 @@ dependencies/*
 data/*
 !dependencies/annovar
 !*/dependencies/annotate_variation.pl
-!dependencies/environment.yml
+!dependencies/conda_environment.yml
 !data/Homo_sapiens_gene_info.tsv
 !data/moi.csv
 !data/template.yaml

@@ -1,0 +1,26 @@
+name: cavalri
+channels:
+  - bioconda
+  - intel
+  - conda-forge
+dependencies:
+  - pandas=1.5.0=py39h4661b88_0
+  - scipy=1.9.1=py39h8ba3f38_0
+  - seaborn=0.12.1=hd8ed1ab_0
+  - pyyaml=6.0=py39hb9d737c_4
+  - pyvcf=0.6.8=py39hde42818_1002
+  - pickleshare=0.7.5=py_1003
+  - libuuid=2.32.1=h7f98852_1000
+  - numpy=1.23.4=py39h3d75532_0
+  - scikit-learn=1.0.1=py39h51133e4_0
+  - matplotlib=3.3.2=0
+  - pip=22.1.2
+  - beautifulsoup4=4.11.1
+  - tabix=1.11
+  - bcftools=1.16
+  - samtools=1.16.1
+  - pysam=0.19.1
+  - openpyxl=3.0.9
+  - pip:
+    - configargparse==1.5.3
+    - snakemake==7.16.1

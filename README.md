@@ -19,6 +19,9 @@ conda env create -f dependencies/conda_environment.yml
 ```
 
 Once this is created, you can activate the conda environment with the following command:
+```
+conda activate cavalri
+```
 
 NOTE: CAVaLRi will not run to completion of the cavalri conda environment is not active
 
