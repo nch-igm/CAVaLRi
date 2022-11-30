@@ -23,7 +23,7 @@ Once this is created, you can activate the conda environment with the following 
 conda activate cavalri
 ```
 
-NOTE: CAVaLRi will not run to completion of the cavalri conda environment is not active
+NOTE: CAVaLRi will not run to completion if the cavalri conda environment is not active
 
 ### Variant Annotation Databases
 CAVaLRi utilizes the ANNOVAR variant annotation library to functionally annotate inputted genetic variants. The RefSeq, gnomAD, and clinvar databases are required. These databases can be downloaded by running the following command:
@@ -31,7 +31,7 @@ CAVaLRi utilizes the ANNOVAR variant annotation library to functionally annotate
 bash get_dependencies.sh
 ```
 
-This script will download not only the ANNOVAR required databases, but all LIRICAL dependencies as well.
+This script will download not only the ANNOVAR required databases, but all other dependencies as well.
 
 NOTE: These databases require ~80GB of storage
 
@@ -68,7 +68,7 @@ The "biological_sex" field indicates the biological sex of the proband (either M
 
 Once these input files are prepared for each case, we are ready to run CAVaLRi
 
-NOTE: Validation logic will be applied to the filed indicated in the input fields, and any validation errors will be raised prior to running CAVaLRi
+NOTE: Validation logic will be applied to the data indicated in the input fields, and any validation errors will be raised prior to running CAVaLRi
 
 ### Run a single case
 To run CAVaLRi on a single case, the cavalri_case.py script should be utilized. To learn more about the inputs to this file run:
