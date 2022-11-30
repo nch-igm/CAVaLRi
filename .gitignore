@@ -18,4 +18,11 @@ data/*
 !data/Homo_sapiens_gene_info.tsv
 !data/moi.csv
 !data/template.yaml
-example
+example/case/*
+!example/case/example.json
+!example/case/example.pheno.tsv
+example/cohort/*
+!example/cohort/example1.json
+!example/cohort/example1.pheno.tsv
+!example/cohort/example2.json
+!example/cohort/example2.pheno.tsv

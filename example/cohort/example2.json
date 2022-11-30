@@ -1,0 +1,8 @@
+{
+    "phenotype": "/igm/home/rsrxs003/rnb/input/BL-173/clinician_phenotypes/M17-3729.clinphen.tsv",
+    "vcf": "/igm/home/rsrxs003/rnb/output/BL-173/vcfs_/M17-3729.filtered.vcf.gz",
+    "biological_sex": "M",
+    "proband": "1194_M17-3729_P_ST-00067834",
+    "mother": "1194_M17-3730_M_ST-00067832",
+    "father": "1194_M17-3731_F_ST-00067830"
+}
