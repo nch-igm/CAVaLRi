@@ -22,5 +22,6 @@ java -jar $lirical_path download -d $lirical_data_path
 
 # Download Exomiser data
 wget https://data.monarchinitiative.org/exomiser/latest/2209_hg38.zip -P $lirical_data_path
-unzip $lirical_data_path/2209_hg38.zip
+mkdir $lirical_data_path/2209_hg38
+unzip $lirical_data_path/2209_hg38.zip -d $lirical_data_path/2209_hg38
 rm $lirical_data_path/2209_hg38.zip
