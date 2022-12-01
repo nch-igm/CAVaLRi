@@ -90,11 +90,17 @@ def read_variants(genotype):
             for s in var.samples:
                 if s.sample == sample:
 
+                    # Try to determine the 
+                    try:
+                        af = round(0 if s.data.AD[1] == 0 else float(s.data.AD[1]/s.data.DP), 3)
+                    except:
+                        af = None
+
                     # Add sample data and add sample name to columns
                     var_row.append({
                         'GT': s.data.GT,
                         'AD': s.data.AD,
-                        'AF': round(0 if s.data.AD[1] == 0 else float(s.data.AD[1]/s.data.DP), 3),
+                        'AF': af,
                         'DP': s.data.DP
                     })
                     columns.append({v: k for k, v in samples.items()}[sample])

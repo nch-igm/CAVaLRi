@@ -51,8 +51,8 @@ def exonic_filter(var):
     return False
 
 
-def multiallelic_filter(var):
-    return True if len(var.samples[0]['AD']) > 2 else False
+def multiallelic_filter(var, proband_pos):
+    return True if var.samples[proband_pos]['AD'] == None or len(var.samples[proband_pos]['AD']) > 2 else False
 
 
 def igm_common_filter(var, common_ids):
@@ -87,7 +87,7 @@ def filter_variants(genotype):
                 and
             record.QUAL >= config['quality_minimum']
                 and
-            not multiallelic_filter(record)
+            not multiallelic_filter(record, proband_pos)
                 and
                 (
                     (
