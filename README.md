@@ -1,5 +1,5 @@
 # CAVaLRi
-CAVaLRi (Clinical Assessment of Variants by Likelihood Ratios) was designed to better prioritize clinically actionable variants in genetic disease. For information regarding the architecture and motivation behind CAVaLRi, please refer to our publication: {link}
+CAVaLRi (Clinical Assessment of Variants by Likelihood Ratios) was designed to better prioritize clinically actionable variants in genetic disease. For information regarding the architecture and motivation behind CAVaLRi, please refer to our publication: {link}. The figure below illustrates the additions made to the original likelihood ratio framework defined in LIRICAL (Robinson et al.). These changes include (1) filtering phenotypes to only consider the most genetically informative, (2) incorporating parental genotypes with a novel mode of inheritence likelihood ratio, and (3) weighting the likelihood ratios by relative importance.
 ![figure1](https://user-images.githubusercontent.com/72405035/204615195-6b28be5c-64de-4c59-a27e-bb7aea0c3cb1.png)
 
 ## Dependencies
