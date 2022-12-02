@@ -1,8 +1,8 @@
 {
-    "phenotype": "/igm/projects/CAVaLRi_example/example1.clinphen.tsv",
-    "vcf": "/igm/projects/CAVaLRi_example/example1.filtered.vcf.gz",
+    "phenotype": "example/cohort/example1.pheno.csv",
+    "vcf": "example/cohort/example1.vcf.gz",
     "biological_sex": "M",
-    "proband": "837_M17-1117_P_ST-00075345",
-    "mother": "837_M17-1118_M_ST-00075344",
-    "father": "837_M17-1119_F_ST-00075340"
+    "proband": "PROBAND",
+    "mother": "MOTHER",
+    "father": "FATHER"
 }
