@@ -21,11 +21,14 @@ data/*
 !data/HPO_with_gene_IC.csv
 example/case/*
 !example/case/example.json
-!example/case/example.pheno.tsv
+!example/case/example.pheno.csv
+!example/case/example.vcf.gz
 example/cohort/*
 !example/cohort/example1.json
-!example/cohort/example1.pheno.tsv
+!example/cohort/example1.pheno.csv
+!example/cohort/example1.vcf.gz
 !example/cohort/example2.json
-!example/cohort/example2.pheno.tsv
+!example/cohort/example2.pheno.csv
+!example/cohort/example2.vcf.gz
 !example_diagnostic.csv
 .vscode
