@@ -31,10 +31,19 @@ def calculate_moiLR(case):
                     gt_data[gt] = v[gt]['GT']
 
                 # Normalize GT by setting all | to /
-                # for gt in samples:
-                #     if gt_data[gt].find('|') != -1:
-                #         g = gt_data[gt].split('|')
-                #         gt_data[gt] = '/'.join(g)
+                for gt in samples:
+                    if gt_data[gt].find('|') != -1:
+                        g = gt_data[gt].split('|')
+                        gt_data[gt] = '/'.join(g)
+                    if gt_data[gt].find('/') != -1:
+                        g = [int(a) for a in gt_data[gt].split('|')]
+                        g.sort()
+                        gt_data[gt] = '/'.join([str(a) for a in g])
+
+                if d['omimId'] == '618332':
+                    with open('/igm/home/rsrxs003/rnb/output/BL-193/test.txt','w') as f:
+                        print(f'GT_DATA: {gt_data}', file = f)
+
 
                 # If both parents are present
                 if gt_data['MOTHER'] != 'Unavailable' and gt_data['FATHER'] != 'Unavailable':

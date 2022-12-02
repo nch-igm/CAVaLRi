@@ -19,7 +19,6 @@ def worker(cmd):
 def annovar_annotate_variants(genotype):
 
     config = genotype.case.cohort.config
-    print(config)
 
     # Get genotype path
     genotype_basename = os.path.basename(genotype.genotype_path)

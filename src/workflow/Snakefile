@@ -2,7 +2,7 @@ import os
 
 # Get configuration settings
 configfile: "config.yaml"
-shell.prefix('source /igm/home/rsrxs003/miniconda3/bin/activate cavalri;')
+shell.prefix('export PATH=$PATH:/igm/home/rsrxs003/miniconda3/bin/; source activate cavalri_test;')
 
 # Set up a temp folder to store pickles
 temp_dir = config['tmp_dir']

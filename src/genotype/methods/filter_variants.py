@@ -52,12 +52,21 @@ def exonic_filter(var):
 
 
 def multiallelic_filter(var, proband_pos):
-    return True if var.samples[proband_pos]['AD'] == None or len(var.samples[proband_pos]['AD']) > 2 else False
+    try:
+        return True if var.samples[proband_pos]['AD'] == None or len(var.samples[proband_pos]['AD']) > 2 else False
+    except:
+        return False
 
 
 def igm_common_filter(var, common_ids):
     var_id = f"{var.CHROM}_{var.POS}_{var.REF}_{var.ALT[0]}"
     return True if var_id in common_ids else False
+
+def qual_filter(var, quality_minimum):
+    try:
+        return True if var.QUAL >= quality_minimum else False
+    except:
+        return True
 
 
 def filter_variants(genotype):
@@ -85,7 +94,7 @@ def filter_variants(genotype):
         if (
             proband_alt_filter(record, proband_pos)
                 and
-            record.QUAL >= config['quality_minimum']
+            qual_filter(record, config['quality_minimum'])
                 and
             not multiallelic_filter(record, proband_pos)
                 and

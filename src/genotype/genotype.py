@@ -1,4 +1,5 @@
 from .methods import *
+import os
 
 class Genotype:
     """
@@ -20,7 +21,7 @@ class Genotype:
     # INITIALIZE
     def __init__(self, case, genotype_path):
         # self.genome_build = genome_build
-        self.genotype_path = genotype_path
+        self.genotype_path = os.path.abspath(genotype_path)
         self.case = case
 
     # METHODS

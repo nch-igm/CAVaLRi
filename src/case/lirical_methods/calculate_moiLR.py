@@ -75,6 +75,16 @@ def calculate_moiLR(case):
 
             # Normalize GT by setting all | to /, we don't care about phasing for now
             for gt in ['proband','mother','father']:
+                if gt_data[gt].find('|') != -1:
+                    g = gt_data[gt].split('|')
+                    gt_data[gt] = '/'.join(g)
+                if gt_data[gt].find('/') != -1:
+                    g = [int(a) for a in gt_data[gt].split('/')]
+                    g.sort()
+                    gt_data[gt] = '/'.join([str(a) for a in g])
+                
+            # Account for genotype edge cases
+            for gt in ['proband','mother','father']:
                 if chrom == 'chrX' or chrom == 'X':
                     if len(gt_data[gt]) == 1:
                         if gt_data[gt] == 0:
@@ -86,7 +96,6 @@ def calculate_moiLR(case):
                         gt_data[gt] = gt_data[gt][0] + '/' + gt_data[gt][2]
 
                 else:
-                    # print(case.genotype.processed_genotype_path, chrom_pos, gt_data[gt])
                     if gt_data[gt] in ['.','1']:
                         gt_data[gt] = '0/1'
                     else:

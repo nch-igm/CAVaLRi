@@ -73,7 +73,7 @@ def get_variant_data(article):
                         moi_pos = text.find('Mode of inheritance:') + len(' Mode of inheritance:')
                         moi = text[moi_pos: text.find('.', moi_pos)]
                     else:
-                        moi = 'hello'
+                        moi = ''
 
                     # Get disease frequency
                     if text.find('disease=') != -1:
