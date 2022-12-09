@@ -33,13 +33,12 @@ class Workflow:
         
         # Set up temporary directory
         temp_folder = os.path.join(os.path.abspath(os.path.dirname(self.cohort.input_path)), str(uuid.uuid4()))
-        # temp_folder = '/igm/home/rsrxs003/rnb/output/2f992fdb-ec7d-4c98-94d4-9c92a8d56859/'
         
         if not os.path.exists(temp_folder):
             os.mkdir(temp_folder)
 
         # Add temp directory to a snakemake yaml file
-        snakemake_yaml_path = os.path.join(os.getcwd(), 'src/workflow', 'config.yaml')
+        snakemake_yaml_path = os.path.join(self.cohort.root_path, 'src/workflow', 'config.yaml')
         with open(snakemake_yaml_path,'w') as f:
             print(f'tmp_dir: {os.path.abspath(temp_folder)}', file = f)
 
@@ -62,7 +61,7 @@ class Workflow:
         #         time.sleep(10)
                 
         
-        # time.sleep(1)
+        # time.sleep(10)
         # parse_qstat()
 
         # Read in populated case data

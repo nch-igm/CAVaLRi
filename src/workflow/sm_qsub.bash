@@ -1,6 +1,6 @@
 #!/bin/bash
 #$ -N cavalri_scheduler
-#$ -wd /igm/home/rsrxs003/CAVaLRi/src/workflow
+#$ -wd /igm/projects/CAVaLRi/src/workflow
 #$ -j y
 
 export PATH=$PATH:/igm/home/rsrxs003/miniconda3/condabin/
