@@ -30,7 +30,7 @@ def get_cases(cohort):
                 else:
                     inputs[parent] = 'Unavailable'
 
-            blacklist = ['M17-2917', 'M17-326', 'M19-7871', 'M19-5147', 'M17-2603', 'M19-1819', 'M19-1602', 'M18-5236', 'M18-3212', 'M18-5107', 'M17-3055', 'M20-2011']
+            blacklist = []
 
             validated_input = validate_case(inputs)
             if validated_input != '':
