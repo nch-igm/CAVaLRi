@@ -1,11 +1,6 @@
 import os
 import yaml
 
-# def get_conf(config_path_list=[
-#                     os.path.join('..', '..', 'config', 'config.yaml'),
-#                     os.path.join('..', 'config', 'config.yaml'), 
-#                     os.path.join('config', 'config.yaml')
-#                     ]):
 
 def get_conf():
 

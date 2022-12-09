@@ -27,7 +27,7 @@ comparator_plot_label: ClinPhen
 
 ## VARIANT FILTERING SETTINGS ##
 gnomAD_popmax: 0.005
-quality_minimum: 150
+quality_minimum: 200
 
 ## BANDWIDTH SETTINGS ##
 cores: 50
