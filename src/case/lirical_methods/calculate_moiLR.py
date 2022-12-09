@@ -79,7 +79,7 @@ def calculate_moiLR(case):
                     g = gt_data[gt].split('|')
                     gt_data[gt] = '/'.join(g)
                 if gt_data[gt].find('/') != -1:
-                    g = [int(a) for a in gt_data[gt].split('/')]
+                    g = [int(a) if a != '.' else 0 for a in gt_data[gt].split('/')]
                     g.sort()
                     gt_data[gt] = '/'.join([str(a) for a in g])
                 
