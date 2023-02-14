@@ -1,7 +1,7 @@
 ## DEPENDICIES ##
 annovar_scripts: dependencies/annovar
 annovar_db: dependencies/human_db
-exomiser_data: dependencies/lirical_data/2209_hg38
+exomiser_data: /igm/projects/exomiser/exomiser-cli-13.1.0/data/2209_hg38
 lirical_executable: dependencies/LIRICAL.jar
 lirical_data_path: dependencies/lirical_data
 lirical_yaml_template: data/template.yaml
