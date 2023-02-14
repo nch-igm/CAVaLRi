@@ -19,7 +19,10 @@ def main(input_dir, output_dir, diagnostic_data):
     # Validate input and output directories
     output_dir = input_dir if not output_dir else output_dir
     for dir in [input_dir,output_dir]:
-        if not os.path.isdir(dir):
+        try:
+            if not os.path.exists(dir):
+                os.mkdir(dir)
+        except:
             print(f'{dir} is not a valid directory')
             sys.exit(1)
     
