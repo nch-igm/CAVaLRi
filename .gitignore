@@ -12,6 +12,7 @@ output/*
 *sub_logfiles*
 dependencies/*
 data/*
+src/workflow/config.yaml
 !dependencies/annovar
 !*/dependencies/annotate_variation.pl
 !dependencies/conda_environment.yml
