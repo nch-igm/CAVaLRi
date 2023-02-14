@@ -79,7 +79,8 @@ def main(input, output_dir):
         # Run case
         full_pickle_path = os.path.join(temp_folder, f'{cs.case_id}.full.pickle')
         script_path = os.path.join(cohort.root_path, 'src/workflow/scripts/run_case.py')
-        p = worker(f'python {script_path} --input {case_pickle_path} -o {full_pickle_path}', err=True)
+        conda_bin = os.path.join(sys.exec_prefix, 'bin')
+        p = worker(f"{os.path.join(conda_bin, 'python')} {script_path} --input {case_pickle_path} -o {full_pickle_path}", err=True)
 
         if not os.path.exists(full_pickle_path):
             print(p)
@@ -114,7 +115,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='')
 
     parser.add_argument('--input', '-i', type=str, 
-        help='Directory where CAVaLRi subject input files are stored')
+        help='Path to CAVaLRi subject input file')
     parser.add_argument('--output_dir', '-o', type=str, 
         help='Directory where CAVaLRi output files are written')
     

@@ -19,6 +19,7 @@ def main(input, output):
         case = pickle.load(f)
 
     # Process variants
+    case.conda_bin = os.path.join(sys.exec_prefix, 'bin')
     case.genotype.annotate_variants()
     case.genotype.filter_variants()
     case.genotype.read_variants()
