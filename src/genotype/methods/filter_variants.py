@@ -53,20 +53,25 @@ def exonic_filter(var):
 
 def multiallelic_filter(var, proband_pos):
     try:
-        return True if var.samples[proband_pos]['AD'] == None or len(var.samples[proband_pos]['AD']) > 2 else False
+        return False if var.samples[proband_pos]['AD'] == None or len(var.samples[proband_pos]['AD']) > 2 else True
     except:
-        return False
+        return True
 
 
 def igm_common_filter(var, common_ids):
     var_id = f"{var.CHROM}_{var.POS}_{var.REF}_{var.ALT[0]}"
     return True if var_id in common_ids else False
 
+
 def qual_filter(var, quality_minimum):
     try:
         return True if var.QUAL >= quality_minimum else False
     except:
         return True
+
+
+def synonymous_filter(var):
+    return False if var.INFO['ExonicFunc.refGene'][0] == 'synonymous_SNV' else True
 
 
 def filter_variants(genotype):
@@ -80,11 +85,15 @@ def filter_variants(genotype):
 
 
     # Read in IGM variant frequencies
-    # igm_common_df = pd.read_csv('/igm/home/rsrxs003/CAVaLRi/data/WES_common_variants.csv')
-    # def get_var_id(row):
-    #     return f"chr{row['CHROM']}_{row['POS']}_{row['REF']}_{row['ALT']}"
-    # igm_common_df['var_id'] = igm_common_df.apply(get_var_id, axis = 1)
-    # igm_common_ids = igm_common_df['var_id'].to_list()
+    igm_freq_path = '/igm/home/rsrxs003/CAVaLRi/data/WES_common_variants.csv'
+    if os.path.exists(igm_freq_path):
+        igm_common_df = pd.read_csv()
+        def get_var_id(row):
+            return f"chr{row['CHROM']}_{row['POS']}_{row['REF']}_{row['ALT']}"
+        igm_common_df['var_id'] = igm_common_df.apply(get_var_id, axis = 1)
+        igm_common_ids = igm_common_df['var_id'].to_list()
+    else:
+        igm_common_ids = []
 
     # Get proband position
     proband_pos = get_proband_pos(vcf_reader.samples, genotype.case.proband)
@@ -96,15 +105,17 @@ def filter_variants(genotype):
                 and
             qual_filter(record, config['quality_minimum'])
                 and
-            not multiallelic_filter(record, proband_pos)
+            multiallelic_filter(record, proband_pos)
                 and
                 (
                     (
                         exonic_filter(record)
                             and
                         popmax_filter(record, config['gnomAD_popmax'])
-                        #     and
-                        # not igm_common_filter(record, igm_common_ids)
+                            and
+                        synonymous_filter(record)
+                            and
+                        not igm_common_filter(record, igm_common_ids)
                     )
                         or 
                     clinvar_filter(record)
