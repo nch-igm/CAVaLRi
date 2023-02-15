@@ -13,10 +13,9 @@ def worker(cmd):
     p.wait()
     out, err = p.communicate()
     return err.decode(), out.decode()
-    # return out.decode() if out else err.decode()
 
 
-def annovar_annotate_variants(genotype):
+def annotate_variants(genotype):
 
     config = genotype.case.cohort.config
 
@@ -44,35 +43,4 @@ def annovar_annotate_variants(genotype):
     """
     e,o = worker(command)
     return f"{output}.vcf.gz"
-
-
-# def get_depth(row):
-#     return json.loads(row['PROBAND'].replace("'", '"'))['DP']
-
-
-# def get_gt(row):
-#     return json.loads(row['PROBAND'].replace("'", '"'))['GT']
-
-
-def annotate_variants(genotype):
-
-    # Annotate with ANNOVAR
-    new_vcf_path = annovar_annotate_variants(genotype)
-
-    # Read in annotated variants
-    # variant_df = genotype.variants
-    # ann_df = variant_df.copy()
-    # for col in ['gnomad_ex_faf95_popmax','gnomad_wg_faf95_popmax']:
-    #     ann_df[col] = ann_df[col].fillna(0)
-
-    # ann_df = parse_annotations(genotype.case.annotations_path)
-
-    # # Fill in frequency nulls
-    # for col in ['gnomad_ex_faf95_popmax','gnomad_wg_faf95_popmax']:
-    #     ann_df[col] = ann_df[col].fillna(0)
-    # ann_df = variant_df.merge(ann_df, on = ['CHROM', 'POS', 'REF', 'ALT'])
-    # ann_df['DP'] = ann_df.apply(get_depth, axis = 1)
-    # ann_df['GT'] = ann_df.apply(get_gt, axis = 1)
-
-    return new_vcf_path
     

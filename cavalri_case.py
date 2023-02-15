@@ -5,6 +5,7 @@ import sys
 import os
 import pandas as pd
 import json
+import vcf
 import subprocess
 import shlex
 import argparse
@@ -27,6 +28,28 @@ def validate_case(inputs):
             return pv
     return ''
 
+
+def validate_samples(inputs):
+
+    # Initialize result
+    res = {}
+    provided_samples = {k:v for k,v in {'proband':inputs['proband'], 'mother':inputs['mother'], 'father':inputs['father']} if v != ''}
+
+    # Read in vcf
+    vcf_reader = vcf.Reader(filename = inputs['vcf'], compressed=True, encoding='ISO-8859-1')
+
+    # Get the first row and parse samples
+    
+    for var in vcf_reader:
+        for sample in var.samples:
+            for k,v in provided_samples.items():
+                if v == sample.sample:
+                    res[k] = sample.sample
+        break
+
+    return True, res if provided_samples == res else False, {k:v for k,v in provided_samples.items() if k not in res.keys()}
+
+
 def main(input, output_dir):
 
     # Parse the input file
@@ -48,8 +71,12 @@ def main(input, output_dir):
             inputs[parent] = 'Unavailable'
 
     validated_input = validate_case(inputs)
+    samples_pass, samples = validate_samples(inputs)
     if validated_input != '':
         print(f"Validation failed: {case}, {inputs[validated_input]} not a valid path")
+
+    elif not samples_pass:
+        print(f"Validation failed: the following samples were not found in the vcf: {samples}")
 
     else:
         cs = Case(

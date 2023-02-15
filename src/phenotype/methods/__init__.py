@@ -1,4 +1,4 @@
 from .read_clinphen import *
 from .read_phenotype import *
-from .score_phenotypes import *
-from .calculate_phenotypeLR import *
+from ._score_phenotypes import *
+from ._calculate_phenotypeLR import *

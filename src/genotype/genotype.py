@@ -25,6 +25,9 @@ class Genotype:
         self.case = case
 
     # METHODS
+    def normalize_variants(self):
+        self.genotype_path = normalize_variants(self)
+
     def annotate_variants(self):
         self.genotype_path = annotate_variants(self)
 

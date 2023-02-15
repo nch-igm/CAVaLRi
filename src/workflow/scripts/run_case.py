@@ -26,6 +26,7 @@ def main(input, output):
 
     # Process phenotypes
     case.phenotype.read_phenotypes()
+    case.phenotype.score_phenotypes()
 
     # Run LIRICAL
     case.run_lirical()
