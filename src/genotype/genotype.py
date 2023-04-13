@@ -36,3 +36,12 @@ class Genotype:
     
     def read_variants(self):
         self.variants = read_variants(self)
+    
+    def get_scoring_annotations(self):
+        self.spliceai_annotations = run_spliceai(self)
+
+    def get_pathogenic_variants(self):
+        self.pathogenic_variants = get_pathogenic_variants(self)
+    
+    def calculate_genoLR(self):
+        self.genotype_LR = calculate_genoLR(self)

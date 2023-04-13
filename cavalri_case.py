@@ -11,6 +11,8 @@ import shlex
 import argparse
 import pickle
 import uuid
+import time
+fo = '/Users/rsrxs003/projects/CAVaLRi_/catch_some_output.txt'
 
 def worker(cmd, err = False):
     parsed_cmd = shlex.split(cmd)
@@ -33,7 +35,7 @@ def validate_samples(inputs):
 
     # Initialize result
     res = {}
-    provided_samples = {k:v for k,v in {'proband':inputs['proband'], 'mother':inputs['mother'], 'father':inputs['father']} if v != ''}
+    provided_samples = {k:v for k,v in {'proband':inputs['proband'], 'mother':inputs['mother'], 'father':inputs['father']}.items() if v != ''}
 
     # Read in vcf
     vcf_reader = vcf.Reader(filename = inputs['vcf'], compressed=True, encoding='ISO-8859-1')
@@ -47,7 +49,7 @@ def validate_samples(inputs):
                     res[k] = sample.sample
         break
 
-    return True, res if provided_samples == res else False, {k:v for k,v in provided_samples.items() if k not in res.keys()}
+    return True if provided_samples == res else False, {k:v for k,v in provided_samples.items() if k not in res.keys()}
 
 
 def main(input, output_dir):
@@ -56,11 +58,13 @@ def main(input, output_dir):
     output_dir = os.path.dirname(input) if not output_dir else output_dir
     cohort = Cohort(os.path.dirname(input), output_dir, '', config)
 
+    print(f'Checkpoint: 1 {time.strftime("%H:%M:%S", time.localtime())}', file = open(fo, 'a'))
     # Add case
     with open(input,'r') as d:
         inputs = json.load(d)
     case = os.path.basename(input)
     case = case[:case.find('.json')]
+    
 
     # Check for parents
     for parent in ['mother','father']:
@@ -71,6 +75,8 @@ def main(input, output_dir):
             inputs[parent] = 'Unavailable'
 
     validated_input = validate_case(inputs)
+    print(f'Checkpoint: 2 {time.strftime("%H:%M:%S", time.localtime())}', file = open(fo, 'a'))
+
     samples_pass, samples = validate_samples(inputs)
     if validated_input != '':
         print(f"Validation failed: {case}, {inputs[validated_input]} not a valid path")
@@ -95,6 +101,9 @@ def main(input, output_dir):
         cs.temp_dir = temp_folder
         if not os.path.exists(temp_folder):
             os.mkdir(temp_folder)
+        
+        print(f'Temp directory: {temp_folder}', file = open(fo, 'a'))
+
 
         # cohort.add_case(cs)
 
@@ -107,6 +116,8 @@ def main(input, output_dir):
         full_pickle_path = os.path.join(temp_folder, f'{cs.case_id}.full.pickle')
         script_path = os.path.join(cohort.root_path, 'src/workflow/scripts/run_case.py')
         conda_bin = os.path.join(sys.exec_prefix, 'bin')
+        print(f'Checkpoint: 3 {time.strftime("%H:%M:%S", time.localtime())}', file = open(fo, 'a'))
+
         p = worker(f"{os.path.join(conda_bin, 'python')} {script_path} --input {case_pickle_path} -o {full_pickle_path}", err=True)
 
         if not os.path.exists(full_pickle_path):

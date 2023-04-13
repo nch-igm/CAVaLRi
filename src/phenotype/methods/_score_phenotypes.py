@@ -3,24 +3,14 @@ import os
 import re
 import pandas as pd
 import json
+import obonet
+import time
+fo = '/Users/rsrxs003/projects/CAVaLRi_/catch_some_output.txt'
 
-sys.path.append('..')
+sys.path.append('/Users/rsrxs003/projects/LIRICAL')
 # from hpo_walk import ontology
-# from hpo_walk.annotations import get_phenotype_disease_gene_df, build_propagated_frequency_map
-from config import *
-
-# Intialize HPO frequency map
-global hpo_map
-hpo_map = pd.read_csv(os.path.join(config['project_root'], config['hpo_frequency_map']))
-
-# Intialize HPO cohort frequencies
-global bkgd_freq
-with open(os.path.join(config['project_root'], config['hpo_background']), 'r') as json_file:
-    bkgd_freq = json.load(json_file)
-
-# Intialize frequency map
-global F
-F = build_propagated_frequency_map()
+from hpo_walk.dag import ontology
+from hpo_walk.annotations import get_phenotype_disease_gene_df, build_propagated_frequency_map
 
 
 def hpo_distance(hpo, term1, term2):
@@ -32,7 +22,7 @@ def hpo_distance(hpo, term1, term2):
     return counter if counter != max_hpo_length else 999
 
 
-def parse_frequency(freq):
+def parse_frequency(freq, config):
 
     # If the frequency is null
     if pd.isna(freq):
@@ -55,20 +45,24 @@ def parse_frequency(freq):
         return int(freq[:-1])/100
 
 
-def get_hpoa_disease_frequency(query_term, F_d, hpo):
+def get_hpoa_disease_frequency(query_term, F_d):
+    """
+    F_d: subset of annotated HPO frequencies in disease d
+    """
 
-
-# def get_phenotype_disease_frequency(term, disease, hpo = HPO, freq_map = F):
+    # def get_phenotype_disease_frequency(term, disease, hpo = HPO, freq_map = F):
     
-    ### first the case when the disease has an associated phenotype at least as specific as the query term -- term is (an ancestor of) a disease term:
+    # First the case when the disease has an associated phenotype at least as 
+    # specific as the query term -- term is (an ancestor of) a disease term:
     if query_term in F_d:
         return F_d[query_term]
 
-    ### now suppose query term is not in ancestral closure of disease term set;
-    ### in this case we'll take the lowest frequency found among the most specific common ancestors of the query term and the disease pheno set
+    # Now suppose query term is not in ancestral closure of disease term set;
+    # in this case we'll take the lowest frequency found among the most 
+    # specific common ancestors of the query term and the disease pheno set
     else:
         return min(
-            [F_d[u] for u in hpo.lower_boundary( hpo.ancestors(query_term) & set(F_d) )]
+            [F_d[ca] for ca in hpo.lower_boundary( hpo.ancestors(query_term) & set(F_d) )]
             )
 
     # Define HPO disease terms
@@ -153,57 +147,79 @@ def get_hpoa_disease_frequency(query_term, F_d, hpo):
     return 0.01
                 
 
-def get_hpoa_background_frequency(term):
+def get_hpoa_background_frequency(pheno, bkgd_freq):
     
     #TODO Add variables that condition on the background frequency
-    return bkgd_freq[term]
+    return bkgd_freq[pheno]
 
 
-def score_phenotype(omim_id, hpo, hpoa, case):
+def score_disease_phenotype(F_d, bkgd_freq, case):
 
     # Initialize result
-    phenos = {}
-    for p in case.phenotype.phenotypes.keys():
-        phenos[p] = {}
-
-    # Get the annotations for this disease
-    disease_term_df = hpoa.loc[hpoa['DatabaseID'] == ('OMIM:' + str(omim_id))][['HPO_ID', 'Frequency']]
+    default_value = 1 #?
+    phenos = {p:{} for p in case.phenotype.phenotypes.keys()}
 
     # Add each term to the result
-    for proband_term in case.phenotype.phenotypes:
-        # phenos[proband_term]['disease_freq'] = get_hpoa_disease_frequency(proband_term, disease_term_df, hpo)
-        phenos[proband_term]['disease_freq'] = get_hpoa_disease_frequency(proband_term, F[omim_id], hpo)
-        phenos[proband_term]['background_freq'] = get_hpoa_background_frequency(proband_term)
-        phenos[proband_term]['LR'] = max(0.01,
-                phenos[proband_term]['disease_freq'] / phenos[proband_term]['background_freq'])
+    for pheno in case.phenotype.phenotypes:
+        # phenos[pheno]['disease_freq'] = get_hpoa_disease_frequency(pheno, disease_hpoa_df, hpo)
+        phenos[pheno]['disease_freq'] = get_hpoa_disease_frequency(pheno, F_d)
+        phenos[pheno]['background_freq'] = get_hpoa_background_frequency(pheno, bkgd_freq)
+
+        pLR = 1 if phenos[pheno]['background_freq'] == 0 else phenos[pheno]['disease_freq'] / phenos[pheno]['background_freq']
+
+        phenos[pheno]['LR'] = max(0.01, pLR)
 
     return phenos
 
 
 def score_phenotypes(case):
 
-    # Read in HPO
-    hpo = ontology('HPO')
+    config = case.cohort.config
 
-    # Read in the HPOA columns
-    hpoa_columns = list(pd.read_csv(
-        os.path.join(config['project_root'], config['hpoa']),
-        skiprows = 4,
-        sep = '\t',
-        nrows = 1
-    ))
+    # Read in HPO
+    global hpo
+    hpo = ontology(config['hpo'])
+
+    # Intialize HPO frequency map
+    # hpo_map = pd.read_csv(os.path.join(case.cohort.root_path, config['hpo_frequency_map']))
+    # hpo_map = pd.read_csv('/Users/rsrxs003/projects/LIRICAL/data/hpo_frequency_map.csv')
+
+    # Intialize HPO cohort frequencies
+    # with open(os.path.join(case.cohort.root_path, config['hpo_background']), 'r') as json_file:
+    with open(config['hpo_bkgd_frequencies'], 'r') as json_file:
+        bkgd_freq = json.load(json_file)
+
+    print(f'Checkpoint: 8 {time.strftime("%H:%M:%S", time.localtime())}', file = open(fo, 'a'))
+
+
+    # Intialize frequency map
+    F = build_propagated_frequency_map()  #TODO Find a way to provide HPOA
+
+    print(f'Checkpoint: 9 {time.strftime("%H:%M:%S", time.localtime())}', file = open(fo, 'a'))
 
     # Read in the HPOA
-    hpoa = pd.read_csv(
-        os.path.join(config['project_root'], config['hpoa']),
-        skiprows = 4,
-        sep = '\t',
-        usecols = [c for c in hpoa_columns if c not in ['Onset', 'Sex', 'Modifier']]
-    ).rename(columns = {'#DatabaseID': 'DatabaseID'})
+    # hpoa_path = os.path.join(case.cohort.root_path, config['hpoa'])
+    # hpoa_path = '/Users/rsrxs003/projects/LIRICAL/data/phenotype.hpoa'
+    # hpoa = pd.read_csv(hpoa_path, skiprows = 4, sep = '\t')
+    # hpoa_cols = hpoa.columns
+    # hpoa = hpoa[hpoa_cols].rename(columns = {'#DatabaseID': 'DatabaseID'})
 
     # Score the phenotypes for every disease
-    for gene in case.case_data['genes']:
-        for d in case.case_data['genes'][gene]['diseases']:
-            d['phenotype_scores'] = score_phenotype(d['omim'], hpo, hpoa, case)
+    # print(case.case_data)
+    # print(case.case_data['genes'].values())
+    for v in case.case_data['genes'].values():
+        for omim in v.keys():
+
+            # Limit HPOA to omim related terms
+            # disease_hpoa_df = hpoa.loc[hpoa['DatabaseID'] == ('OMIM:' + str(omim))][['HPO_ID', 'Frequency']]
+            
+            # Get scores for all phenotype terms
+            # F[D] needs to go into score_phenotypes
+            try:
+                v[omim]['phenotype_scores'] = score_disease_phenotype(F[f'OMIM:{omim}'], bkgd_freq, case)
+                print(v[omim]['phenotype_scores'], file = open('/Users/rsrxs003/projects/CAVaLRi_/catch_some_phenos.txt', 'w'))
+            except Exception as e:
+                print(f'Checkpoint: 9 ERROR:{e} {time.strftime("%H:%M:%S", time.localtime())}', file = open(fo, 'a'))
+                pass
 
     return case.case_data

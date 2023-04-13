@@ -7,6 +7,8 @@ import json
 
 def read_phenotypes(case):
 
+    config = case.cohort.config
+
     # Intialize phenotype dictionary
     res = {}
 
@@ -19,7 +21,7 @@ def read_phenotypes(case):
     pheno_df = pheno_df.sort_values('IC', ascending = False).reset_index(drop = True).reset_index().rename(columns = {'index': 'rank'})
     pheno_df['rank'] = pheno_df['rank'] + 1
 
-    for idx, row in pheno_df.iterrows():
+    for idx, row in pheno_df.head(config['hpo_upper_bound']).iterrows():
 
         # Add HPO ID to the result
         res[row['HPO ID']] = row['rank']

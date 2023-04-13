@@ -10,14 +10,14 @@ def calculate_moiLR(case):
     samples = set(['PROBAND', 'MOTHER', 'FATHER']).intersection(set(case.case_data['genes'][first_gene]['variants'][0].keys()))
         
     
-    for gene in case.case_data['genes']:
-        for d in case.case_data['genes'][gene]['diseases']:
+    for g, g_data in case.case_data['genes'].items():
+        for d, d_data in g_data['diseases'].items():
 
             # Intialize moi LR
-            d['moiLR_log10'] = 0
+            d_data['moiLR_log10'] = 0
 
             # Go through each variant
-            for i, v in enumerate(case.case_data['genes'][gene]['variants']):
+            for i, v in enumerate(g_data['variants']):
 
                 # Initialize genotype data
                 gt_data = {

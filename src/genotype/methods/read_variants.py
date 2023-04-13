@@ -1,5 +1,6 @@
 import os
 import re
+import json
 import shlex
 import pandas as pd
 import vcf
@@ -23,6 +24,13 @@ def read_variants(genotype):
 
     # Initialize list to capture variants
     var_list = []
+
+    # Set sample list
+    samples = {
+        'proband':genotype.case.proband,
+        'mother': genotype.case.mother,
+        'father': genotype.case.father
+    }
     
     for var in vcf_reader:
         
@@ -32,13 +40,14 @@ def read_variants(genotype):
         pos = var.POS
         ref = var.REF
         alt = ','.join([str(i) for i in var.ALT])
-        info = var.INFO
-        var_row = [chrom, pos, ref, alt, info]
-        columns = ['CHROM', 'POS', 'REF', 'ALT', 'INFO']
+        info = json.dumps(var.INFO)
+        gene = var.INFO['Gene.refGene'][0]
+        var_row = [chrom, pos, ref, alt, gene, info]
+        columns = ['CHROM', 'POS', 'REF', 'ALT', 'GENE', 'INFO']
         
 
         # Sample specific
-        for sample in samples.values():
+        for k, sample in samples.items():
             for s in var.samples:
                 if s.sample == sample:
 
@@ -65,9 +74,13 @@ def read_variants(genotype):
                         'AF': af,
                         'DP': dp
                     })
-                    columns.append({v: k for k, v in samples.items()}[sample])
+                    columns.append(k)
 
         # Add variant to list, which will be converted back into a data frame
         var_list.append(var_row)
     
-    return pd.DataFrame(var_list, columns = columns, dtype=str)
+    df = pd.DataFrame(var_list, columns = columns, dtype=str)
+    df.to_csv('/Users/rsrxs003/projects/CAVaLRi_/example/var_df.csv', index = False)
+    # df = df['INFO']
+    # df.str.split('&').apply(pd.Series, 1)
+    return df

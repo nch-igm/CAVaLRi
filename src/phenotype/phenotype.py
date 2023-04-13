@@ -11,8 +11,9 @@ class Phenotype:
     def read_phenotypes(self):
         self.phenotypes, self.pheno_df = read_phenotypes(self.case)
 
+    #TODO score_phenotypes(self.case.genotype.genes, self.phenotypes)
     def score_phenotypes(self):
-        self.scored_phenotypes = score_phenotypes(self)
+        self.scored_phenotypes = score_phenotypes(self.case)
 
     def calculate_phenotypeLR(self):
         self.phenoLRs = calculate_phenotypeLR(self.case)

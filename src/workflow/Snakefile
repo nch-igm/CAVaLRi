@@ -1,8 +1,11 @@
+import sys
 import os
+conda_bin = os.path.join(sys.exec_prefix, 'bin')
 
 # Get configuration settings
 configfile: "config.yaml"
-shell.prefix('export PATH=$PATH:/igm/home/rsrxs003/miniconda3/bin/; source activate cavalri_test;')
+shell.prefix(f'export PATH={conda_bin}:$PATH')
+# ; mamba activate cavalri_3.6;
 
 # Set up a temp folder to store pickles
 temp_dir = config['tmp_dir']

@@ -9,6 +9,8 @@ import time
 import shlex
 import re
 import sys
+import time
+fo = '/Users/rsrxs003/projects/CAVaLRi_/catch_some_output___.txt'
 
 class Workflow:
     """
@@ -24,16 +26,16 @@ class Workflow:
         p = subprocess.Popen(parsed_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
         p.wait()
         out, err = p.communicate()
-        # return err.decode()
-        return out.decode() if out else err.decode()
+        return err.decode()
+        # return out.decode() if out else err.decode()
 
     def run(self):
 
         config = self.cohort.config
         
         # Set up temporary directory
-        temp_folder = os.path.join(os.path.abspath(os.path.dirname(self.cohort.input_path)), str(uuid.uuid4()))
-        
+        temp_folder = os.path.abspath(self.cohort.input_path) if os.path.isdir(self.cohort.input_path) else os.path.abspath(os.path.dirname(self.cohort.input_path))
+        temp_folder = os.path.join(temp_folder, str(uuid.uuid4()))
         if not os.path.exists(temp_folder):
             os.mkdir(temp_folder)
 
@@ -50,7 +52,7 @@ class Workflow:
                 pickle.dump(case, file = f)
 
         # Run CAVaLRi case pipeline
-        res = self.worker(f"snakemake --cores {config['cores']} -pk")
+        res = self.worker(f"{os.path.join(self.cohort.conda_bin,'snakemake')} --cores {config['cores']} -pk")
         # res = self.worker(f"qsub {os.path.join(self.cohort.root_path, 'src/workflow/sm_qsub.bash')} {config['cores']}")
 
         # def parse_qstat():
@@ -63,6 +65,8 @@ class Workflow:
         
         # time.sleep(10)
         # parse_qstat()
+
+        print(f'Snakemake complete {res} {time.strftime("%H:%M:%S", time.localtime())}', file = open(fo, 'a'))
 
         # Read in populated case data
         for case in self.cohort.cases:

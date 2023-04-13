@@ -8,21 +8,22 @@ def build_case_summary(case):
     # res_df = pd.DataFrame(columns=['geneRank', 'geneNcbiId', 'geneSymbol', 'postTestProbability', 'phenoLR', 'geneLR', 'moiLR', 'compositeLR','hpoCount'])
     res_df = pd.DataFrame(columns=['geneRank', 'geneSymbol', 'postTestProbability', 'phenoLR', 'geneLR', 'moiLR', 'compositeLR','hpoCount'])
 
-    for d in case.case_data['diseases']:
-        res_df = pd.concat([
-            res_df, 
-            pd.DataFrame({
-                'geneRank': d['geneRank'],
-                # 'geneNcbiId': d['gene_data']['geneNcbiId'],
-                'geneSymbol': d['gene_data']['gene'],
-                'postTestProbability': d['postTestProbability'],
-                'phenoLR': d['phenoLR'] * config['phenoLR_scalar'],
-                'geneLR': d['genoLR'] * config['genoLR_scalar'],
-                'moiLR': d['moiLR'] * config['moiLR_scalar'],
-                'compositeLR': d['compositeLR'],
-                'hpoCount': d['hpoCount']
-            }, index = [0])
-        ])
+    for g, g_data in case.case_data['genes'].items():
+        for d, d_data in g_data.items():
+            res_df = pd.concat([
+                res_df, 
+                pd.DataFrame({
+                    'geneRank': d_data['geneRank'],
+                    # 'geneNcbiId': d['gene_data']['geneNcbiId'],
+                    'geneSymbol': g,
+                    'postTestProbability': d_data['postTestProbability'],
+                    'phenoLR': d_data['phenoLR_log10'] * config['phenoLR_scalar'],
+                    'geneLR': d_data['genoLR'] * config['genoLR_scalar'],
+                    'moiLR': d_data['moiLR'] * config['moiLR_scalar'],
+                    'compositeLR': d_data['compositeLR'],
+                    'hpoCount': d_data['phenoCount']
+                }, index = [0])
+            ])
 
     # Get highest compositeLR for each disease
     compositLR_max_df = res_df[['geneSymbol', 'compositeLR']].groupby('geneSymbol').max().reset_index().rename(columns=({'compositeLR': 'max_compositeLR'}))

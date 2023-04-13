@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+import pickle
 
 def get_diagnostic_df(case):
 
@@ -19,6 +20,9 @@ def get_diagnostic_df(case):
 
 def add_tp(case):
 
+    with open('/Users/rsrxs003/projects/CAVaLRi_/case.pickle','wb') as f:
+        pickle.dump(case, f)
+
     # Get true positive data
     tp_df = get_diagnostic_df(case)
     
@@ -32,14 +36,15 @@ def add_tp(case):
     case.case_data['isTp'] = 1 if len(tp_df.index) != 0 else 0
 
     # Iterate through each disease
-    for d in case.case_data['diseases']:
+    for g, g_data in case.case_data['genes'].items():
+        for d, d_data in g_data.items():
         
-        # Check if the disease is related to a true positive gene
-        if len(tp_df.loc[tp_df['gene'] == d['gene_data']['gene']].index) != 0:
-            d['isHit'] = 1
-            case.case_data['tpHits'].append(d['geneRank'])
-        else:
-            d['isHit'] = 0
+            # Check if the disease is related to a true positive gene
+            if len(tp_df.loc[tp_df['gene'] == g].index) != 0:
+                d_data['isHit'] = 1
+                case.case_data['tpHits'].append(d_data['geneRank'])
+            else:
+                d_data['isHit'] = 0
 
     return case.case_data
 

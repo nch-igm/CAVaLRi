@@ -2,6 +2,7 @@ from ..workflow import Workflow
 from .methods import *
 # # from .hpo_walk import *
 import os
+import sys
 # import vcf
 
 
@@ -12,6 +13,8 @@ class Cohort:
     """
 
     def __init__(self, input_dir, output_dir, diagnostic_data, config):
+        
+        self.conda_bin = os.path.join(sys.exec_prefix, 'bin')
         self.cases = set()
         self.input_path = input_dir
         self.output_path = output_dir
@@ -32,11 +35,11 @@ class Cohort:
     def remove_case(self, case):
         self.cases.remove(case)
     
-    def retrieve_annotated_variants(self):
-        self.annotated_variants = retrieve_annotated_variants(self)
+    # def retrieve_annotated_variants(self):
+    #     self.annotated_variants = retrieve_annotated_variants(self)
 
-    def score_variants(self):
-        self.scored_variants = score_variants(self)
+    # def score_variants(self):
+    #     self.scored_variants = score_variants(self)
 
     def optimize_scalars(self):
         self.optimal_positions = optimize_scalars(os.path.join(self.output_root, 'summary'))
