@@ -1,8 +1,6 @@
 import os
 import pandas as pd
 import json
-import time
-fo = '/Users/rsrxs003/projects/CAVaLRi_/catch_some_output.txt'
 
 def add_rankings(case):
 
@@ -39,21 +37,10 @@ def add_rankings(case):
     for g, g_data in case.case_data['genes'].items():
         for d, d_data in g_data.items():
 
-            try:
-                gene_rank = int(rank_df.loc[rank_df['omimId'] == d, 'geneRank'].reset_index(drop=True)[0])
-            except:
-                print(f'Checkpoint: 14 {g} {d} Calculating cLR {time.strftime("%H:%M:%S", time.localtime())}', file = open(fo, 'a'))
-            
+            gene_rank = int(rank_df.loc[rank_df['omimId'] == d, 'geneRank'].reset_index(drop=True)[0])            
             disease_rank = int(rank_df.loc[rank_df['omimId'] == d, 'diseaseRank'].reset_index(drop=True)[0])
 
             d_data['geneRank'] = gene_rank # Step can be duplicated, but oh well
             d_data['diseaseRank'] = disease_rank
-
-    # for d in case.case_data['diseases']:
-    #     d.update({
-    #         'geneRank': int(rank_df.loc[rank_df['omimId'] == d['omimId'], 'geneRank'].reset_index(drop=True)[0]),
-    #         'diseaseRank': int(rank_df.loc[rank_df['omimId'] == d['omimId'], 'diseaseRank'].reset_index(drop=True)[0])
-    #     })
-
 
     return case.case_data

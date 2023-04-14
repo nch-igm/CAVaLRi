@@ -2,8 +2,6 @@ import math
 import json
 from scipy.stats import norm, skewnorm
 import pickle
-import time
-fo = '/Users/rsrxs003/projects/CAVaLRi_/catch_some_output.txt'
 
 
 def get_diagnostic_probability(cLR, prior, pos_mu, pos_std, a, loc, scale):
@@ -41,12 +39,7 @@ def calculate_compositeLR(case):
             d_data['moiLR'] = case.moiLRs[d]
             
             # Append compositeLR
-            try:
-                d_data['compositeLR'] = d_data['phenoLR_log10'] * config['phenoLR_scalar'] + d_data['genoLR'] * config['genoLR_scalar'] + d_data['moiLR'] * config['moiLR_scalar']
-            except:
-                print(f'ERROR {g} {d} {time.strftime("%H:%M:%S", time.localtime())}', file = open(fo, 'a'))
-
-            
+            d_data['compositeLR'] = d_data['phenoLR_log10'] * config['phenoLR_scalar'] + d_data['genoLR'] * config['genoLR_scalar'] + d_data['moiLR'] * config['moiLR_scalar']
 
             # Calculate post-test probability
             # numerator = d['pretest_probability'] * 10**d['compositeLR']

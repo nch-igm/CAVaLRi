@@ -4,8 +4,6 @@ import json
 import re
 import vcf
 import time
-import pickle
-fo = '/Users/rsrxs003/projects/CAVaLRi_/catch_some_output.txt'
 
 
 def get_trio_genotype(case, chrom, pos):
@@ -45,11 +43,7 @@ def calculate_moiLR(case):
 
     config = case.cohort.config
 
-    # with open('/Users/rsrxs003/projects/CAVaLRi_/case_data.json','w') as f:
-    #     json.dump(case.case_data, fp = f, indent = 4)
-
     # Intialize result dict
-    # moiLRs = {d:0 for d in case.case_data['diseases']}
     res = {}
 
     # Read in inheritance data frame
@@ -63,15 +57,6 @@ def calculate_moiLR(case):
         # Go through each variant
         for chrom_pos, s_counts in alt_counts.items():
 
-            # Parse out chromosome and position
-            # chrom = chrom_pos[:chrom_pos.find(':')]
-            # for j in range(chrom_pos.find(':'), len(chrom_pos)):
-            #     try:
-            #         x = int(chrom_pos[j])  # Validate that j is an integer
-            #         end_pos = j + 1
-            #     except:
-            #         pass
-            # pos = chrom_pos[chrom_pos.find(':') + 1: end_pos]
             chrom, pos = f"chr{chrom_pos.split('-')[0]}", chrom_pos.split('-')[1]
 
             # Get trio genotypes
@@ -119,9 +104,6 @@ def calculate_moiLR(case):
         de_novo_count = sum([var['proband'] for var in alt_counts.values() if var['mother'] == 0 and var['father'] == 0])
 
         # Go through each disaese assocaited with the gene
-        with open('/Users/rsrxs003/projects/CAVaLRi_/case_moi.pickle','wb') as f:
-            pickle.dump(case, f)
-
         for d in case.case_data['genes'][gene].keys():
             
             # Get MOI

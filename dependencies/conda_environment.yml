@@ -1,6 +1,8 @@
 name: cavalri_3.6
 channels:
   - defaults
+  - bioconda
+  - conda-forge
 dependencies:
   - python=3.6.5
   - snakemake
@@ -15,4 +17,3 @@ dependencies:
   - matplotlib
   - seaborn
   - spliceai
-prefix: /Users/rsrxs003/miniconda3/envs/cavalri_/envs/cavalri_3.6

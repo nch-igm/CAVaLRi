@@ -4,8 +4,6 @@ import pandas as pd
 import json
 import math
 from scipy.stats import poisson
-import time
-fo = '/Users/rsrxs003/projects/CAVaLRi_/catch_some_output.txt'
 
 
 def calculate_genoLR(genotype):

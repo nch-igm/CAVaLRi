@@ -5,11 +5,10 @@ import subprocess
 import logging
 import pandas as pd
 import argparse
-import time
-fo = '/Users/rsrxs003/projects/CAVaLRi_/catch_some_output.txt'
 
 
-def run_spliceai_argparser():
+
+def run_mutpred_argparser():
     parser = argparse.ArgumentParser(prog=run_spliceai.__name__, description="")
     parser.add_argument('--input', help="S3 path to varhouse output parquet", required=True)
     parser.add_argument('--output', help="S3 path to varhouse output parquet", required=True)
@@ -27,11 +26,9 @@ def worker(command):
         output = e.output
     return output.decode('utf-8')#.replace('\n','')
 
-def run_spliceai(genotype):
+def run_mutpred(genotype):
 
     config = genotype.case.cohort.config
-    print(f'Checkpoint: 10.1 {time.strftime("%H:%M:%S", time.localtime())}', file = open(fo, 'a'))
-
 
     """Run mutpredindel predictions pipeline."""
     # parser = run_spliceai_argparser()
@@ -54,25 +51,20 @@ def run_spliceai(genotype):
 
     # Download parquet from s3:
     # download_s3_file(args.input_excel, os.path.join(input_excel_folder, 'excel_output.xlsx'))
-    print(f'Checkpoint: 10.2 {time.strftime("%H:%M:%S", time.localtime())}', file = open(fo, 'a'))
 
     # Reduce the vcf to only include splice variants
     vcf_path = os.path.join(genotype.case.temp_dir,f'{genotype.case.case_id}.filtered.vcf.gz')
     spliceai_input_vcf = f"{vcf_path[:vcf_path.find('.vcf')]}.mutpredindel.vcf"
     cmd = f"bcftools filter -i 'INFO/Func.refGene==\"splicing\"' -Ov -o {spliceai_input_vcf} {vcf_path}"
     p = worker(cmd)
-    print(f'Checkpoint: 10.3: {cmd}. {time.strftime("%H:%M:%S", time.localtime())}', file = open(fo, 'a'))
-    print(f'Checkpoint: 10.31: {p}. {time.strftime("%H:%M:%S", time.localtime())}', file = open(fo, 'a'))
-
 
     # Run spliceai
     spliceai_output_vcf = f"{vcf_path[:vcf_path.find('.vcf')]}.spliceai_annotated.vcf"
     reference = os.path.join(genotype.case.cohort.root_path,config['reference_path'])
     cmd = f"spliceai -I {spliceai_input_vcf} -O {spliceai_output_vcf} -R {reference} -A grch38"
     p = worker(cmd)
-    print(f'Checkpoint: 10.4: {cmd}. {time.strftime("%H:%M:%S", time.localtime())}', file = open(fo, 'a'))
-    print(f'Checkpoint: 10.41: {p}. {time.strftime("%H:%M:%S", time.localtime())}', file = open(fo, 'a'))
 
+    # Read in results
     cols = ['CHROM','POS','ID','REF','ALT','QUAL','FILTER','INFO']
     spliceai_df = pd.read_csv(spliceai_output_vcf, sep = '\t', comment = '#')
     spliceai_df.columns = cols + [i for i in range(len(spliceai_df.columns) - len(cols))]

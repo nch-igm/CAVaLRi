@@ -4,8 +4,7 @@ import re
 import pandas as pd
 import json
 import obonet
-import time
-fo = '/Users/rsrxs003/projects/CAVaLRi_/catch_some_output.txt'
+
 
 sys.path.append('/Users/rsrxs003/projects/LIRICAL')
 # from hpo_walk import ontology
@@ -189,13 +188,8 @@ def score_phenotypes(case):
     with open(config['hpo_bkgd_frequencies'], 'r') as json_file:
         bkgd_freq = json.load(json_file)
 
-    print(f'Checkpoint: 8 {time.strftime("%H:%M:%S", time.localtime())}', file = open(fo, 'a'))
-
-
     # Intialize frequency map
     F = build_propagated_frequency_map()  #TODO Find a way to provide HPOA
-
-    print(f'Checkpoint: 9 {time.strftime("%H:%M:%S", time.localtime())}', file = open(fo, 'a'))
 
     # Read in the HPOA
     # hpoa_path = os.path.join(case.cohort.root_path, config['hpoa'])
@@ -205,8 +199,6 @@ def score_phenotypes(case):
     # hpoa = hpoa[hpoa_cols].rename(columns = {'#DatabaseID': 'DatabaseID'})
 
     # Score the phenotypes for every disease
-    # print(case.case_data)
-    # print(case.case_data['genes'].values())
     for v in case.case_data['genes'].values():
         for omim in v.keys():
 
@@ -217,9 +209,8 @@ def score_phenotypes(case):
             # F[D] needs to go into score_phenotypes
             try:
                 v[omim]['phenotype_scores'] = score_disease_phenotype(F[f'OMIM:{omim}'], bkgd_freq, case)
-                print(v[omim]['phenotype_scores'], file = open('/Users/rsrxs003/projects/CAVaLRi_/catch_some_phenos.txt', 'w'))
             except Exception as e:
-                print(f'Checkpoint: 9 ERROR:{e} {time.strftime("%H:%M:%S", time.localtime())}', file = open(fo, 'a'))
+                # print(f'Checkpoint: 9 ERROR:{e} {time.strftime("%H:%M:%S", time.localtime())}', file = open(fo, 'a'))
                 pass
 
     return case.case_data

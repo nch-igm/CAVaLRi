@@ -4,8 +4,6 @@ import pandas as pd
 import json
 import math
 from scipy.stats import poisson
-import time
-fo = '/Users/rsrxs003/projects/CAVaLRi_/catch_some_output.txt'
 
 
 def get_pathogenic_variants(genotype):
@@ -123,7 +121,5 @@ def get_pathogenic_variants(genotype):
         bad_inframe_indel_df[index_cols],
         clinvar_path_df[index_cols]
     ]).drop_duplicates().reset_index(drop=True)
-
-    print(f'Checkpoint: 12 {time.strftime("%H:%M:%S", time.localtime())}', file = open(fo, 'a'))
     
     return var_df.merge(pathogenic_df, on = index_cols)
