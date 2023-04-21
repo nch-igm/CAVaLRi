@@ -15,7 +15,7 @@ def worker(cmd):
     return out.decode() if out else err.decode()
 
 
-def read_variants(genotype):
+def read_filtered_variants(genotype):
 
     config = genotype.case.cohort.config
 
@@ -80,7 +80,6 @@ def read_variants(genotype):
         var_list.append(var_row)
     
     df = pd.DataFrame(var_list, columns = columns, dtype=str)
-    df.to_csv('/Users/rsrxs003/projects/CAVaLRi_/example/var_df.csv', index = False)
     # df = df['INFO']
     # df.str.split('&').apply(pd.Series, 1)
     return df

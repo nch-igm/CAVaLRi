@@ -2,8 +2,10 @@ from .normalize_variants import *
 from .annotate_variants import *
 from .filter_variants import *
 from .read_annotated_variants import *
-from .read_variants import *
+from .read_filtered_variants import *
 from .score_variants import *
-from .get_pathogenic_variants import *
+from .filter_pathogenic_variants import *
 from .calculate_genoLR import *
 from .spliceai_annotation import *
+from .mutpredindel_annotation import *
+from .snpdogg_annotation import *

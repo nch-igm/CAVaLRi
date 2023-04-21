@@ -3,7 +3,7 @@ import re
 import sys
 import pandas as pd
 sys.path.append('.')
-from .read_variants import *
+from .read_filtered_variants import *
 
 
 def parse_info(row):

@@ -1,61 +1,57 @@
-import json
+import sys
+import math
 import pandas as pd
+
 
 
 def calculate_phenotypeLR(case):
 
     config = case.cohort.config
 
-    # Get HPO Ranks
-    hpo_rank_df = pd.DataFrame(data = case.case_data['hpoRankings']).sort_values(by='hpoRank').reset_index(drop=True)
+    for gene, gene_diseases in case.case_data['genes'].items():
+        for d, d_data in gene_diseases.items():
 
-    # Intialize result dict
-    res = {
-        'subjectId': case.case_id
-    }
+            try:
 
-    # For each OMIM ID, find the maximium phenotype likelihood ratio
+                # Initialize a data frame to capture composite likelihood ratios for each iteration
+                # run_df = pd.DataFrame(columns = ['hpo_total', 'phenoLR'])
+                hpo_totals, composite_phenoLRs = [], []
 
-    for d in case.case_data['diseases']:
+                # Get the necessary phenotype rank and LR data
+                pheno_df = pd.DataFrame(d_data['phenotype_scores']).T
+                pheno_rank_df = pd.DataFrame(case.phenotype.phenotypes).T
+                pheno_rank_df = pheno_rank_df.merge(pheno_df, left_index = True, right_index = True)[['rank', 'LR']]
+                
+                for hpo_total in range(config['hpo_lower_bound'], config['hpo_upper_bound'] + 1):
+                    
+                    composite_phenoLR = pheno_rank_df.loc[pheno_rank_df['rank'] <= hpo_total]['LR'].product()
 
-        # Initialize OMIM specific data frame to capture each HPO term list phenoLR
-        run_df = pd.DataFrame(columns = ['hpo_total', 'phenoLR'])
+                    # Add HPO term count, compositeLR and post-test probability to the run data frame
+                    # run_df = run_df.append({
+                    #     'hpo_total': hpo_total,
+                    #     'phenoLR': composite_phenoLR
+                    # }, ignore_index = True)
 
-        # Iterate through each HPO term lists length and calculate compositeLR and post-test probability,
-        # then take the max of each.  We also need to grab the length of the list when the max was achieved.
+                    hpo_totals.append(hpo_total)
+                    composite_phenoLRs.append(composite_phenoLR)
+                
+                run_df = pd.DataFrame({'hpo_total':hpo_totals, 'phenoLR':composite_phenoLRs})
 
-        for hpo_total in range(config['hpo_lower_bound'], config['hpo_upper_bound'] + 1):
-        # for hpo_total in range(len(hpo_rank_df.index), len(hpo_rank_df.index) + 1):
-            
-            # Sum together hpoLRs, grouped by omimId
-            omim_pheno_df = pd.DataFrame(data = d['pheno_data'])
-            omim_pheno_df = hpo_rank_df.merge(omim_pheno_df)
-            # print(omim_pheno_df)
-            phenoLR = omim_pheno_df.loc[0:hpo_total-1]['hpoLR'].sum()
+                # Get maximum values of compositeLR and total phenotypes considered from the run data frame
+                max_phenoLR = run_df['phenoLR'].max()
+                                
+                # Get positions where the max phenoLR is occuring
+                phenoCount = [str(i+config['hpo_lower_bound']) for i, j in enumerate(run_df['phenoLR']) if j == max_phenoLR]
+                phenoCount = ",".join(phenoCount)
 
-            # Add HPO term count, compositeLR and post-test probability to the run data frame
-            run_df = pd.concat([run_df, pd.DataFrame({
-                'hpo_total': hpo_total,
-                'phenoLR': phenoLR
-            }, index = [0])])
-
-        # Get maximum values of compositeLR and postTestProbability from the run data frame
-        # print(d['gene_data']['gene'])
-        # print(omim_pheno_df)
-        # print(run_df)
-        max_phenoLR = run_df['phenoLR'].max()
-        # print(max_phenoLR)
-        # Get positions where the max phenoLR is occuring
-        hpoCount = [str(i+config['hpo_lower_bound']) for i, j in enumerate(run_df['phenoLR']) if j == max_phenoLR]
-        hpoCount = ",".join(hpoCount)
-
-        # Append OMIM ID, PhenoLR and associated HPO set length toresult
-        res.update({
-            d['omimId']: {
-                'phenoLR': round(max_phenoLR, 3),
-                'hpoCount': hpoCount
-            }
-        })
+                # Append OMIM ID, PhenoLR and associated HPO set length to result
+                gene_diseases[d]['phenoLR_log10'] = round(math.log(max_phenoLR, 10), 3)
+                gene_diseases[d]['phenoCount'] = phenoCount
+                            
+            except Exception as e:
+                # print(f"An exception: {e} occured at {time.strftime('%H:%M:%S', time.localtime())}: {d}", file = open(fo, 'a'))
+                gene_diseases[d]['phenoLR_log10'] = 0
+                gene_diseases[d]['phenoCount'] = None
 
     # Return the result data frame
-    return res
+    return case.case_data

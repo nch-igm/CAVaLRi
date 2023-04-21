@@ -21,13 +21,15 @@ def calculate_genoLR(genotype):
     # Intialize result dict
     res = {}
 
-    for g in genotype.variants['GENE'].unique():
+    pathogenic_df = genotype.pathogenic_variants.copy()
+
+    for g in pathogenic_df['GENE'].unique():
         
-        g_df = genotype.variants[genotype.variants['GENE'] == g]
+        g_df = pathogenic_df[pathogenic_df['GENE'] == g]
 
         # Calculate cumulative scores between all passing variants
-        # score = g_df['conservation_score'].sum()
-        score = len(g_df.index)
+        score = g_df['score'].sum()
+        # score = len(g_df.index)
     
         # # Get maximum pathogenicity score
         # max_path_score = 0

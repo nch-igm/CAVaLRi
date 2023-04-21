@@ -1,7 +1,6 @@
 import sys
 from ..genotype import Genotype
 from ..phenotype import Phenotype
-from .lirical_methods import *
 from .methods import *
 
 
@@ -31,14 +30,12 @@ class Case:
         self.mother = mother
         self.father = father
     
-    # def run_lirical(self):
-    #     self.lirical_tsv_output, self.lirical_html_output = run_lirical(self)
+
+    def validate_inputs(self):
+        self.validation_status = validate_inputs(self)
 
     def build_case_data(self):
         self.case_data = build_case_data(self)
-    
-    # def calculate_genoLR(self):
-    #     self.genoLRs = calculate_genoLR(self)
 
     def calculate_moiLR(self):
         self.moiLRs = calculate_moiLR(self)

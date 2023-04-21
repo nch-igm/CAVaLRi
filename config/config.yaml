@@ -5,17 +5,25 @@ exomiser_data: /igm/projects/exomiser/exomiser-cli-13.1.0/data/2209_hg38
 lirical_executable: dependencies/LIRICAL.jar
 lirical_data_path: dependencies/lirical_data
 lirical_yaml_template: data/template.yaml
-reference_path: dependencies/hg38upper.fa
+reference_path: dependencies/hg38.fa
+hpo_walk_dir: /igm/projects/
+common_variants: data/WES_common_variants.csv
+mutpredindel: /igm/home/rsrxs003/mutpred-indel/mutpredindel/
+muptredindel_MCR: /igm/home/rsrxs003/mutpred-indel/mutpredindel/MCR2/v91/
+snpdogg: dependencies/snpdogg_skinny
+
 
 ## DATA TABLES ##
 gene_info: data/Homo_sapiens_gene_info.tsv
 moi_db: data/moi.csv
-hpo: /Users/rsrxs003/projects/LIRICAL/data/hp.obo
-hpoa: /Users/rsrxs003/projects/LIRICAL/data/phenotype.hpoa
-hpo_bkgd_frequencies: /Users/rsrxs003/projects/LIRICAL/data/hpo-frequency-wes.json
+hpo: data/hp.obo
+hpoa: data/phenotype.hpoa
+hpo_bkgd_frequencies: data/hpo-frequency-wes.json
+mim2gene: data/mim2gene_medgen
 pheno_score_source: data/HPO_with_gene_IC.csv
 
 ## CAVaLRi SETTINGS ##
+run_mutpredindel: False
 genome_build: hg38 
 hpo_lower_bound: 5
 hpo_upper_bound: 15

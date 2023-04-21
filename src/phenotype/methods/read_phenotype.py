@@ -24,6 +24,10 @@ def read_phenotypes(case):
     for idx, row in pheno_df.head(config['hpo_upper_bound']).iterrows():
 
         # Add HPO ID to the result
-        res[row['HPO ID']] = row['rank']
+        res[row['HPO ID']] = {
+            'IC': row['IC'],
+            'name': row['term_name'],
+            'rank': row['rank']
+        }
         
     return res, pheno_df

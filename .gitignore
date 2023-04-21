@@ -13,8 +13,6 @@ output/*
 dependencies/*
 data/*
 src/workflow/config.yaml
-!dependencies/annovar
-!*/dependencies/annotate_variation.pl
 !dependencies/conda_environment.yml
 !data/Homo_sapiens_gene_info.tsv
 !data/moi.csv
@@ -32,5 +30,4 @@ example/cohort/*
 !example/cohort/example2.pheno.csv
 !example/cohort/example2.vcf.gz
 !example_diagnostic.csv
-dependencies/annovar/humandb
 .vscode

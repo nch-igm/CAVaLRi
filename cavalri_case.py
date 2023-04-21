@@ -11,45 +11,45 @@ import shlex
 import argparse
 import pickle
 import uuid
-import time
-fo = '/Users/rsrxs003/projects/CAVaLRi_/catch_some_output.txt'
-
-def worker(cmd, err = False):
-    parsed_cmd = shlex.split(cmd)
-    p = subprocess.Popen(parsed_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    p.wait()
-    out, err = p.communicate()
-    return err.decode() if err else out.decode()
+import yaml
+fo = '/igm/projects/CAVaLRi/test.txt'
 
 
-def validate_case(inputs):
+def worker(command):
+    """
+    Runs a bash command using subprocess module
+    """
+    try:
+        output = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError as e:
+        output = e.output
+    return output.decode('utf-8')
 
-    path_variables = ['phenotype','vcf']
-    for pv in path_variables:
-        if not os.path.exists(inputs[pv]):
-            return pv
-    return ''
 
+def update_config(temp_pickle_path, config_template_path, 
+                    root_dir, config_output_path):
+    """
+    inputs:
+        temp_pickle_path (str) - filepath to a cavalri.Case object.
+        workflow_config_path(str): path to a local yaml file that informs a 
+        cavalri.Workflow instance.
+    outputs:
+        Boolean, True if no errors were encountered, False otherwise.
+    """
 
-def validate_samples(inputs):
-
-    # Initialize result
-    res = {}
-    provided_samples = {k:v for k,v in {'proband':inputs['proband'], 'mother':inputs['mother'], 'father':inputs['father']}.items() if v != ''}
-
-    # Read in vcf
-    vcf_reader = vcf.Reader(filename = inputs['vcf'], compressed=True, encoding='ISO-8859-1')
-
-    # Get the first row and parse samples
+    # Read in the yaml
+    with open(config_template_path,'r') as f:
+        cfg = yaml.load(f, Loader=yaml.FullLoader)
     
-    for var in vcf_reader:
-        for sample in var.samples:
-            for k,v in provided_samples.items():
-                if v == sample.sample:
-                    res[k] = sample.sample
-        break
+    # Add data
+    cfg['root_dir'] = root_dir
+    cfg['temp_pickle'] = temp_pickle_path
+    cfg['temp_dir'] = os.path.dirname(temp_pickle_path)
+    cfg['case'] = True
 
-    return True if provided_samples == res else False, {k:v for k,v in provided_samples.items() if k not in res.keys()}
+    # Overwrite yaml
+    with open(config_output_path,'w') as f:
+        cfg = yaml.dump(cfg, f)
 
 
 def main(input, output_dir):
@@ -58,14 +58,20 @@ def main(input, output_dir):
     output_dir = os.path.dirname(input) if not output_dir else output_dir
     cohort = Cohort(os.path.dirname(input), output_dir, '', config)
 
-    print(f'Checkpoint: 1 {time.strftime("%H:%M:%S", time.localtime())}', file = open(fo, 'a'))
     # Add case
     with open(input,'r') as d:
         inputs = json.load(d)
     case = os.path.basename(input)
     case = case[:case.find('.json')]
-    
 
+    required_keys = ['phenotype','vcf','biological_sex','proband']
+
+
+    for rk in required_keys:
+        if rk not in inputs.keys():
+            print(f'Required key: {rk} was not provided in the CAVaLRi input file')
+            sys.exit(1)
+    
     # Check for parents
     for parent in ['mother','father']:
         if parent in inputs.keys():
@@ -73,77 +79,79 @@ def main(input, output_dir):
                 inputs[parent] = 'Unavailable'
         else:
             inputs[parent] = 'Unavailable'
+    
+    # Intialize case object
+    cs = Case(
+        cohort = cohort, 
+        case_id = case,
+        phenotype_path = inputs['phenotype'],
+        genotype_path = inputs['vcf'],
+        biological_sex = inputs['biological_sex'],
+        proband = inputs['proband'],
+        mother = inputs['mother'],
+        father = inputs['father']
+    )
 
-    validated_input = validate_case(inputs)
-    print(f'Checkpoint: 2 {time.strftime("%H:%M:%S", time.localtime())}', file = open(fo, 'a'))
+    # Set up a temporary directory
+    temp_folder = os.path.abspath(os.path.join(output_dir, str(uuid.uuid4())))
+    cs.temp_dir = temp_folder
+    if not os.path.exists(temp_folder):
+        os.mkdir(temp_folder)
 
-    samples_pass, samples = validate_samples(inputs)
-    if validated_input != '':
-        print(f"Validation failed: {case}, {inputs[validated_input]} not a valid path")
+    # cohort.add_case(cs)
 
-    elif not samples_pass:
-        print(f"Validation failed: the following samples were not found in the vcf: {samples}")
+    # Pickle the case
+    case_pickle_path = os.path.join(temp_folder, f'{cs.case_id}.pickle')
+    with open(case_pickle_path, 'wb') as f:
+        pickle.dump(cs, file = f)
 
-    else:
-        cs = Case(
-            cohort = cohort, 
-            case_id = case,
-            phenotype_path = inputs['phenotype'],
-            genotype_path = inputs['vcf'],
-            biological_sex = inputs['biological_sex'],
-            proband = inputs['proband'],
-            mother = inputs['mother'],
-            father = inputs['father']
-        )
+    # Run case
+    full_pickle_path = os.path.join(temp_folder, f'{cs.case_id}.full.pickle')
+    script_path = os.path.join(cohort.root_path, 'src/workflow/scripts/run_case.py')
+    conda_bin = os.path.join(sys.exec_prefix, 'bin')
 
-        # Set up the temporary directory
-        temp_folder = os.path.abspath(os.path.join(output_dir, str(uuid.uuid4())))
-        cs.temp_dir = temp_folder
-        if not os.path.exists(temp_folder):
-            os.mkdir(temp_folder)
-        
-        print(f'Temp directory: {temp_folder}', file = open(fo, 'a'))
+    # Write temp file path to workflow config.yaml
+    workflow_path = os.path.join(cohort.root_path, 'src/workflow')
+    workflow_config_path = os.path.join(workflow_path, 'config.yaml')
+    config_output_path = os.path.join(cs.temp_dir, 'config.yaml')
+    update_config(case_pickle_path, workflow_config_path, cohort.root_path, config_output_path)
+    
+    # Run snakemake pipeline
+    cmd = f"cd {workflow_path} && {os.path.join(conda_bin, 'snakemake')} --cores {config['cores']} --configfile {config_output_path}"
+    p = worker(cmd)
+    with open(fo, 'a') as f:
+        print(cmd, file = f)
+        print(p, file = f)
 
+    if not os.path.exists(full_pickle_path):
+        print(p)
+        sys.exit(1)
 
-        # cohort.add_case(cs)
+    # Load result
+    with open(full_pickle_path, 'rb') as f:
+        cs = pickle.load(f)
 
-        # Pickle the case
-        case_pickle_path = os.path.join(temp_folder, f'{cs.case_id}.pickle')
-        with open(case_pickle_path, 'wb') as f:
-            pickle.dump(cs, file = f)
+    # Add scored phenotypes to case data
+    cs.case_data['phenotypes'] = cs.phenotype.phenotypes
 
-        # Run case
-        full_pickle_path = os.path.join(temp_folder, f'{cs.case_id}.full.pickle')
-        script_path = os.path.join(cohort.root_path, 'src/workflow/scripts/run_case.py')
-        conda_bin = os.path.join(sys.exec_prefix, 'bin')
-        print(f'Checkpoint: 3 {time.strftime("%H:%M:%S", time.localtime())}', file = open(fo, 'a'))
+    # Write output files
+    with open(os.path.join(output_dir, f'{cs.case_id}.cavalri.json'), 'w') as f:
+        json.dump(cs.case_data, f, indent = 4)
+    cs.case_summary.to_csv(os.path.join(output_dir, f'{cs.case_id}.cavalri.summary.csv'), index = False)
 
-        p = worker(f"{os.path.join(conda_bin, 'python')} {script_path} --input {case_pickle_path} -o {full_pickle_path}", err=True)
+    # Remove temporary directory
+    worker(f'rm -Rf {temp_folder}')
 
-        if not os.path.exists(full_pickle_path):
-            print(p)
-            sys.exit(1)
+    # Get versions of dependencies
+    # lirical_version = worker(f"java -jar {os.path.join(cs.cohort.root_path,  config['lirical_executable'])} --version")
+    # hpo_version = worker(f"grep #date: {os.path.join(cs.cohort.root_path,  config['lirical_data_path'], 'phenotype.hpoa')}")
+    # config['LIRICAL version'] = lirical_version.strip()
+    # config['HPOA version'] = hpo_version.split(' ')[-1].strip()
 
-        # Load result
-        with open(full_pickle_path, 'rb') as f:
-            cs = pickle.load(f)
-        with open(os.path.join(output_dir, f'{cs.case_id}.cavalri.json'), 'w') as f:
-            json.dump(cs.case_data, f, indent = 4)
-        cs.case_summary.to_csv(os.path.join(output_dir, f'{cs.case_id}.cavalri.summary.csv'), index = False)
-
-        # Remove temporary directory
-        worker(f'rm -Rf {temp_folder}')
-
-        # Get LIRICAL and HPOA version
-        lirical_version = worker(f"java -jar {os.path.join(cs.cohort.root_path,  config['lirical_executable'])} --version")
-        hpo_version = worker(f"grep #date: {os.path.join(cs.cohort.root_path,  config['lirical_data_path'], 'phenotype.hpoa')}")
-        config['LIRICAL version'] = lirical_version.strip()
-        config['HPOA version'] = hpo_version.split(' ')[-1].strip()
-
-        # Create run log
-        log_path = os.path.join(output_dir,'config.json')
-        with open(log_path, 'w') as f:
-            json.dump(config, f, indent=4)
+    # Create run log
+    log_path = os.path.join(output_dir,'config.json')
+    with open(log_path, 'w') as f:
+        json.dump(config, f, indent=4)
 
         
 

@@ -5,8 +5,7 @@ import json
 import math
 from scipy.stats import poisson
 
-
-def get_pathogenic_variants(genotype):
+def filter_pathogenic_variants(genotype):
     """
     input:
         genotype -- CAVaLRi Genotype type object 
@@ -75,13 +74,14 @@ def get_pathogenic_variants(genotype):
     var_df['exon_func'] = var_df.apply(get_exon_func, axis = 1)
     var_df['clinvar_vus_sig'] = var_df.apply(get_clinvar_vus_sig, clinvar_sig = clinvar_sig, axis = 1)
     var_df['clinvar_path_sig'] = var_df.apply(get_clinvar_path_sig, clinvar_sig = clinvar_sig, axis = 1)
-    var_df.to_csv('/Users/rsrxs003/projects/CAVaLRi_/all_var.csv', index = False)
     null_df = var_df[var_df['exon_func'].isin(null_variants)]
+    null_df['score'] = 1
     snv_df = var_df[var_df['exon_func'].isin(snv_variants)]
     inframe_indel_df = var_df[var_df['exon_func'].isin(inframe_indel_variants)]
     splicing_df = var_df[var_df['func'].isin(splice_variants)]
     clinvar_vus_df = var_df[var_df['clinvar_vus_sig']]
     clinvar_path_df = var_df[var_df['clinvar_path_sig']]
+    clinvar_path_df['score'] = 1
     other_df = var_df[~(
         var_df['exon_func'].isin(null_variants)
             |
@@ -93,33 +93,21 @@ def get_pathogenic_variants(genotype):
     )]
 
     # Limit SNVs to only the ones that look bad
-    threshold = 0.8
-    def get_snv_score(row):
-        # return row['SNPdogg']
-        return 1
-    snv_df['score'] = snv_df.apply(get_snv_score, axis = 1)
-    bad_snv_df = snv_df[snv_df['score'] >= config['snpdogg_threshold']]
+    snv_df = snv_df.merge(genotype.snpdogg_annotations, how = 'left', on = ['CHROM','POS','REF','ALT']).fillna(0)
+    bad_snv_df = snv_df[snv_df['snpdogg_score'] >= config['snpdogg_threshold']].rename(columns = {'snpdogg_score':'score'})
 
     # Limit splicing variants to only the ones that look bad
-    splicing_scored_df = splicing_df.merge(genotype.spliceai_annotations, how = 'left', on = ['CHROM','POS','REF','ALT'])
-    bad_splicing_df = splicing_scored_df[splicing_scored_df['spliceai_score'] >= config['spliceai_threshold']]
+    splicing_scored_df = splicing_df.merge(genotype.spliceai_annotations, how = 'left', on = ['CHROM','POS','REF','ALT']).fillna(0)
+    bad_splicing_df = splicing_scored_df[splicing_scored_df['spliceai_score'] >= config['spliceai_threshold']].rename(columns = {'spliceai_score':'score'})
 
 
     # Limit inframe indels to only those that look bad
-    def get_inframe_sig(row):
-        # return json.loads(row['INFO'])['inframe_sig'][0]
-        return 0.2
-    inframe_indel_df['inframe_score'] = inframe_indel_df.apply(get_inframe_sig, axis = 1)
-    bad_inframe_indel_df = inframe_indel_df[inframe_indel_df['inframe_score'] >= config['mutpredindel_threshold']]
+    inframe_indel_df = inframe_indel_df.merge(genotype.mutpredindel_annotations, how = 'left', on = ['CHROM','POS','REF','ALT']).fillna(0)
+    bad_inframe_indel_df = inframe_indel_df[inframe_indel_df['mutpred_score'] >= config['mutpredindel_threshold']].rename(columns = {'mutpred_score':'score'})
 
     # Potentially pathogenic variant counts by category
-    index_cols = ['CHROM','POS','REF','ALT']
-    pathogenic_df = pd.concat([
-        null_df[index_cols],
-        bad_snv_df[index_cols],
-        bad_splicing_df[index_cols],
-        bad_inframe_indel_df[index_cols],
-        clinvar_path_df[index_cols]
-    ]).drop_duplicates().reset_index(drop=True)
+    index_cols = ['CHROM','POS','REF','ALT','score']
+    pathogenic_df = pd.concat([df[index_cols] for df in [null_df, bad_snv_df, bad_splicing_df, bad_inframe_indel_df, clinvar_path_df] if not df.empty])
+    pathogenic_df = pathogenic_df.drop_duplicates().reset_index(drop=True)
     
-    return var_df.merge(pathogenic_df, on = index_cols)
+    return var_df.merge(pathogenic_df, on = index_cols[:-1])

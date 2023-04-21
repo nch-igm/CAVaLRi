@@ -9,10 +9,14 @@ import pandas as pd
 
 
 def worker(cmd):
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell = True)
-    p.wait()
-    out, err = p.communicate()
-    return err.decode(), out.decode()
+    """
+    Runs a bash command using subprocess module
+    """
+    try:
+        output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError as e:
+        output = e.output
+    return output.decode('utf-8')
 
 
 def annotate_variants(genotype):
@@ -21,6 +25,8 @@ def annotate_variants(genotype):
 
     # Get genotype path
     genotype_basename = os.path.basename(genotype.genotype_path)
+    conda_bin = genotype.case.cohort.conda_bin
+    root_path = genotype.case.cohort.root_path
 
     # Determine output path
     output = os.path.join(genotype.case.temp_dir, f"{genotype.case.case_id}.annotated")
@@ -29,9 +35,10 @@ def annotate_variants(genotype):
 
     # Run annovar
     command = f"""
-        perl {os.path.join(os.path.join(genotype.case.cohort.root_path, config['annovar_scripts']),'table_annovar.pl')} \
+            {os.path.join(conda_bin, 'perl')} \
+            {os.path.join(os.path.join(root_path, config['annovar_scripts']),'table_annovar.pl')} \
             -vcfinput {genotype.genotype_path} \
-            {os.path.join(genotype.case.cohort.root_path, config['annovar_db'])} \
+            {os.path.join(root_path, config['annovar_db'])} \
             -buildver {config['genome_build']} \
             --out {output} \
             -remove \
@@ -42,25 +49,7 @@ def annotate_variants(genotype):
             && tabix {unzipped_out}.gz
     """
 
-    command = f"""
-        perl {os.path.join(os.path.join(genotype.case.cohort.root_path, config['annovar_scripts']),'table_annovar.pl')} \
-            -vcfinput {genotype.genotype_path} \
-            /Users/rsrxs003/projects/CAVaLRi/dependencies/human_db \
-            -buildver {config['genome_build']} \
-            --out {output} \
-            -remove \
-            -protocol refGene,clinvar_20220320 \
-            -operation g,f -nastring . \
-            && mv {temp_out} {unzipped_out} \
-            && bgzip {unzipped_out} \
-            && tabix {unzipped_out}.gz
-    """
-
-    e,o = worker(command)
-    with open('/Users/rsrxs003/projects/CAVaLRi_/example/check.txt','w') as f:
-        print(e, file = f)
-        print('\n', file = f)
-        print(o, file = f)
+    p = worker(command)
 
     return f"{output}.vcf.gz"
     

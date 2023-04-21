@@ -3,7 +3,7 @@ import pickle
 import argparse
 import json
 import os
-
+import time
 
 def main(input, output):
 
@@ -23,27 +23,11 @@ def main(input, output):
     case.genotype.read_filtered_variants()
     case.genotype.score_pathogenicity()
     case.genotype.filter_pathogenic_variants()
-    case.genotype.get_pathogenic_variants()
+
 
     # Build case data
     case.build_case_data()
 
-    # Process phenotypes
-    case.phenotype.read_phenotypes()
-    case.phenotype.score_phenotypes()
-    case.phenotype.calculate_phenotypeLR()
-
-    # Process genotype likelihoods
-    case.genotype.calculate_genoLR()
-
-    # Process mode of inheritence likelihoods
-    case.calculate_moiLR()
-
-    # Run aggregate methods
-    case.calculate_compositeLR()
-    case.add_tp()
-    case.add_rankings()
-    case.build_case_summary()
 
     # Save the processed case object
     with open(output, 'wb') as f:

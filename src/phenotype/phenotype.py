@@ -5,7 +5,7 @@ class Phenotype:
 
     # INITIALIZE
     def __init__(self, case, phenotype_path):
-        self.phenotype_path = os.path.abspath(phenotype_path)
+        self.phenotype_path = os.path.join(case.cohort.root_path, phenotype_path)
         self.case = case
 
     def read_phenotypes(self):

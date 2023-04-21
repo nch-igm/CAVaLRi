@@ -77,18 +77,21 @@ def synonymous_filter(var):
 def filter_variants(genotype):
 
     config = genotype.case.cohort.config
+    conda_bin = genotype.case.cohort.conda_bin
+    root_path = genotype.case.cohort.root_path
 
+    # Set paths
+    input_vcf_path = os.path.join(genotype.case.cohort.root_path, genotype.genotype_path)
+    filtered_vcf_path = os.path.join(genotype.case.temp_dir, f"{genotype.case.case_id}.filtered.vcf")
+    
     # Read in the vcf
-    print(os.path.join(genotype.case.cohort.root_path, genotype.genotype_path))
-    vcf_reader = vcf.Reader(filename = os.path.join(genotype.case.cohort.root_path, genotype.genotype_path), compressed=True, encoding='ISO-8859-1')
-    filtered_path = os.path.join(genotype.case.temp_dir, f"{genotype.case.case_id}.filtered.vcf")
-    vcf_writer = vcf.Writer(open(filtered_path, 'w'), vcf_reader)
-
+    vcf_reader = vcf.Reader(filename = input_vcf_path, compressed=True, encoding='ISO-8859-1')
+    vcf_writer = vcf.Writer(open(filtered_vcf_path, 'w'), vcf_reader)
 
     # Read in IGM variant frequencies
-    igm_freq_path = '/igm/home/rsrxs003/CAVaLRi/data/WES_common_variants.csv'
+    igm_freq_path = os.path.join(root_path, config['common_variants'])
     if os.path.exists(igm_freq_path):
-        igm_common_df = pd.read_csv()
+        igm_common_df = pd.read_csv(igm_freq_path)
         def get_var_id(row):
             return f"chr{row['CHROM']}_{row['POS']}_{row['REF']}_{row['ALT']}"
         igm_common_df['var_id'] = igm_common_df.apply(get_var_id, axis = 1)
@@ -126,6 +129,6 @@ def filter_variants(genotype):
     
     # Compress vcf
     vcf_writer.close()
-    worker(f'bgzip {filtered_path}')
-    worker(f"tabix {filtered_path}.gz")
-    return f"{filtered_path}.gz"
+    worker(f"{os.path.join(conda_bin, 'bgzip')} {filtered_vcf_path}")
+    worker(f"{os.path.join(conda_bin, 'tabix')} {filtered_vcf_path}.gz")
+    return f"{filtered_vcf_path}.gz"

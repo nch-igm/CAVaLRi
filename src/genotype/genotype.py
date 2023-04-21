@@ -1,5 +1,7 @@
 from .methods import *
 import os
+import time
+
 
 class Genotype:
     """
@@ -21,7 +23,7 @@ class Genotype:
     # INITIALIZE
     def __init__(self, case, genotype_path):
         # self.genome_build = genome_build
-        self.genotype_path = os.path.abspath(genotype_path)
+        self.genotype_path = os.path.join(case.cohort.root_path, genotype_path)
         self.case = case
 
     # METHODS
@@ -34,14 +36,16 @@ class Genotype:
     def filter_variants(self):
         self.genotype_path = filter_variants(self)
     
-    def read_variants(self):
-        self.variants = read_variants(self)
+    def read_filtered_variants(self):
+        self.variants = read_filtered_variants(self)
     
-    def get_scoring_annotations(self):
+    def score_pathogenicity(self):
         self.spliceai_annotations = run_spliceai(self)
+        self.mutpredindel_annotations = run_mutpredindel(self)
+        self.snpdogg_annotations = get_snpdogg(self)
 
-    def get_pathogenic_variants(self):
-        self.pathogenic_variants = get_pathogenic_variants(self)
+    def filter_pathogenic_variants(self):
+        self.pathogenic_variants = filter_pathogenic_variants(self)
     
     def calculate_genoLR(self):
         self.genotype_LR = calculate_genoLR(self)

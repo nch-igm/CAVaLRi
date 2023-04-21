@@ -1,313 +1,272 @@
 import os
 import pandas as pd
+import json
+import re
+import vcf
+import time
+
+
+def get_trio_genotype(case, chrom, pos):
+
+    proband, mother, father = 0, 0, 0
+    vcf_reader = vcf.Reader(filename = os.path.join(case.temp_dir, f'{case.case_id}.filtered.vcf.gz'), compressed=True, encoding='ISO-8859-1')
+    for i, s in enumerate(vcf_reader.samples):
+        parent_patterns = {
+            'proband': case.proband,
+            'mother': case.mother,
+            'father': case.father
+            }
+        if re.search(parent_patterns['proband'].lower(), s.lower()):  
+            proband = (i, s)
+        if re.search(parent_patterns['mother'].lower(), s.lower()):
+            mother = (i, s)
+        if re.search(parent_patterns['father'].lower(), s.lower()):
+            father = (i, s)
+    res = []
+    query = vcf_reader.fetch(chrom = chrom, start = pos - 1, end = pos)
+    for q in query:
+        for col in [proband, mother, father]:
+            if col != 0:
+                res.append(q.samples[col[0]]['GT'])
+            else:
+                res.append('Unavailable')
+        break
+
+    return {
+        'proband': res[0],
+        'mother': res[1],
+        'father': res[2]
+    }
+
 
 def calculate_moiLR(case):
 
     config = case.cohort.config
 
-    # Get available parental samples
-    first_gene = list(case.case_data['genes'].keys())[0]
-    samples = set(['PROBAND', 'MOTHER', 'FATHER']).intersection(set(case.case_data['genes'][first_gene]['variants'][0].keys()))
+    # Intialize result dict
+    res = {}
+
+    # Read in inheritance data frame
+    moi_df = pd.read_csv(os.path.join(case.cohort.root_path, config['moi_db']))
+    for gene in case.case_data['genes'].keys():
+
+        # Intialize dict to store count of alternate alleles
+        g_df = case.genotype.pathogenic_variants[case.genotype.pathogenic_variants['GENE'] == gene]
+        alt_counts = {f"{var['CHROM']}-{var['POS']}-{var['REF']}-{var['ALT']}":{s:0 for s in ['proband', 'mother', 'father']} for idx,var in g_df.iterrows()}
+
+        # Go through each variant
+        for chrom_pos, s_counts in alt_counts.items():
+
+            chrom, pos = f"chr{chrom_pos.split('-')[0]}", chrom_pos.split('-')[1]
+
+            # Get trio genotypes
+            gt_data = get_trio_genotype(case, chrom, int(pos))
+
+            # Normalize GT by setting all | to /, we don't care about phasing for now
+            for gt in ['proband','mother','father']:
+                if gt_data[gt].find('|') != -1:
+                    g = gt_data[gt].split('|')
+                    gt_data[gt] = '/'.join(g)
+                if gt_data[gt].find('/') != -1:
+                    g = [int(a) if a != '.' else 0 for a in gt_data[gt].split('/')]
+                    g.sort()
+                    gt_data[gt] = '/'.join([str(a) for a in g])
+            
+            # Account for genotype edge cases
+            for gt in ['proband','mother','father']:
+                if chrom == 'chrX' or chrom == 'X':
+                    if len(gt_data[gt]) == 1:
+                        if gt_data[gt] == 0:
+                            gt_data[gt] = '0/1'
+                        else:
+                            gt_data[gt] = '0/0'
+                        gt_data[gt] = gt_data[gt][0] + '/' + gt_data[gt][2]
+                    else:
+                        gt_data[gt] = gt_data[gt][0] + '/' + gt_data[gt][2]
+
+                else:
+                    if gt_data[gt] in ['.','1']:
+                        gt_data[gt] = '0/1'
+                    else:
+                        gt_data[gt] = gt_data[gt][0] + '/' + gt_data[gt][2]
+
+            # Count alternate alleles
+            for s in s_counts.keys():
+                if gt_data[s] == '0/1':
+                    s_counts[s] = 1
+                if gt_data[s] == '1/1':
+                    s_counts[s] = 2
+            
+        #TODO Add logic to return variants that agree with mode of inheritance if applicable
+        proband_alt_count = sum([var['proband'] for var in alt_counts.values()])
+        mother_alt_count = sum([var['mother'] for var in alt_counts.values()])
+        father_alt_count = sum([var['father'] for var in alt_counts.values()])
+        de_novo_count = sum([var['proband'] for var in alt_counts.values() if var['mother'] == 0 and var['father'] == 0])
+
+        # Go through each disaese assocaited with the gene
+        for d in case.case_data['genes'][gene].keys():
+            
+            # Get MOI
+            moi = moi_df.loc[moi_df['omimId'] == 'OMIM:' + str(d)].reset_index(drop=True)
+            if moi.empty:
+                moi = ''
+            else:
+                moi = moi.loc[0, 'moi']
+
+            # If both parents are present
+            if case.mother != 'Unavailable' and case.father != 'Unavailable':
+
+                if moi == 'AD':
+
+                    # De Novo
+                    if de_novo_count >= 1:
+                        res[d] = 1
+
+                    # Candidate allele present in either of the parents
+                    else:
+                        res[d] = -1
         
-    
-    for g, g_data in case.case_data['genes'].items():
-        for d, d_data in g_data['diseases'].items():
-
-            # Intialize moi LR
-            d_data['moiLR_log10'] = 0
-
-            # Go through each variant
-            for i, v in enumerate(g_data['variants']):
-
-                # Initialize genotype data
-                gt_data = {
-                    'PROBAND': 'Unavailable',
-                    'MOTHER': 'Unavailable',
-                    'FATHER': 'Unavailable'
-                    }
                 
-                # Get genotypes
-                for gt in samples:
-                    gt_data[gt] = v[gt]['GT']
+                if moi == 'AR':
 
-                # Normalize GT by setting all | to /
-                for gt in samples:
-                    if gt_data[gt].find('|') != -1:
-                        g = gt_data[gt].split('|')
-                        gt_data[gt] = '/'.join(g)
-                    if gt_data[gt].find('/') != -1:
-                        g = [int(a) for a in gt_data[gt].split('|')]
-                        g.sort()
-                        gt_data[gt] = '/'.join([str(a) for a in g])
-
-                if d['omimId'] == '618332':
-                    with open('/igm/home/rsrxs003/rnb/output/BL-193/test.txt','w') as f:
-                        print(f'GT_DATA: {gt_data}', file = f)
-
-
-                # If both parents are present
-                if gt_data['MOTHER'] != 'Unavailable' and gt_data['FATHER'] != 'Unavailable':
-                    if d['moi'] == 'AD':
-
-                        # De Novo
-                        if gt_data['MOTHER'] == '0/0' and gt_data['FATHER'] == '0/0':
-                            d['moiLR_log10'] = 1
-                            break
-
-                        # Candidate allele present in the parents
-                        if gt_data['MOTHER'] != '0/0' or gt_data['FATHER'] != '0/0':
-                            d['moiLR_log10'] = -1
-            
+                    # Check for two hits
+                    if proband_alt_count >= 2 and mother_alt_count <= 1 and father_alt_count <= 1:
+                        res[d] = 1
+                    else:
+                        res[d] = -1
                     
-                    if d['moi'] == 'AR':
-
-                        # De novo
-                        # or parents are heterozygous and the proband is homozygous
-                        if gt_data['PROBAND'] == '1/1' and gt_data['MOTHER'] in ('0/0','0/1') and gt_data['FATHER'] in ('0/0', '0/1'):
-                            d['moiLR_log10'] = 1
-                            break
-
-                        # Not homozygous for only variant
-                        if gt_data['PROBAND'] != '1/1' and len(case.case_data['genes'][gene]['variants']) == 1:
-                            d['moiLR_log10'] = -1
-                            break
-
-                        # If parents are homozygous
-                        if gt_data['MOTHER'] == '1/1' or gt_data['FATHER'] == '1/1':
-                            d['moiLR_log10'] = -1
-
-                        # Check for a compound het
-                        compound_het = set()
-                        de_novos = 0
-                        if gt_data['PROBAND'] == '0/1' and gt_data['MOTHER'] == '0/1':
-                            compound_het.add('MOM HIT')
-                        if gt_data['PROBAND'] == '0/1' and gt_data['FATHER'] == '0/1':
-                            compound_het.add('DAD HIT')
-                        if gt_data['PROBAND'] == '0/1' and gt_data['MOTHER'] == '0/0' and gt_data['FATHER'] == '0/0':
-                            compound_het.add('DE NOVO')
-                            de_novos += 1
-
-                        if i+1 == len(case.case_data['genes'][gene]['variants']): # If variant is the last variant in the gene
-                            if len(compound_het) > 1 or de_novos > 1:
-                                d['moiLR_log10'] = 1
-                            else:
-                                d['moiLR_log10'] = -1
-                    
-                    if d['moi'] == 'XLD':
-
-                        # De novo
-                        if gt_data['PROBAND'] in ('0/1', '1/1') and gt_data['MOTHER'] == '0/0' and gt_data['FATHER'] == '0/0':
-                            d['moiLR_log10'] = 1
-                            break
-
-                        # Variant present in parents
-                        if gt_data['MOTHER'] != '0/0' or gt_data['FATHER'] != '0/0':
-                            d['moiLR_log10'] = -1
-
-                        
-                    if d['moi'] == 'XLR':
-
-                        # Female case
-                        if case.biological_sex == 'F':
-                            
-                            # De novo
-                            if gt_data['PROBAND'] == '1/1' and gt_data['MOTHER'] in ('0/0','0/1') and gt_data['FATHER'] in ('0/0', '0/1'):
-                                d['moiLR_log10'] = 1
-                                break
-
-                            # If parents are heterozygous and the proband is homozygous
-                            if gt_data['PROBAND'] == '1/1' and gt_data['MOTHER'] == '0/1' and gt_data['FATHER'] == '0/1':
-                                d['moiLR_log10'] = 1
-                                break
-
-                            # Not homozygous for only variant
-                            if gt_data['PROBAND'] != '1/1' and len(case.case_data['genes'][gene]['variants']) == 1:
-                                d['moiLR_log10'] = -1
-                                break
-
-                            # If parents are homozygous
-                            if gt_data['MOTHER'] == '1/1' or gt_data['FATHER'] == '1/1':
-                                d['moiLR_log10'] = -1
-
-                            # Check for a compound het
-                            compound_het = set()
-                            de_novos = 0
-                            if gt_data['PROBAND'] == '0/1' and gt_data['MOTHER'] == '0/1':
-                                compound_het.add('MOM HIT')
-                            if gt_data['PROBAND'] == '0/1' and gt_data['FATHER'] == '0/1':
-                                compound_het.add('DAD HIT')
-                            if gt_data['PROBAND'] == '0/1' and gt_data['MOTHER'] == '0/0' and gt_data['FATHER'] == '0/0':
-                                compound_het.add('DE NOVO')
-                                de_novos += 1
-
-                            if i+1 == len(case.case_data['genes'][gene]['variants']):
-                                if len(compound_het) > 1 or de_novos > 1:
-                                    d['moiLR_log10'] = 1
-                                else:
-                                    d['moiLR_log10'] = -1
-
-                            
-
-                        # Male case
-                        if case.biological_sex == 'M':
-
-                            # If mother is heterozygous
-                            if gt_data['MOTHER'] == '0/1':
-                                d['moiLR_log10'] = 1
-                                break
-                            
-                            # If mother is homozygous alt
-                            if gt_data['MOTHER'] == '1/1':
-                                d['moiLR_log10'] = -1
-
                 
+                if moi == 'XLD':
 
-                # If father is missing
-                if gt_data['MOTHER'] != 'Unavailable' and gt_data['FATHER'] == 'Unavailable':
-
-                    if d['moi'] == 'AD':
-
-                        # De Novo
-                        if gt_data['MOTHER'] == '0/0':
-                            d['moiLR_log10'] = .5
-                            break
-
-                        # Candidate allele present in the parent
-                        if gt_data['MOTHER'] != '0/0':
-                            d['moiLR_log10'] = -1
-            
-                    
-                    if d['moi'] == 'AR':
-
-                        # De novo
-                        if gt_data['PROBAND'] == '1/1' and gt_data['MOTHER'] == '0/0':
-                            d['moiLR_log10'] = 1
-                            break
-
-                        # If parent is heterozygous and the proband is homozygous
-                        if gt_data['PROBAND'] == '1/1' and gt_data['MOTHER'] == '0/1':
-                            d['moiLR_log10'] = .5
-                            break
-
-                        # If parent is homozygous
-                        if gt_data['MOTHER'] == '1/1':
-                            d['moiLR_log10'] = -1
-
-                        # Not homozygous
-                        if gt_data['PROBAND'] != '1/1' and len(case.case_data['genes'][gene]['variants']) == 1:
-                            d['moiLR_log10'] = -1
-                            break
+                    # De Novo
+                    if de_novo_count >= 1:
+                        res[d] = 1
+                    else:
+                        res[d] = -1
 
                     
-                    if d['moi'] == 'XLD':
+                if moi == 'XLR':
 
-                        # De novo
-                        if gt_data['PROBAND'] in ('0/1', '1/1') and gt_data['MOTHER'] == '0/0':
-                            d['moiLR_log10'] = .5
-                            break
-
-                        # Variant present in parent
-                        if gt_data['MOTHER'] != '0/0':
-                            d['moiLR_log10'] = -1
-
+                    # Female case
+                    if case.biological_sex == 'F':
                         
-                    if d['moi'] == 'XLR':
-
-                        # Female case
-                        if case.biological_sex == 'F':
-                            
-                            # If parent is heterozygous and the proband is homozygous
-                            if gt_data['PROBAND'] == '1/1' and gt_data['MOTHER'] in ('0/0', '0/1'):
-                                d['moiLR_log10'] = .5
-                                break
-
-                            # If parent is homozygous
-                            if gt_data['MOTHER'] == '1/1':
-                                d['moiLR_log10'] = -1
-
-
-                        # Male case
-                        if case.biological_sex == 'M':
-
-                            # If mother is heterozygous
-                            if gt_data['MOTHER'] == '0/1':
-                                d['moiLR_log10'] = 1
-                                break
-                            
-                            # If mother is homozygous alt
-                            if gt_data['MOTHER'] == '1/1':
-                                d['moiLR_log10'] = -1
-                
-
-
-                # If mother is missing
-                if gt_data['MOTHER'] == 'Unavailable' and gt_data['FATHER'] != 'Unavailable':
-
-                    if d['moi'] == 'AD':
-
-                        # De Novo
-                        if gt_data['FATHER'] == '0/0':
-                            d['moiLR_log10'] = .5
-                            break
-
-                        # Candidate allele present in the parent
-                        if gt_data['FATHER'] != '0/0':
-                            d['moiLR_log10'] = -1
-            
-                    
-                    if d['moi'] == 'AR':
-
-                        # De novo
-                        if gt_data['PROBAND'] == '1/1' and gt_data['FATHER'] == '0/0':
-                            d['moiLR_log10'] = 1
-                            break
-
-                        # If parent is heterozygous and the proband is homozygous
-                        if gt_data['PROBAND'] == '1/1' and gt_data['FATHER'] == '0/1':
-                            d['moiLR_log10'] = .5
-                            break
-
-                        # Not homozygous with one pathogenic variant
-                        if gt_data['PROBAND'] != '1/1' and len(case.case_data['genes'][gene]['variants']) == 1:
-                            d['moiLR_log10'] = -1
-                            break
-
-                        # If parent is homozygous
-                        if gt_data['FATHER'] == '1/1':
-                            d['moiLR_log10'] = -1
-
-                    
-                    if d['moi'] == 'XLD':
-
-                        # De novo
-                        if gt_data['PROBAND'] in ('0/1', '1/1') and gt_data['FATHER'] == '0/0':
-                            d['moiLR_log10'] = .5
-                            break
-
-                        # Variant present in parent
-                        if gt_data['FATHER'] != '0/0':
-                            d['moiLR_log10'] = -1
-
+                        # De novo / parents are carriers
+                        if proband_alt_count >= 2 and mother_alt_count <= 1 and father_alt_count == 0:
+                            res[d] = 1
+                        else:
+                            res[d] = -1
                         
-                    if d['moi'] == 'XLR':
+                    # Male case
+                    if case.biological_sex == 'M':
 
-                        # Female case
-                        if case.biological_sex == 'F':
-                            
-                            # If parent is heterozygous and the proband is homozygous
-                            if gt_data['PROBAND'] == '1/1' and gt_data['FATHER'] in ('0/0', '0/1'):
-                                d['moiLR_log10'] = .5
-                                break
-                            
+                        # De Novo or mother is heterozygous
+                        if proband_alt_count >= 1 and mother_alt_count <= 1 and father_alt_count == 0:
+                            res[d] = 1
+                        else:
+                            res[d] = -1
+
+            
+
+            # If father is missing
+            elif case.mother != 'Unavailable' and case.father == 'Unavailable':
+
+                if moi == 'AD':
+
+                    # De Novo
+                    if de_novo_count >= 1:
+                        res[d] = .5
+
+                    # Candidate allele present in the parent
+                    else:
+                        res[d] = -1
+        
+                if moi == 'AR':
+
+                    # De novo
+                    if proband_alt_count >= 2 and mother_alt_count <= 1:
+                        res[d] = 0.5
+                    else:
+                        res[d] = -1
+
+                if moi == 'XLD':
+
+                    # De novo
+                    if de_novo_count >= 1:
+                        res[d] = 0.5
+                    else:
+                        res[d] = -1
+
+                if moi == 'XLR':
+
+                    # Female case
+                    if case.biological_sex == 'F':
+                        
+                        # If mom has less than 2 hits and the proband has 2 or more hits
+                        if proband_alt_count >= 2 and mother_alt_count <= 1:
+                            res[d] = 0.5
+                        else:
+                            res[d] = -1
+                        
+                    # Male case
+                    if case.biological_sex == 'M':
+
+                        # If mother is heterozygous or de novo
+                        if proband_alt_count >= 1 and mother_alt_count <= 1:
+                            res[d] = 0.5
+                        else:
+                            res[d] = -1
+            
 
 
-                        # Male case
-                        if case.biological_sex == 'M':
+            # If mother is missing
+            elif case.mother == 'Unavailable' and case.father != 'Unavailable':
 
-                            # If father is heterozygous
-                            if gt_data['FATHER'] == '0/1':
-                                d['moiLR_log10'] = -1
-                                break
-    
-    return case.case_data
+                if moi == 'AD':
 
+                    # De Novo
+                    if de_novo_count >= 1:
+                        res[d] = .5
+
+                    # Candidate allele present in the parent
+                    else:
+                        res[d] = -1
+        
+                if moi == 'AR':
+
+                    if proband_alt_count >= 2 and father_alt_count <= 1:
+                        res[d] = 0.5
+                    else:
+                        res[d] = -1
+
+                if moi == 'XLD':
+
+                    # De novo
+                    if de_novo_count >= 1:
+                        res[d] = 0.5
+                    else:
+                        res[d] = -1
+
+                if moi == 'XLR':
+
+                    # Female case
+                    if case.biological_sex == 'F':
+                        
+                        # If mom has less than 2 hits and the proband has 2 or more hits
+                        if proband_alt_count >= 2 and father_alt_count == 0:
+                            res[d] = 0.5
+                        else:
+                            res[d] = -1
+                        
+                    # Male case
+                    if case.biological_sex == 'M':
+
+                        # If mother is heterozygous or de novo
+                        if proband_alt_count >= 1 and father_alt_count == 0:
+                            res[d] = 0.5
+                        else:
+                            res[d] = -1
+            
+            if d not in res.keys():
+                res[d] = 0
+
+    return res

@@ -5,16 +5,8 @@ import subprocess
 import logging
 import pandas as pd
 import argparse
-
-
-
-def run_mutpred_argparser():
-    parser = argparse.ArgumentParser(prog=run_spliceai.__name__, description="")
-    parser.add_argument('--input', help="S3 path to varhouse output parquet", required=True)
-    parser.add_argument('--output', help="S3 path to varhouse output parquet", required=True)
-    parser.add_argument('--reference', help="Path to reference", required=True)
-    parser.add_argument('--annotation_file', help="Gene annotation file, uses package files when 'grch37' or 'grch38' is passed", required=True)
-    return parser
+from Bio import SeqIO
+fo = '/igm/projects/CAVaLRi/test.txt'
 
 def worker(command):
     """
@@ -24,95 +16,112 @@ def worker(command):
         output = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as e:
         output = e.output
-    return output.decode('utf-8')#.replace('\n','')
+    return output.decode('utf-8')
 
-def run_mutpred(genotype):
+
+def run_mutpredindel(genotype):
 
     config = genotype.case.cohort.config
-
-    """Run mutpredindel predictions pipeline."""
-    # parser = run_spliceai_argparser()
-    # args = parser.parse_args()
-    wrk_dir = os.path.join(genotype.case.temp_dir, 'mutpredindel')
+    conda_bin = genotype.case.cohort.conda_bin
+    root_path = genotype.case.cohort.root_path
 
     # Set up directories
-    input_excel_folder = os.path.join(wrk_dir, 'input')
+    wrk_dir = os.path.join(genotype.case.temp_dir, 'mutpredindel')
+    input_folder = os.path.join(wrk_dir, 'input')
     vc_folder = os.path.join(wrk_dir, 'predictions')
     resource_folder = os.path.join(wrk_dir, 'resource')
     output_folder = os.path.join(wrk_dir, 'output')
 
-    for dir in [wrk_dir, input_excel_folder, vc_folder, resource_folder, output_folder]:
+    for dir in [wrk_dir, input_folder, vc_folder, resource_folder, output_folder]:
         if not os.path.exists(dir):
             os.mkdir(dir)
 
-    # set up logging
-    # LOGGING_FILE = f"{vc_folder}/logging.txt"
-    # logging.basicConfig(filename=LOGGING_FILE, level=logging.DEBUG, format="%(asctime)s:%(levelname)s:%(message)s")
-
-    # Download parquet from s3:
-    # download_s3_file(args.input_excel, os.path.join(input_excel_folder, 'excel_output.xlsx'))
-
     # Reduce the vcf to only include splice variants
-    vcf_path = os.path.join(genotype.case.temp_dir,f'{genotype.case.case_id}.filtered.vcf.gz')
-    spliceai_input_vcf = f"{vcf_path[:vcf_path.find('.vcf')]}.mutpredindel.vcf"
-    cmd = f"bcftools filter -i 'INFO/Func.refGene==\"splicing\"' -Ov -o {spliceai_input_vcf} {vcf_path}"
+    vcf_path = os.path.join(genotype.case.temp_dir, f'{genotype.case.case_id}.filtered.vcf.gz')
+    mutpred_input_vcf = os.path.join(input_folder, f"{genotype.case.case_id}.mutpredindel.vcf")
+    inframe_indel_variants = ['nonframeshift_insertion','nonframeshift_deletion',
+                        'inframe_insertion','inframe_deletion',
+                        'inframe_variant']
+    exp = ' | '.join([f'INFO/ExonicFunc.refGene==\"{x}\"' for x in inframe_indel_variants])
+    cmd = f"{os.path.join(conda_bin,'bcftools')} filter -i '{exp}' -Ov -o {mutpred_input_vcf} {vcf_path}"
     p = worker(cmd)
 
-    # Run spliceai
-    spliceai_output_vcf = f"{vcf_path[:vcf_path.find('.vcf')]}.spliceai_annotated.vcf"
-    reference = os.path.join(genotype.case.cohort.root_path,config['reference_path'])
-    cmd = f"spliceai -I {spliceai_input_vcf} -O {spliceai_output_vcf} -R {reference} -A grch38"
-    p = worker(cmd)
+    # Read in inframe indel mutations
+    inframe_indel_df = pd.read_csv(mutpred_input_vcf, sep = '\t', comment = '#', header = None).iloc[:,[0,1,3,4]]
+    inframe_indel_df.columns = ['CHROM','POS','REF','ALT']
 
-    # Read in results
-    cols = ['CHROM','POS','ID','REF','ALT','QUAL','FILTER','INFO']
-    spliceai_df = pd.read_csv(spliceai_output_vcf, sep = '\t', comment = '#')
-    spliceai_df.columns = cols + [i for i in range(len(spliceai_df.columns) - len(cols))]
-    def parse_info(row):
-        info = {x.split('=')[0]:x.split('=')[1] for x in row['INFO'].split(';') if re.search('=',x)}
-        try:
-            sa = info['SpliceAI'].split('|')
-            return max(sa[2:6])
-        except:
-            return 0
+    if config['run_mutpredindel']:
 
-    spliceai_df['spliceai_score'] = spliceai_df.apply(parse_info, axis = 1)
-    spliceai_df = spliceai_df[['CHROM','POS','REF','ALT','spliceai_score']]
-    return spliceai_df
+        print('HELLO', file = open(fo,'a'))
 
-    # Define template vcf
-    # template_vcf = '/Users/rsrxs003/projects/LIRICAL/input/EXOME_RERUNS/template.vcf'
+        # Create a .avinput file to send to get fasta changes
+        annovar_path = os.path.join(root_path, config['annovar_scripts'])
+        avinput = os.path.join(input_folder, f"{genotype.case.case_id}.mutpredindel.avinput")
+        cmd = f"{os.path.join(annovar_path,'convert2annovar.pl')} -format vcf4 {mutpred_input_vcf} > {avinput}"
+        p = worker(cmd)
+        print(cmd, file = open(fo,'a'))
 
-    # Convert input from parquet to VCF
-    # splicai_vcf_path = excel_to_vcf(args.input_excel, template_vcf, output_folder)
+        # Annotate the .avinput file with exonic functional annotations
+        annovar_db = os.path.join(root_path, config['annovar_db'])
+        cmd = f"{os.path.join(annovar_path, 'annotate_variation.pl')} -build hg38 {avinput} {annovar_db}"
+        p = worker(cmd)
+        print(cmd, file = open(fo,'a'))
 
-    # download reference fasta file from s3
-    # ref_fa = flex_input(args.ref_fasta, reference_folder)
-    # ref_dict = '.'.join(args.ref_fasta.split('.')[:-1]) + '.dict'
-    # ref_fai = args.ref_fasta + '.fai'
+        # Create a fasta input file to send to mutpredindel
+        exon_avinput = f"{avinput}.exonic_variant_function"
+        refgene_dna = os.path.join(root_path, config['annovar_db'], 'hg38_refGene.txt')
+        refgene_mrna = os.path.join(root_path, config['annovar_db'], 'hg38_refGeneMrna.fa')
+        mutpred_input_fasta = os.path.join(input_folder, f'{genotype.case.case_id}.input.fasta')
+        cmd = f"{os.path.join(annovar_path,'coding_change.pl')} {exon_avinput} {refgene_dna} {refgene_mrna} > {mutpred_input_fasta}"
+        p = worker(cmd)
+        print(cmd, file = open(fo,'a'))
 
-    # flex_input(ref_fai, reference_folder)
-    # flex_input(ref_dict, reference_folder)
+        # Run mutpredindel
+        # mutpred_output_vcf = os.path.join(output_folder, f"{genotype.case.case_id}.mutpredindel_annotated.vcf")
+        mutpred_script = os.path.join(config['mutpredindel'],'run_MutPredIndel.sh')
+        mutpred_mcr = config['muptredindel_MCR']
+        output_prefix = os.path.join(output_folder, f'{genotype.case.case_id}.')
+        cmd = f"cd {os.path.dirname(mutpred_script)} && {mutpred_script} {mutpred_mcr} {mutpred_input_fasta} {output_prefix}"
+        p = worker(cmd)
+        print(cmd, file = open(fo,'a'))
 
-    # download bam from s3
-    # bai_file = '.'.join(args.input_bam.split('.')[:-1]) + '.bai'
-    # input_bam = flex_input(args.input_bam, bam_folder)
-    # flex_input(bai_file, bam_folder)
+        # Read in results
+        temp_file = os.path.join(output_folder, 'temp_output.txt')
+        mutpred_indel_output_path = os.path.join(output_folder,f'{genotype.case.case_id}.output_output.txt')
+
+        with open(temp_file, 'w') as fo:
+            with open(mutpred_indel_output_path, 'r') as f:
+                for line in f:
+                    l = line.split(' ')[:5]
+                    info = ''.join(line.split(' ')[5:])
+                    score = info.split('|')[1]
+                    l.append(score)
+                    print('\t'.join(l), file = fo)
+
+        mutpred_score_df = pd.read_csv(temp_file, sep = '\t', header = None)
+        mutpred_score_df.columns = ['line','transcript','c_DNA-change','p_change','function','score']
+
+        exon_input_df = pd.read_csv(exonic_variant_input, sep = '\t', header = None).iloc[:,[0,3,4,5,6]]
+        exon_input_df.columns = ['line','CHROM','POS','end','type']
+        def amend_pos(row):
+            if row['type'] != '-':
+                return row['start'] - 1
+            return row['start']
+
+        mutpred_score_df = exon_input_df.merge(mutpred_score_df, how = 'left').fillna(0)
+        mutpred_score_df['start'] = mutpred_score_df.apply(amend_pos, axis = 1)
+            
+    else:
+        
+        mutpred_score_df = inframe_indel_df.copy()
+        mutpred_score_df['score'] = 0
+        
+
+
+    mutpred_score_df = mutpred_score_df[['CHROM','POS','score']]
+    mutpred_score_df = inframe_indel_df.merge(mutpred_score_df, on = ['CHROM','POS'])
+    mutpred_score_df = mutpred_score_df.rename(columns = {'score':'mutpred_score'})
+    mutpred_score_df = mutpred_score_df[['CHROM','POS','REF','ALT','mutpred_score']].astype({'mutpred_score':float,'POS':str})
+    mutpred_score_df['CHROM'] = mutpred_score_df['CHROM'].str[3:]
+    return mutpred_score_df
     
-    # output_vcf = output_vcf
-    # spliceai_cmd = f'spliceai -I {splicai_vcf_path} -O {output_folder}/spliceai_scored.vcf -R {args.reference} -A {args.annotation_file}'
-    # worker(cmd=spliceai_cmd, warn=True)
-    # logging.debug(f"haplotypecaller_cmd: {spliceai_cmd}")
-
-    # list_of_gvcfs = glob.glob(os.path.join(vc_folder, '*g.vcf.gz'))
-    # list_of_gvcfs = sorted(list_of_gvcfs)
-
-    # output_gvcf = os.path.join(variants_folder, os.path.basename(args.output_gvcf))
-    # output_gvcf_idx = f'{output_gvcf}.tbi'
-
-    # if args.logging:
-    #     flex_output(LOGGING_FILE, os.path.dirname(args.logging), os.path.basename(args.logging))
-    # flex_output(output_gvcf, os.path.dirname(args.output_gvcf), os.path.basename(args.output_gvcf))
-    # flex_output(output_gvcf_idx, os.path.dirname(args.output_gvcf), f'{os.path.basename(args.output_gvcf)}.tbi')
-
-# run_spliceai()

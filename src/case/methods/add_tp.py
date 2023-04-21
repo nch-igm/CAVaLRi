@@ -20,9 +20,6 @@ def get_diagnostic_df(case):
 
 def add_tp(case):
 
-    with open('/Users/rsrxs003/projects/CAVaLRi_/case.pickle','wb') as f:
-        pickle.dump(case, f)
-
     # Get true positive data
     tp_df = get_diagnostic_df(case)
     

@@ -3,28 +3,79 @@ import os
 conda_bin = os.path.join(sys.exec_prefix, 'bin')
 
 # Get configuration settings
-configfile: "config.yaml"
-shell.prefix(f'export PATH={conda_bin}:$PATH')
-# ; mamba activate cavalri_3.6;
+# configfile: "config.yaml"
 
 # Set up a temp folder to store pickles
-temp_dir = config['tmp_dir']
+temp_dir = config['temp_dir']
+root_path = os.path.join(config['root_dir'], 'src','workflow')
 
 # Define cases
 CASES, = glob_wildcards(os.path.join(temp_dir, "{case}.pickle"))
 CASES = [c for c in CASES if c.find('.full') == -1]
+
 
 rule all:
     input:
         expand(os.path.join(temp_dir, "{case}.full.pickle"), case = CASES)
 
 
-rule run_case:
+rule get_gene_list:
     input:
         os.path.join(temp_dir, "{case}.pickle")
     params:
-        script = os.path.abspath('scripts/run_case.py')
+        script = os.path.join(root_path, 'scripts', 'get_gene_list.py'),
+        python = os.path.join(conda_bin, 'python')
+    output:
+        os.path.join(temp_dir, "{case}.genelist.pickle")
+    shell:
+        '{params.python} {params.script} --input {input} -o {output}'
+
+
+rule run_genotype:
+    input:
+        os.path.join(temp_dir, "{case}.genelist.pickle")
+    params:
+        script = os.path.join(root_path, 'scripts', 'run_genotype.py'),
+        python = os.path.join(conda_bin, 'python')
+    output:
+        os.path.join(temp_dir, "{case}.geno.pickle")
+    shell:
+        '{params.python} {params.script} --input {input} -o {output}'
+
+
+rule run_phenotype:
+    input:
+        os.path.join(temp_dir, "{case}.genelist.pickle")
+    params:
+        script = os.path.join(root_path, 'scripts', 'run_phenotype.py'),
+        python = os.path.join(conda_bin, 'python')
+    output:
+        os.path.join(temp_dir, "{case}.pheno.pickle")
+    shell:
+        '{params.python} {params.script} --input {input} -o {output}'
+
+
+rule run_moi:
+    input:
+        os.path.join(temp_dir, "{case}.genelist.pickle")
+    params:
+        script = os.path.join(root_path, 'scripts', 'run_moi.py'),
+        python = os.path.join(conda_bin, 'python')
+    output:
+        os.path.join(temp_dir, "{case}.moi.pickle")
+    shell:
+        '{params.python} {params.script} --input {input} -o {output}'
+
+
+rule aggregate_results:
+    input:
+        pheno = os.path.join(temp_dir, "{case}.pheno.pickle"),
+        geno = os.path.join(temp_dir, "{case}.geno.pickle"),
+        moi = os.path.join(temp_dir, "{case}.moi.pickle")
+    params:
+        script = os.path.join(root_path, 'scripts', 'aggregate_results.py'),
+        python = os.path.join(conda_bin, 'python')
     output:
         os.path.join(temp_dir, "{case}.full.pickle")
     shell:
-        'python {params.script} --input {input} -o {output}'
+        '{params.python} {params.script} --input {input.pheno} -o {output}'
