@@ -1,10 +1,6 @@
 ## DEPENDICIES ##
 annovar_scripts: dependencies/annovar
 annovar_db: dependencies/human_db
-exomiser_data: /igm/projects/exomiser/exomiser-cli-13.1.0/data/2209_hg38
-lirical_executable: dependencies/LIRICAL.jar
-lirical_data_path: dependencies/lirical_data
-lirical_yaml_template: data/template.yaml
 reference_path: dependencies/hg38.fa
 hpo_walk_dir: /igm/projects/
 common_variants: data/WES_common_variants.csv
@@ -18,6 +14,7 @@ gene_info: data/Homo_sapiens_gene_info.tsv
 moi_db: data/moi.csv
 hpo: data/hp.obo
 hpoa: data/phenotype.hpoa
+phenotype_disease_gene: data/phenotype_disease_gene.txt
 hpo_bkgd_frequencies: data/hpo-frequency-wes.json
 mim2gene: data/mim2gene_medgen
 pheno_score_source: data/HPO_with_gene_IC.csv
@@ -33,7 +30,7 @@ genoLR_scalar: 3.6
 moiLR_scalar: 6.8
 
 ## PATHOGENICITY FILTERS ##
-snpdogg_threshold: 0.8
+snpdogg_threshold: 0.5
 spliceai_threshold: 0.5
 mutpredindel_threshold: 0.5
 
@@ -42,8 +39,8 @@ plot_label: Clinician
 comparator_plot_label: ClinPhen
 
 ## VARIANT FILTERING SETTINGS ##
-gnomAD_popmax: 0.005
-quality_minimum: 200
+gnomAD_popmax: 0.01
+quality_minimum: 150
 
 ## BANDWIDTH SETTINGS ##
 cores: 50

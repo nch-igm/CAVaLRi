@@ -17,7 +17,7 @@ def build_case_summary(case):
                     # 'geneNcbiId': d['gene_data']['geneNcbiId'],
                     'geneSymbol': g,
                     'postTestProbability': d_data['postTestProbability'],
-                    'phenoLR': d_data['phenoLR_log10'] * config['phenoLR_scalar'],
+                    'phenoLR': d_data['phenoLR'] * config['phenoLR_scalar'],
                     'geneLR': d_data['genoLR'] * config['genoLR_scalar'],
                     'moiLR': d_data['moiLR'] * config['moiLR_scalar'],
                     'compositeLR': d_data['compositeLR'],

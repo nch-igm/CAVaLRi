@@ -16,21 +16,9 @@ def calculate_compositeLR(case):
     config = case.cohort.config
 
     # For each OMIM ID, calculate the compositeLR
-    # for g in case.case_data['genes'].keys():
-    # case.genotype.pathogenic_variants.to_csv('/Users/rsrxs003/projects/CAVaLRi_/pathogenic_variants.csv', index = False)
-
     for g in case.case_data['genes'].keys():
 
-        # with open('/Users/rsrxs003/projects/CAVaLRi_/case_data_.json','w') as f:
-        #     json.dump(case.case_data, fp = f, indent = 4)
-
         for d, d_data in case.case_data['genes'][g].items():
-
-            # Append phenoLR
-            # case.case_data['genes'][g][d].update({
-            #     'phenoLR': case.phenotype.phenoLRs[d['omimId']]['phenoLR'],
-            #     'hpoCount': case.phenotype.phenoLRs[d['omimId']]['hpoCount']
-            # })
 
             # Append genoLR
             d_data['genoLR'] = case.genotype.genotype_LR[g]
@@ -39,12 +27,9 @@ def calculate_compositeLR(case):
             d_data['moiLR'] = case.moiLRs[d]
             
             # Append compositeLR
-            d_data['compositeLR'] = d_data['phenoLR_log10'] * config['phenoLR_scalar'] + d_data['genoLR'] * config['genoLR_scalar'] + d_data['moiLR'] * config['moiLR_scalar']
+            d_data['compositeLR'] = d_data['phenoLR'] * config['phenoLR_scalar'] + d_data['genoLR'] * config['genoLR_scalar'] + d_data['moiLR'] * config['moiLR_scalar']
 
             # Calculate post-test probability
-            # numerator = d['pretest_probability'] * 10**d['compositeLR']
-            # denominator = (1 - d['pretest_probability']) + d['pretest_probability'] * 10**d['compositeLR']
-            # posttest_probability = numerator / denominator
             posttest_probability = get_diagnostic_probability(
                     cLR = d_data['compositeLR'], 
                     prior = 0.006708, 

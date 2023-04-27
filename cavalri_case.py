@@ -12,7 +12,6 @@ import argparse
 import pickle
 import uuid
 import yaml
-fo = '/igm/projects/CAVaLRi/test.txt'
 
 
 def worker(command):
@@ -119,10 +118,8 @@ def main(input, output_dir):
     # Run snakemake pipeline
     cmd = f"cd {workflow_path} && {os.path.join(conda_bin, 'snakemake')} --cores {config['cores']} --configfile {config_output_path}"
     p = worker(cmd)
-    with open(fo, 'a') as f:
-        print(cmd, file = f)
-        print(p, file = f)
 
+    # Check to see if the pipeline ran successfully
     if not os.path.exists(full_pickle_path):
         print(p)
         sys.exit(1)
@@ -143,9 +140,7 @@ def main(input, output_dir):
     worker(f'rm -Rf {temp_folder}')
 
     # Get versions of dependencies
-    # lirical_version = worker(f"java -jar {os.path.join(cs.cohort.root_path,  config['lirical_executable'])} --version")
     # hpo_version = worker(f"grep #date: {os.path.join(cs.cohort.root_path,  config['lirical_data_path'], 'phenotype.hpoa')}")
-    # config['LIRICAL version'] = lirical_version.strip()
     # config['HPOA version'] = hpo_version.split(' ')[-1].strip()
 
     # Create run log

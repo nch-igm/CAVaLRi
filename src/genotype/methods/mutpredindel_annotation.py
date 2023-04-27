@@ -6,7 +6,7 @@ import logging
 import pandas as pd
 import argparse
 from Bio import SeqIO
-fo = '/igm/projects/CAVaLRi/test.txt'
+
 
 def worker(command):
     """
@@ -52,20 +52,16 @@ def run_mutpredindel(genotype):
 
     if config['run_mutpredindel']:
 
-        print('HELLO', file = open(fo,'a'))
-
         # Create a .avinput file to send to get fasta changes
         annovar_path = os.path.join(root_path, config['annovar_scripts'])
         avinput = os.path.join(input_folder, f"{genotype.case.case_id}.mutpredindel.avinput")
         cmd = f"{os.path.join(annovar_path,'convert2annovar.pl')} -format vcf4 {mutpred_input_vcf} > {avinput}"
         p = worker(cmd)
-        print(cmd, file = open(fo,'a'))
 
         # Annotate the .avinput file with exonic functional annotations
         annovar_db = os.path.join(root_path, config['annovar_db'])
         cmd = f"{os.path.join(annovar_path, 'annotate_variation.pl')} -build hg38 {avinput} {annovar_db}"
         p = worker(cmd)
-        print(cmd, file = open(fo,'a'))
 
         # Create a fasta input file to send to mutpredindel
         exon_avinput = f"{avinput}.exonic_variant_function"
@@ -74,7 +70,6 @@ def run_mutpredindel(genotype):
         mutpred_input_fasta = os.path.join(input_folder, f'{genotype.case.case_id}.input.fasta')
         cmd = f"{os.path.join(annovar_path,'coding_change.pl')} {exon_avinput} {refgene_dna} {refgene_mrna} > {mutpred_input_fasta}"
         p = worker(cmd)
-        print(cmd, file = open(fo,'a'))
 
         # Run mutpredindel
         # mutpred_output_vcf = os.path.join(output_folder, f"{genotype.case.case_id}.mutpredindel_annotated.vcf")
@@ -83,7 +78,6 @@ def run_mutpredindel(genotype):
         output_prefix = os.path.join(output_folder, f'{genotype.case.case_id}.')
         cmd = f"cd {os.path.dirname(mutpred_script)} && {mutpred_script} {mutpred_mcr} {mutpred_input_fasta} {output_prefix}"
         p = worker(cmd)
-        print(cmd, file = open(fo,'a'))
 
         # Read in results
         temp_file = os.path.join(output_folder, 'temp_output.txt')
@@ -96,7 +90,6 @@ def run_mutpredindel(genotype):
                     info = ''.join(line.split(' ')[5:])
                     score = info.split('|')[1]
                     l.append(score)
-                    print('\t'.join(l), file = fo)
 
         mutpred_score_df = pd.read_csv(temp_file, sep = '\t', header = None)
         mutpred_score_df.columns = ['line','transcript','c_DNA-change','p_change','function','score']
@@ -114,7 +107,7 @@ def run_mutpredindel(genotype):
     else:
         
         mutpred_score_df = inframe_indel_df.copy()
-        mutpred_score_df['score'] = 0
+        mutpred_score_df['score'] = 0.5
         
 
 

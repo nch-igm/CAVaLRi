@@ -17,37 +17,50 @@ def calculate_genoLR(genotype):
 
     # Read in the configuration settings of the Cohort object
     config = genotype.case.cohort.config
+    root_path = genotype.case.cohort.root_path
 
     # Intialize result dict
     res = {}
 
+    # Read in mode of inheritance
+    moi_df = pd.read_csv(os.path.join(root_path, config['moi_db']))
+    dominant_codes = set(['AD','XLD'])
+    recessive_codes = set(['AR','XLR'])
+
     pathogenic_df = genotype.pathogenic_variants.copy()
 
-    for g in pathogenic_df['GENE'].unique():
+    for g in list(genotype.case.case_data['genes'].keys()):
         
+        # Get alt allele count
         g_df = pathogenic_df[pathogenic_df['GENE'] == g]
+        def get_gt(row):
+            gt = json.loads(row['proband'].replace("'",'\"'))['GT']
+            if gt in ['0|1','1/1','1|1'] or (gt in ['0/1','1/0'] and genotype.case.biological_sex == 'M' and row['CHROM'] == 'X'):
+                return 2
+            elif gt in ['0/1','1/0']:
+                return 1
+            else:
+                return 0
+        
+        g_df['var_count'] = g_df.apply(get_gt, axis = 1)
+        var_count = g_df['var_count'].sum()
 
-        # Calculate cumulative scores between all passing variants
-        score = g_df['score'].sum()
-        # score = len(g_df.index)
-    
-        # # Get maximum pathogenicity score
-        # max_path_score = 0
-        # for variant in d['gene_data']['variants']:
-        #     if variant['pathScore'] > max_path_score:
-        #         max_path_score = variant['pathScore']
+        # Calculate cumulative scores between all passing variants with ClinVar override
+        clinvar_count = len(g_df[g_df['clinvar_path_sig']].index)
+        score = 2 if clinvar_count > 0 else g_df['score'].mean()
 
-        # # Calculate genotype likelihood ratio
-        # if d['gene_data']['background_freq'] != 0.001 and d['gene_data']['disease_freq'] != 0.001:
-        #     background_freq = 10**-5 + d['gene_data']['background_freq']
-        #     disease_freq = d['gene_data']['disease_freq']
-        #     # geneLR_log10 = math.log(poisson.pmf(disease_freq, max_path_score * disease_freq)/poisson.pmf(disease_freq, max_path_score * background_freq),10)
-        #     geneLR_log10 = 0
+        # Determine mode of inheritance
+        diseases = [f'OMIM:{d}' for d in genotype.case.case_data['genes'][g].keys()]
+        mois = list(moi_df[moi_df['omimId'].isin(diseases)]['moi'].unique())
+        mois = ';'.join(mois)
+        mois = set(mois.split(';'))
 
-        # else:
-        #     geneLR_log10 = 0
-
-        # Append to result
-        res[g] = score
+        # Compare variant count to mode of inheritance
+        if len(dominant_codes & mois) >= 1 and var_count >= 1:
+            res[g] = score
+        elif len(recessive_codes & mois) >= 1 and var_count >= 2:
+            res[g] = score
+        else:
+            res[g] = 0
 
     return res

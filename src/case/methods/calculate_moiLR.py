@@ -65,8 +65,9 @@ def calculate_moiLR(case):
             # Normalize GT by setting all | to /, we don't care about phasing for now
             for gt in ['proband','mother','father']:
                 if gt_data[gt].find('|') != -1:
-                    g = gt_data[gt].split('|')
-                    gt_data[gt] = '/'.join(g)
+                    # g = gt_data[gt].split('|')
+                    # gt_data[gt] = '/'.join(g)
+                    gt_data[gt] = '1/1'
                 if gt_data[gt].find('/') != -1:
                     g = [int(a) if a != '.' else 0 for a in gt_data[gt].split('/')]
                     g.sort()
@@ -92,10 +93,13 @@ def calculate_moiLR(case):
 
             # Count alternate alleles
             for s in s_counts.keys():
-                if gt_data[s] == '0/1':
-                    s_counts[s] = 1
                 if gt_data[s] == '1/1':
                     s_counts[s] = 2
+                elif s == 'proband' and case.biological_sex == 'M' and gt_data[s] in ['0/1','1/0'] and chrom == 'X':
+                    s_counts[s] = 2
+                elif gt_data[s] == '0/1':
+                    s_counts[s] = 1
+                
             
         #TODO Add logic to return variants that agree with mode of inheritance if applicable
         proband_alt_count = sum([var['proband'] for var in alt_counts.values()])
@@ -107,166 +111,170 @@ def calculate_moiLR(case):
         for d in case.case_data['genes'][gene].keys():
             
             # Get MOI
-            moi = moi_df.loc[moi_df['omimId'] == 'OMIM:' + str(d)].reset_index(drop=True)
-            if moi.empty:
-                moi = ''
+            moi_ = moi_df.loc[moi_df['omimId'] == 'OMIM:' + str(d)].reset_index(drop=True)
+            if moi_.empty:
+                moi_ = ''
             else:
-                moi = moi.loc[0, 'moi']
+                moi_ = moi_.loc[0, 'moi']
 
-            # If both parents are present
-            if case.mother != 'Unavailable' and case.father != 'Unavailable':
+            moi = {m: None for m in moi_.split(';')}
 
-                if moi == 'AD':
+            for k in moi_.split(';'):
 
-                    # De Novo
-                    if de_novo_count >= 1:
-                        res[d] = 1
+                # If both parents are present
+                if case.mother != 'Unavailable' and case.father != 'Unavailable':
 
-                    # Candidate allele present in either of the parents
-                    else:
-                        res[d] = -1
-        
-                
-                if moi == 'AR':
+                    if k == 'AD':
 
-                    # Check for two hits
-                    if proband_alt_count >= 2 and mother_alt_count <= 1 and father_alt_count <= 1:
-                        res[d] = 1
-                    else:
-                        res[d] = -1
-                    
-                
-                if moi == 'XLD':
+                        # De Novo
+                        if de_novo_count >= 1:
+                            moi[k] = 1
 
-                    # De Novo
-                    if de_novo_count >= 1:
-                        res[d] = 1
-                    else:
-                        res[d] = -1
-
-                    
-                if moi == 'XLR':
-
-                    # Female case
-                    if case.biological_sex == 'F':
-                        
-                        # De novo / parents are carriers
-                        if proband_alt_count >= 2 and mother_alt_count <= 1 and father_alt_count == 0:
-                            res[d] = 1
+                        # Candidate allele present in either of the parents
                         else:
-                            res[d] = -1
-                        
-                    # Male case
-                    if case.biological_sex == 'M':
-
-                        # De Novo or mother is heterozygous
-                        if proband_alt_count >= 1 and mother_alt_count <= 1 and father_alt_count == 0:
-                            res[d] = 1
-                        else:
-                            res[d] = -1
-
+                            moi[k] = -1
             
+                    
+                    if k == 'AR':
 
-            # If father is missing
-            elif case.mother != 'Unavailable' and case.father == 'Unavailable':
-
-                if moi == 'AD':
-
-                    # De Novo
-                    if de_novo_count >= 1:
-                        res[d] = .5
-
-                    # Candidate allele present in the parent
-                    else:
-                        res[d] = -1
-        
-                if moi == 'AR':
-
-                    # De novo
-                    if proband_alt_count >= 2 and mother_alt_count <= 1:
-                        res[d] = 0.5
-                    else:
-                        res[d] = -1
-
-                if moi == 'XLD':
-
-                    # De novo
-                    if de_novo_count >= 1:
-                        res[d] = 0.5
-                    else:
-                        res[d] = -1
-
-                if moi == 'XLR':
-
-                    # Female case
-                    if case.biological_sex == 'F':
+                        # Check for two hits
+                        if proband_alt_count >= 2 and mother_alt_count <= 1 and father_alt_count <= 1:
+                            moi[k] = 1
+                        else:
+                            moi[k] = -1
                         
-                        # If mom has less than 2 hits and the proband has 2 or more hits
+                    
+                    if k == 'XLD':
+
+                        # De Novo
+                        if de_novo_count >= 1:
+                            moi[k] = 1
+                        else:
+                            moi[k] = -1
+
+                        
+                    if k == 'XLR':
+
+                        # Female case
+                        if case.biological_sex == 'F':
+                            
+                            # De novo / parents are carriers
+                            if proband_alt_count >= 2 and mother_alt_count <= 1 and father_alt_count == 0:
+                                moi[k] = 1
+                            else:
+                                moi[k] = -1
+                            
+                        # Male case
+                        if case.biological_sex == 'M':
+
+                            # De Novo or mother is heterozygous
+                            if proband_alt_count >= 1 and mother_alt_count <= 1 and father_alt_count == 0:
+                                moi[k] = 1
+                            else:
+                                moi[k] = -1
+
+                
+
+                # If father is missing
+                elif case.mother != 'Unavailable' and case.father == 'Unavailable':
+
+                    if k == 'AD':
+
+                        # De Novo
+                        if de_novo_count >= 1:
+                            moi[k] = .5
+
+                        # Candidate allele present in the parent
+                        else:
+                            moi[k] = -1
+            
+                    if k == 'AR':
+
+                        # De novo
                         if proband_alt_count >= 2 and mother_alt_count <= 1:
-                            res[d] = 0.5
+                            moi[k] = 0.5
                         else:
-                            res[d] = -1
-                        
-                    # Male case
-                    if case.biological_sex == 'M':
+                            moi[k] = -1
 
-                        # If mother is heterozygous or de novo
-                        if proband_alt_count >= 1 and mother_alt_count <= 1:
-                            res[d] = 0.5
+                    if k == 'XLD':
+
+                        # De novo
+                        if de_novo_count >= 1:
+                            moi[k] = 0.5
                         else:
-                            res[d] = -1
+                            moi[k] = -1
+
+                    if k == 'XLR':
+
+                        # Female case
+                        if case.biological_sex == 'F':
+                            
+                            # If mom has less than 2 hits and the proband has 2 or more hits
+                            if proband_alt_count >= 2 and mother_alt_count <= 1:
+                                moi[k] = 0.5
+                            else:
+                                moi[k] = -1
+                            
+                        # Male case
+                        if case.biological_sex == 'M':
+
+                            # If mother is heterozygous or de novo
+                            if proband_alt_count >= 1 and mother_alt_count <= 1:
+                                moi[k] = 0.5
+                            else:
+                                moi[k] = -1
+                
+
+
+                # If mother is missing
+                elif case.mother == 'Unavailable' and case.father != 'Unavailable':
+
+                    if k == 'AD':
+
+                        # De Novo
+                        if de_novo_count >= 1:
+                            moi[k] = .5
+
+                        # Candidate allele present in the parent
+                        else:
+                            moi[k] = -1
             
+                    if k == 'AR':
 
-
-            # If mother is missing
-            elif case.mother == 'Unavailable' and case.father != 'Unavailable':
-
-                if moi == 'AD':
-
-                    # De Novo
-                    if de_novo_count >= 1:
-                        res[d] = .5
-
-                    # Candidate allele present in the parent
-                    else:
-                        res[d] = -1
-        
-                if moi == 'AR':
-
-                    if proband_alt_count >= 2 and father_alt_count <= 1:
-                        res[d] = 0.5
-                    else:
-                        res[d] = -1
-
-                if moi == 'XLD':
-
-                    # De novo
-                    if de_novo_count >= 1:
-                        res[d] = 0.5
-                    else:
-                        res[d] = -1
-
-                if moi == 'XLR':
-
-                    # Female case
-                    if case.biological_sex == 'F':
-                        
-                        # If mom has less than 2 hits and the proband has 2 or more hits
-                        if proband_alt_count >= 2 and father_alt_count == 0:
-                            res[d] = 0.5
+                        if proband_alt_count >= 2 and father_alt_count <= 1:
+                            moi[k] = 0.5
                         else:
-                            res[d] = -1
-                        
-                    # Male case
-                    if case.biological_sex == 'M':
+                            moi[k] = -1
 
-                        # If mother is heterozygous or de novo
-                        if proband_alt_count >= 1 and father_alt_count == 0:
-                            res[d] = 0.5
+                    if k == 'XLD':
+
+                        # De novo
+                        if de_novo_count >= 1:
+                            moi[k] = 0.5
                         else:
-                            res[d] = -1
-            
-            if d not in res.keys():
-                res[d] = 0
+                            moi[k] = -1
+
+                    if k == 'XLR':
+
+                        # Female case
+                        if case.biological_sex == 'F':
+                            
+                            # If mom has less than 2 hits and the proband has 2 or more hits
+                            if proband_alt_count >= 2 and father_alt_count == 0:
+                                moi[k] = 0.5
+                            else:
+                                moi[k] = -1
+                            
+                        # Male case
+                        if case.biological_sex == 'M':
+
+                            # If mother is heterozygous or de novo
+                            if proband_alt_count >= 1 and father_alt_count == 0:
+                                moi[k] = 0.5
+                            else:
+                                moi[k] = -1
+                                
+            d_scores = [v for v in moi.values() if v != None]
+            res[d] = 0 if len(d_scores) == 0 else max(d_scores)
 
     return res

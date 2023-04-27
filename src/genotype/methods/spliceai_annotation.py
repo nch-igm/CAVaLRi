@@ -17,6 +17,7 @@ def worker(command):
         output = e.output
     return output.decode('utf-8')
 
+
 def run_spliceai(genotype):
 
     config = genotype.case.cohort.config
@@ -52,11 +53,13 @@ def run_spliceai(genotype):
     cols = ['CHROM','POS','ID','REF','ALT','QUAL','FILTER','INFO']
     spliceai_df = pd.read_csv(spliceai_output_vcf, sep = '\t', comment = '#')
     spliceai_df.columns = cols + [i for i in range(len(spliceai_df.columns) - len(cols))]
+    
     def parse_info(row):
-        info = {x.split('=')[0]:x.split('=')[1] for x in row['INFO'].split(';') if re.search('=',x)}
         try:
+            info = {x.split('=')[0]:x.split('=')[1] for x in row['INFO'].split(';') if re.search('=',x)}
             sa = info['SpliceAI'].split('|')
-            return max(sa[2:6])
+            spliceai_score = max(sa[2:6])
+            return 0 if spliceai_score == '.' else spliceai_score
         except:
             return 0
 

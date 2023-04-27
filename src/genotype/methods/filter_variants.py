@@ -129,6 +129,11 @@ def filter_variants(genotype):
     
     # Compress vcf
     vcf_writer.close()
+
+    filtered_vcf_dir = '/igm/home/rsrxs003/rnb/output/BL-283/clinician/filtered_vcfs'
+    out_vcf_path = os.path.join(filtered_vcf_dir, f"{genotype.case.case_id}.vcf")
+    worker(f"cp {filtered_vcf_path} {filtered_vcf_dir}")
+
     worker(f"{os.path.join(conda_bin, 'bgzip')} {filtered_vcf_path}")
     worker(f"{os.path.join(conda_bin, 'tabix')} {filtered_vcf_path}.gz")
     return f"{filtered_vcf_path}.gz"

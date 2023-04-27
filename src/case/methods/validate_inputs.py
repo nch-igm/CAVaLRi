@@ -7,7 +7,7 @@ def validate_samples(case):
 
     # Initialize result
     res = {}
-    provided_samples = {k:v for k,v in {'proband':case.proband, 'mother':case.mother, 'father':case.father}.items() if v != ''}
+    provided_samples = {k:v for k,v in {'proband':case.proband, 'mother':case.mother, 'father':case.father}.items() if v != 'Unavailable'}
 
     # Read in vcf
     vcf_reader = vcf.Reader(filename = case.genotype.genotype_path, compressed=True, encoding='ISO-8859-1')

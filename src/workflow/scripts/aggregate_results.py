@@ -1,6 +1,7 @@
 import sys
 import pickle
 import argparse
+import pandas as pd
 import json
 import os
 
@@ -16,6 +17,8 @@ def main(input, output):
     with open(input, 'rb') as f:
         pheno_case = pickle.load(f)
 
+    config = pheno_case.cohort.config
+
     # Read in geno case
     geno_case_path = os.path.join(os.path.dirname(input), f'{pheno_case.case_id}.geno.pickle')
     with open(geno_case_path, 'rb') as f:
@@ -28,6 +31,18 @@ def main(input, output):
     
     pheno_case.genotype = geno_case.genotype
     pheno_case.moiLRs = moi_case.moiLRs
+
+    # Get diseases that lack mendelien inheritance annotations
+    moi_df = pd.read_csv(os.path.join(pheno_case.cohort.root_path, config['moi_db']))
+    no_moi_diseases = list(moi_df[moi_df['moi'].isna()]['omimId'].unique())
+
+    # Limit cases to only those that have a phenotype likelihood ratio
+    new_case_data = {'genes':{g:{} for g in pheno_case.case_data['genes'].keys()}}
+    for g, g_data in new_case_data['genes'].items():
+        for d, d_data in pheno_case.case_data['genes'][g].items():
+            if d_data['phenoCount'] != 0 and f'OMIM:{d}' not in no_moi_diseases:
+                g_data[d] = d_data
+    pheno_case.case_data = {'genes':{k:v for k,v in new_case_data['genes'].items() if v != {} and pheno_case.genotype.genotype_LR[k] != 0}}
 
     # Run aggregate methods
     pheno_case.calculate_compositeLR()
