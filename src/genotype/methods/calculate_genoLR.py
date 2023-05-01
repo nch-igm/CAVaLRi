@@ -24,6 +24,7 @@ def calculate_genoLR(genotype):
 
     # Read in mode of inheritance
     moi_df = pd.read_csv(os.path.join(root_path, config['moi_db']))
+    disease_count = len(moi_df.index)
     dominant_codes = set(['AD','XLD'])
     recessive_codes = set(['AR','XLR'])
 
@@ -45,10 +46,6 @@ def calculate_genoLR(genotype):
         g_df['var_count'] = g_df.apply(get_gt, axis = 1)
         var_count = g_df['var_count'].sum()
 
-        # Calculate cumulative scores between all passing variants with ClinVar override
-        clinvar_count = len(g_df[g_df['clinvar_path_sig']].index)
-        score = 2 if clinvar_count > 0 else g_df['score'].mean()
-
         # Determine mode of inheritance
         diseases = [f'OMIM:{d}' for d in genotype.case.case_data['genes'][g].keys()]
         mois = list(moi_df[moi_df['omimId'].isin(diseases)]['moi'].unique())
@@ -57,10 +54,20 @@ def calculate_genoLR(genotype):
 
         # Compare variant count to mode of inheritance
         if len(dominant_codes & mois) >= 1 and var_count >= 1:
-            res[g] = score
+            score = g_df['score'].max()
         elif len(recessive_codes & mois) >= 1 and var_count >= 2:
-            res[g] = score
+            score = g_df['score'].mean()
         else:
-            res[g] = 0
+            score = 0
+
+        # Multiply score by the length of possible diseases
+        score = score * disease_count
+
+        # Square the value if a ClinVar pathogenic is present
+        clinvar_count = len(g_df[g_df['clinvar_path_sig']].index)
+        if clinvar_count > 0:
+            score = score ** 2
+
+        res[g] = math.log(score, 10)
 
     return res
