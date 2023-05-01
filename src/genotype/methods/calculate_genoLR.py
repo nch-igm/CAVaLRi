@@ -56,7 +56,9 @@ def calculate_genoLR(genotype):
         if len(dominant_codes & mois) >= 1 and var_count >= 1:
             score = g_df['score'].max()
         elif len(recessive_codes & mois) >= 1 and var_count >= 2:
-            score = g_df['score'].mean()
+            sorted_numbers = sorted(g_df['score'].to_list(), reverse=True)
+            highest_values = (sorted_numbers[0],sorted_numbers[1])
+            score = sum(highest_values) / 2
         else:
             score = 0
 
