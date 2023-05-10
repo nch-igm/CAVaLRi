@@ -25,16 +25,15 @@ def get_case_output(path):
     """
     
     # Read in all cases in selected output directory
-    # path = '../output/2021-10-06_clinphen/summary'
     cases = []
     for entry in os.scandir(path):
-        if entry.name.endswith('.lr.tsv'):
-            cases.append(entry.name[:entry.name.find('.lr.tsv')])
+        if entry.name.endswith('.cavalri.summary.csv'):
+            cases.append(entry.name[:entry.name.find('.cavalri.summary.csv')])
 
     # Intialize case data frame
-    case_df = pd.DataFrame(columns = ['copath'])
+    case_df = pd.DataFrame(columns = ['case'])
     for i, case in enumerate(cases):
-        case_df.loc[i, 'copath'] = case
+        case_df.loc[i, 'case'] = case
 
     # Merge in true positive values
     diag_df = get_diagnostic_df()

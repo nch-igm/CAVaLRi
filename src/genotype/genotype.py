@@ -42,7 +42,7 @@ class Genotype:
     def score_pathogenicity(self):
         self.spliceai_annotations = run_spliceai(self)
         self.mutpredindel_annotations = run_mutpredindel(self)
-        self.snpdogg_annotations = get_snpdogg(self)
+        self.snv_annotations = get_snv_scores(self)
 
     def filter_pathogenic_variants(self):
         self.pathogenic_variants = filter_pathogenic_variants(self)

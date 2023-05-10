@@ -8,16 +8,30 @@ import json
 def read_phenotypes(case):
 
     config = case.cohort.config
+    root_path = case.cohort.root_path
 
     # Intialize phenotype dictionary
     res = {}
 
-    # Read in HPO IC
-    ic_df = pd.read_csv(os.path.join(case.cohort.root_path,'data','HPO_with_gene_IC.csv'))
+    # Read in default HPO scores
+    ic_df = pd.read_csv(os.path.join(root_path, config['pheno_score_source']))
 
-    # Read in phenotypes stored as csvs
-    pheno_df = pd.read_csv(case.phenotype.phenotype_path).merge(ic_df)
-    
+    # Read in phenotypes stored as csvs with custom IC score, if available
+    pheno_df = pd.read_csv(case.phenotype.phenotype_path)
+    if len(pheno_df.columns) > 1:
+
+        # Use the provided IC
+        pheno_df = pheno_df.iloc[:,:2]
+        pheno_df.columns = ['HPO ID','IC']
+        pheno_df = pheno_df.merge(ic_df[['HPO ID','term_name']])
+
+    else:
+        
+        # Read in HPO IC (Phrank score)
+        pheno_df.columns = ['HPO ID']
+        pheno_df = pheno_df.merge(ic_df)
+        
+
     pheno_df = pheno_df.sort_values('IC', ascending = False).reset_index(drop = True).reset_index().rename(columns = {'index': 'rank'})
     pheno_df['rank'] = pheno_df['rank'] + 1
 

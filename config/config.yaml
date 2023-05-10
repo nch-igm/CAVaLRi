@@ -1,4 +1,4 @@
-## DEPENDICIES ##
+## DEPENDENCIES ##
 annovar_scripts: dependencies/annovar
 annovar_db: dependencies/human_db
 reference_path: dependencies/hg38.fa
@@ -15,32 +15,30 @@ moi_db: data/moi.csv
 hpo: data/hp.obo
 hpoa: data/phenotype.hpoa
 phenotype_disease_gene: data/phenotype_disease_gene.txt
-hpo_bkgd_frequencies: data/hpo-frequency-wes.json
+hpo_bkgd_frequencies: data/hpoa_frequencies.json
 mim2gene: data/mim2gene_medgen
 pheno_score_source: data/HPO_with_gene_IC.csv
 
 ## CAVaLRi SETTINGS ##
 run_mutpredindel: False
+dbNSFP_score: MetaRNN_score
 genome_build: hg38 
-hpo_lower_bound: 5
-hpo_upper_bound: 15
+hpo_lower_bound: 1
+hpo_upper_bound: 11
 pheno_score: IC
 phenoLR_scalar: 1
-genoLR_scalar: 3.6
-moiLR_scalar: 6.8
+genoLR_scalar: 1.96953125
+moiLR_scalar: 5.93359375
 
 ## PATHOGENICITY FILTERS ##
-snpdogg_threshold: 0.5
+snv_threshold: 0.5
 spliceai_threshold: 0.5
 mutpredindel_threshold: 0.5
-
-## PLOT SETTINGS ##
-plot_label: Clinician
-comparator_plot_label: ClinPhen
 
 ## VARIANT FILTERING SETTINGS ##
 gnomAD_popmax: 0.01
 quality_minimum: 150
+depth_minimum: 10
 
 ## BANDWIDTH SETTINGS ##
 cores: 50

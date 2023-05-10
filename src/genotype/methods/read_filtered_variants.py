@@ -68,12 +68,12 @@ def read_filtered_variants(genotype):
                         dp = None
 
                     # Add sample data and add sample name to columns
-                    var_row.append({
+                    var_row.append(json.dumps({
                         'GT': s.data.GT,
                         'AD': ad,
                         'AF': af,
                         'DP': dp
-                    })
+                    }))
                     columns.append(k)
 
         # Add variant to list, which will be converted back into a data frame

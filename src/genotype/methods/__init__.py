@@ -8,4 +8,4 @@ from .filter_pathogenic_variants import *
 from .calculate_genoLR import *
 from .spliceai_annotation import *
 from .mutpredindel_annotation import *
-from .snpdogg_annotation import *
+from .snv_annotation import *

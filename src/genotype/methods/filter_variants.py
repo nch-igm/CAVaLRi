@@ -70,6 +70,12 @@ def qual_filter(var, quality_minimum):
         return True
 
 
+def depth_filter(var, depth_minimum, proband):
+    try:
+        return True if int(var.samples[proband_pos]['DP']) >= depth_minimum else False
+    except:
+        return True
+
 def synonymous_filter(var):
     return False if var.INFO['ExonicFunc.refGene'][0] == 'synonymous_SNV' else True
 
@@ -108,6 +114,8 @@ def filter_variants(genotype):
             proband_alt_filter(record, proband_pos)
                 and
             qual_filter(record, config['quality_minimum'])
+                and
+            depth_filter(record, config['depth_minimum'], proband_pos)
                 and
             multiallelic_filter(record, proband_pos)
                 and
