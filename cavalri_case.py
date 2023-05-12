@@ -63,7 +63,7 @@ def main(input, output_dir):
     case = os.path.basename(input)
     case = case[:case.find('.json')]
 
-    required_keys = ['phenotype','vcf','biological_sex','proband']
+    required_keys = ['phenotype','vcf','biological_sex','proband','mother_affected','father_affected']
 
 
     for rk in required_keys:
@@ -88,7 +88,9 @@ def main(input, output_dir):
         biological_sex = inputs['biological_sex'],
         proband = inputs['proband'],
         mother = inputs['mother'],
-        father = inputs['father']
+        father = inputs['father'],
+        mother_affected = inputs['mother_affected'],
+        father_affected = inputs['father_affected']
     )
 
     # Set up a temporary directory

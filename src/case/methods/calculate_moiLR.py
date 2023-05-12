@@ -105,7 +105,6 @@ def calculate_moiLR(case):
         proband_alt_count = sum([var['proband'] for var in alt_counts.values()])
         mother_alt_count = sum([var['mother'] for var in alt_counts.values()])
         father_alt_count = sum([var['father'] for var in alt_counts.values()])
-        de_novo_count = sum([var['proband'] for var in alt_counts.values() if var['mother'] == 0 and var['father'] == 0])
 
         # Go through each disaese assocaited with the gene
         for d in case.case_data['genes'][gene].keys():
@@ -124,10 +123,46 @@ def calculate_moiLR(case):
                 # If both parents are present
                 if case.mother != 'Unavailable' and case.father != 'Unavailable':
 
-                    if k == 'AD':
+                    if k in ['AD','XLD']:
 
-                        # De Novo
-                        if de_novo_count >= 1:
+                        # Parents are unaffected
+                        if all([
+                            case.mother_affected == 0,
+                            case.father_affected == 0,
+                            proband_alt_count >= 1,
+                            mother_alt_count == 0,
+                            father_alt_count == 0,
+                        ]):
+                            moi[k] = 1
+
+                        # Mother is affected
+                        elif all([
+                            case.mother_affected == 1,
+                            case.father_affected == 0,
+                            proband_alt_count >= 1,
+                            mother_alt_count >= 1,
+                            father_alt_count == 0,
+                        ]):
+                            moi[k] = 1
+
+                        # Father is affected
+                        elif all([
+                            case.mother_affected == 0,
+                            case.father_affected == 1,
+                            proband_alt_count >= 1,
+                            mother_alt_count == 0,
+                            father_alt_count >= 1
+                        ]):
+                            moi[k] = 1
+
+                        # Both parents are affected
+                        elif all([
+                            case.mother_affected == 1,
+                            case.father_affected == 1,
+                            proband_alt_count >= 1,
+                            mother_alt_count >= 1,
+                            father_alt_count >= 1
+                        ]):
                             moi[k] = 1
 
                         # Candidate allele present in either of the parents
@@ -137,18 +172,47 @@ def calculate_moiLR(case):
                     
                     if k == 'AR':
 
-                        # Check for two hits
-                        if proband_alt_count >= 2 and mother_alt_count <= 1 and father_alt_count <= 1:
+                        # Unaffected parents
+                        if all([
+                            case.mother_affected == 0,
+                            case.father_affected == 0,
+                            proband_alt_count >= 2,
+                            mother_alt_count <= 1,
+                            father_alt_count <= 1
+                        ]):
                             moi[k] = 1
-                        else:
-                            moi[k] = -1
-                        
-                    
-                    if k == 'XLD':
 
-                        # De Novo
-                        if de_novo_count >= 1:
+                        # Affected mother
+                        elif all([
+                            case.mother_affected == 1,
+                            case.father_affected == 0,
+                            proband_alt_count >= 2,
+                            mother_alt_count >= 2,
+                            father_alt_count <= 1
+                        ]):
                             moi[k] = 1
+
+                        # Affected father
+                        elif all([
+                            case.mother_affected == 0,
+                            case.father_affected == 1,
+                            proband_alt_count >= 2,
+                            mother_alt_count <= 1,
+                            father_alt_count >= 2
+                        ]):
+                            moi[k] = 1
+
+                        # Affected parents
+                        elif all([
+                            case.mother_affected == 1,
+                            case.father_affected == 1,
+                            proband_alt_count >= 2,
+                            mother_alt_count >= 2,
+                            father_alt_count >= 2
+                        ]):
+                            moi[k] = 1
+
+                            
                         else:
                             moi[k] = -1
 
@@ -158,30 +222,116 @@ def calculate_moiLR(case):
                         # Female case
                         if case.biological_sex == 'F':
                             
-                            # De novo / parents are carriers
-                            if proband_alt_count >= 2 and mother_alt_count <= 1 and father_alt_count == 0:
+                            # Unaffected parents
+                            if all([
+                                case.mother_affected == 0,
+                                case.father_affected == 0,
+                                proband_alt_count >= 2,
+                                mother_alt_count <= 1,
+                                father_alt_count == 0
+                            ]):
                                 moi[k] = 1
+
+                            # Affected mother
+                            elif all([
+                                case.mother_affected == 1,
+                                case.father_affected == 0,
+                                proband_alt_count >= 2,
+                                mother_alt_count >= 2,
+                                father_alt_count == 0
+                            ]):
+                                moi[k] = 1
+                            
+                            # Affected father
+                            elif all([
+                                case.mother_affected == 0,
+                                case.father_affected == 1,
+                                proband_alt_count >= 2,
+                                mother_alt_count <= 1,
+                                father_alt_count >= 1
+                            ]):
+                                moi[k] = 1
+                            
+                            # Affected parents
+                            elif all([
+                                case.mother_affected == 1,
+                                case.father_affected == 1,
+                                proband_alt_count >= 2,
+                                mother_alt_count >= 2,
+                                father_alt_count >= 1
+                            ]):
+                                moi[k] = 1
+                  
                             else:
                                 moi[k] = -1
                             
                         # Male case
                         if case.biological_sex == 'M':
 
-                            # De Novo or mother is heterozygous
-                            if proband_alt_count >= 1 and mother_alt_count <= 1 and father_alt_count == 0:
+                            # Unaffected parents
+                            if all([
+                                case.mother_affected == 0,
+                                case.father_affected == 0,
+                                proband_alt_count >= 1,
+                                mother_alt_count <= 1,
+                                father_alt_count == 0
+                            ]):
                                 moi[k] = 1
+
+                            # Affected mother
+                            elif all([
+                                case.mother_affected == 1,
+                                case.father_affected == 0,
+                                proband_alt_count >= 1,
+                                mother_alt_count >= 2,
+                                father_alt_count == 0
+                            ]):
+                                moi[k] = 1
+                            
+                            # Affected father
+                            elif all([
+                                case.mother_affected == 0,
+                                case.father_affected == 1,
+                                proband_alt_count >= 1,
+                                mother_alt_count <= 1,
+                                father_alt_count >= 1
+                            ]):
+                                moi[k] = 1
+                            
+                            # Affected parents
+                            elif all([
+                                case.mother_affected == 1,
+                                case.father_affected == 1,
+                                proband_alt_count >= 1,
+                                mother_alt_count >= 2,
+                                father_alt_count >= 1
+                            ]):
+                                moi[k] = 1
+                  
                             else:
-                                moi[k] = -1
+                                moi[k] = -1                            
 
                 
 
                 # If father is missing
                 elif case.mother != 'Unavailable' and case.father == 'Unavailable':
 
-                    if k == 'AD':
+                    if k in ['AD','XLD']:
 
-                        # De Novo
-                        if de_novo_count >= 1:
+                        # Mother is unaffected
+                        if all([
+                            case.mother_affected == 0,
+                            proband_alt_count >= 1,
+                            mother_alt_count == 0
+                        ]):
+                            moi[k] = .5
+
+                        # Mother is affected
+                        elif all([
+                            case.mother_affected == 1,
+                            proband_alt_count >= 1,
+                            mother_alt_count >= 1
+                        ]):
                             moi[k] = .5
 
                         # Candidate allele present in the parent
@@ -190,17 +340,22 @@ def calculate_moiLR(case):
             
                     if k == 'AR':
 
-                        # De novo
-                        if proband_alt_count >= 2 and mother_alt_count <= 1:
+                        # Mother is unaffected
+                        if all([
+                            case.mother_affected == 0,
+                            proband_alt_count >= 2,
+                            mother_alt_count <= 1
+                        ]):
                             moi[k] = 0.5
-                        else:
-                            moi[k] = -1
+                        
+                        # Mother is affected
+                        elif all([
+                            case.mother_affected == 1,
+                            proband_alt_count >= 2,
+                            mother_alt_count >= 2
+                        ]):
+                            moi[k] = .5
 
-                    if k == 'XLD':
-
-                        # De novo
-                        if de_novo_count >= 1:
-                            moi[k] = 0.5
                         else:
                             moi[k] = -1
 
@@ -209,18 +364,44 @@ def calculate_moiLR(case):
                         # Female case
                         if case.biological_sex == 'F':
                             
-                            # If mom has less than 2 hits and the proband has 2 or more hits
-                            if proband_alt_count >= 2 and mother_alt_count <= 1:
+                            # Mother is unaffected
+                            if all([
+                                case.mother_affected == 0,
+                                proband_alt_count >= 2,
+                                mother_alt_count <= 1
+                            ]):
                                 moi[k] = 0.5
+
+                            # Mother is affected
+                            elif all([
+                                case.mother_affected == 1,
+                                proband_alt_count >= 2,
+                                mother_alt_count >= 2
+                            ]):
+                                moi[k] = 0.5
+                            
                             else:
                                 moi[k] = -1
                             
                         # Male case
                         if case.biological_sex == 'M':
 
-                            # If mother is heterozygous or de novo
-                            if proband_alt_count >= 1 and mother_alt_count <= 1:
+                            # Mother is unaffected
+                            if all([
+                                case.mother_affected == 0,
+                                proband_alt_count >= 1,
+                                mother_alt_count <= 1
+                            ]):
                                 moi[k] = 0.5
+
+                            # Mother is affected
+                            elif all([
+                                case.mother_affected == 1,
+                                proband_alt_count >= 1,
+                                mother_alt_count >= 2
+                            ]):
+                                moi[k] = 0.5
+                            
                             else:
                                 moi[k] = -1
                 
@@ -229,28 +410,45 @@ def calculate_moiLR(case):
                 # If mother is missing
                 elif case.mother == 'Unavailable' and case.father != 'Unavailable':
 
-                    if k == 'AD':
+                    if k in ['AD','XLD']:
 
-                        # De Novo
-                        if de_novo_count >= 1:
+                        # Father is unaffected
+                        if all([
+                            case.father_affected == 0,
+                            proband_alt_count >= 1,
+                            father_alt_count == 0
+                        ]):
                             moi[k] = .5
 
-                        # Candidate allele present in the parent
+                        # Father is affected
+                        elif all([
+                            case.father_affected == 1,
+                            proband_alt_count >= 1,
+                            father_alt_count >= 1
+                        ]):
+                            moi[k] = .5
+
                         else:
                             moi[k] = -1
             
                     if k == 'AR':
 
-                        if proband_alt_count >= 2 and father_alt_count <= 1:
+                        # Father is unaffected
+                        if all([
+                            case.father_affected == 0,
+                            proband_alt_count >= 2,
+                            father_alt_count <= 1
+                        ]):
                             moi[k] = 0.5
-                        else:
-                            moi[k] = -1
+                        
+                        # Father is affected
+                        elif all([
+                            case.father_affected == 1,
+                            proband_alt_count >= 2,
+                            father_alt_count >= 2
+                        ]):
+                            moi[k] = .5
 
-                    if k == 'XLD':
-
-                        # De novo
-                        if de_novo_count >= 1:
-                            moi[k] = 0.5
                         else:
                             moi[k] = -1
 
@@ -259,18 +457,44 @@ def calculate_moiLR(case):
                         # Female case
                         if case.biological_sex == 'F':
                             
-                            # If mom has less than 2 hits and the proband has 2 or more hits
-                            if proband_alt_count >= 2 and father_alt_count == 0:
+                            # Father is unaffected
+                            if all([
+                                case.father_affected == 0,
+                                proband_alt_count >= 2,
+                                father_alt_count == 0
+                            ]):
                                 moi[k] = 0.5
+
+                            # Father is affected
+                            elif all([
+                                case.father_affected == 1,
+                                proband_alt_count >= 2,
+                                father_alt_count >= 1
+                            ]):
+                                moi[k] = 0.5
+                            
                             else:
                                 moi[k] = -1
                             
                         # Male case
                         if case.biological_sex == 'M':
 
-                            # If mother is heterozygous or de novo
-                            if proband_alt_count >= 1 and father_alt_count == 0:
+                            # Father is unaffected
+                            if all([
+                                case.father_affected == 0,
+                                proband_alt_count >= 1,
+                                father_alt_count == 0
+                            ]):
                                 moi[k] = 0.5
+
+                            # Father is affected
+                            elif all([
+                                case.father_affected == 1,
+                                proband_alt_count >= 1,
+                                father_alt_count >= 1
+                            ]):
+                                moi[k] = 0.5
+                            
                             else:
                                 moi[k] = -1
                                 

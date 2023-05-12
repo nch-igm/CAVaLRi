@@ -37,7 +37,7 @@ mutpredindel_threshold: 0.5
 
 ## VARIANT FILTERING SETTINGS ##
 gnomAD_popmax: 0.01
-quality_minimum: 150
+quality_minimum: 100
 depth_minimum: 10
 
 ## BANDWIDTH SETTINGS ##

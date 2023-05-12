@@ -87,11 +87,11 @@ def get_snv_scores(genotype):
         scored_snv_df = snv_df.merge(scored_df, on = ['CHROM','POS','REF','ALT'], how = 'left')
         scored_snv_df.loc[scored_snv_df['SCORE'] == 'None','SCORE'] = 0
         scored_snv_df = scored_snv_df.rename(columns = {'SCORE':'snv_score'}).reset_index(drop=True)
-        scored_snv_df = scored_snv_df.astype({'snv_score':float})
+        scored_snv_df = scored_snv_df.astype({'snv_score':float,'CHROM':str})
         scored_snv_df['CHROM'] = scored_snv_df['CHROM'].str[3:]
     
     except:
         scored_snv_df = pd.DataFrame()
-        
+
     return scored_snv_df
     

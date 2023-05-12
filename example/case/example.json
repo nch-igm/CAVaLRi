@@ -4,5 +4,7 @@
     "biological_sex": "M",
     "proband": "PROBAND",
     "mother": "MOTHER",
-    "father": "FATHER"
+    "father": "FATHER",
+    "mother_affected": 0,
+    "father_affected": 0
 }

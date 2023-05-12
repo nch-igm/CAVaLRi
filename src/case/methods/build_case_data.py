@@ -20,6 +20,11 @@ def build_case_data(case):
     gene_disease_df = gene_disease_df.merge(gene_df[['GeneID','Symbol']], on = 'GeneID')
     gene_disease_df = gene_disease_df[gene_disease_df['type'] == 'phenotype']
 
+    # Remove disease without an annotated mode of inheretence
+    moi_df = pd.read_csv(os.path.join(root_path, config['moi_db']))
+    moi_diseases = [int(moi[moi.find(':')+1:]) for moi in list(set(moi_df['omimId']))]
+    gene_disease_df = gene_disease_df[gene_disease_df['OMIM'].isin(moi_diseases)]
+
     for k,v in case_data['genes'].items():
 
         omim_ids = gene_disease_df[gene_disease_df['Symbol'] == k]['OMIM'].to_list()

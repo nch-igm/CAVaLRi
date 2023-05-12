@@ -18,7 +18,8 @@ class Case:
 
     # INITIALIZE
     def __init__(self, cohort, case_id, genotype_path, phenotype_path, 
-                 biological_sex, proband, mother, father, genome_build='hg38'):
+                 biological_sex, proband, mother, father, mother_affected, 
+                 father_affected, genome_build='hg38'):
         
         self.cohort = cohort
         self.case_id = case_id
@@ -29,10 +30,12 @@ class Case:
         self.proband = proband
         self.mother = mother
         self.father = father
+        self.mother_affected = int(mother_affected)
+        self.father_affected = int(father_affected)
     
 
     def validate_inputs(self):
-        self.validation_status = validate_inputs(self)
+        self.genotype.genotype_path = validate_inputs(self)
 
     def build_case_data(self):
         self.case_data = build_case_data(self)

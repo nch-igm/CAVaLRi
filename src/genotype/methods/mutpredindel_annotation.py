@@ -47,8 +47,11 @@ def run_mutpredindel(genotype):
     p = worker(cmd)
 
     # Read in inframe indel mutations
-    inframe_indel_df = pd.read_csv(mutpred_input_vcf, sep = '\t', comment = '#', header = None).iloc[:,[0,1,3,4]]
-    inframe_indel_df.columns = ['CHROM','POS','REF','ALT']
+    try:
+        inframe_indel_df = pd.read_csv(mutpred_input_vcf, sep = '\t', comment = '#', header = None).iloc[:,[0,1,3,4]]
+        inframe_indel_df.columns = ['CHROM','POS','REF','ALT']
+    except:
+        return pd.DataFrame()
 
     if config['run_mutpredindel']:
 
@@ -114,7 +117,7 @@ def run_mutpredindel(genotype):
     mutpred_score_df = mutpred_score_df[['CHROM','POS','score']]
     mutpred_score_df = inframe_indel_df.merge(mutpred_score_df, on = ['CHROM','POS'])
     mutpred_score_df = mutpred_score_df.rename(columns = {'score':'mutpred_score'})
-    mutpred_score_df = mutpred_score_df[['CHROM','POS','REF','ALT','mutpred_score']].astype({'mutpred_score':float,'POS':str})
+    mutpred_score_df = mutpred_score_df[['CHROM','POS','REF','ALT','mutpred_score']].astype({'mutpred_score':float,'POS':str,'CHROM':str})
     mutpred_score_df['CHROM'] = mutpred_score_df['CHROM'].str[3:]
     return mutpred_score_df
     
