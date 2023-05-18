@@ -58,7 +58,7 @@ def multiallelic_filter(var, proband_pos):
         return True
 
 
-def igm_common_filter(var, common_ids):
+def common_var_filter(var, common_ids):
     var_id = f"{var.CHROM}_{var.POS}_{var.REF}_{var.ALT[0]}"
     return True if var_id in common_ids else False
 
@@ -94,16 +94,16 @@ def filter_variants(genotype):
     vcf_reader = vcf.Reader(filename = input_vcf_path, compressed=True, encoding='ISO-8859-1')
     vcf_writer = vcf.Writer(open(filtered_vcf_path, 'w'), vcf_reader)
 
-    # Read in IGM variant frequencies
-    igm_freq_path = os.path.join(root_path, config['common_variants'])
-    if os.path.exists(igm_freq_path):
-        igm_common_df = pd.read_csv(igm_freq_path)
+    # Read in common variants
+    common_var_path = os.path.join(root_path, config['common_variants'])
+    if os.path.exists(common_var_path):
+        common_var_df = pd.read_csv(common_var_path)
         def get_var_id(row):
             return f"chr{row['CHROM']}_{row['POS']}_{row['REF']}_{row['ALT']}"
-        igm_common_df['var_id'] = igm_common_df.apply(get_var_id, axis = 1)
-        igm_common_ids = igm_common_df['var_id'].to_list()
+        common_var_df['var_id'] = common_var_df.apply(get_var_id, axis = 1)
+        common_var_ids = common_var_df['var_id'].to_list()
     else:
-        igm_common_ids = []
+        common_var_ids = []
 
     # Get proband position
     proband_pos = get_proband_pos(vcf_reader.samples, genotype.case.proband)
@@ -127,7 +127,7 @@ def filter_variants(genotype):
                             and
                         synonymous_filter(record)
                             and
-                        not igm_common_filter(record, igm_common_ids)
+                        not common_var_filter(record, common_var_ids)
                     )
                         or 
                     clinvar_filter(record)

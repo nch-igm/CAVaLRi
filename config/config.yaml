@@ -3,32 +3,31 @@ annovar_scripts: dependencies/annovar
 annovar_db: dependencies/human_db
 reference_path: dependencies/hg38.fa
 hpo_walk_dir: /igm/projects/
-common_variants: data/WES_common_variants.csv
+common_variants: data/DDD_common_variants.csv
 mutpredindel: /igm/home/rsrxs003/mutpred-indel/mutpredindel/
 muptredindel_MCR: /igm/home/rsrxs003/mutpred-indel/mutpredindel/MCR2/v91/
-snpdogg: dependencies/snpdogg_skinny
 
 
 ## DATA TABLES ##
-gene_info: data/Homo_sapiens_gene_info.tsv
+gene_info: dependencies/Homo_sapiens.gene_info
 moi_db: data/moi.csv
-hpo: data/hp.obo
-hpoa: data/phenotype.hpoa
-phenotype_disease_gene: data/phenotype_disease_gene.txt
+hpo: dependencies/hp.obo
+hpoa: dependencies/phenotype.hpoa
 hpo_bkgd_frequencies: data/hpoa_frequencies.json
-mim2gene: data/mim2gene_medgen
+mim2gene: dependencies/mim2gene_medgen
 pheno_score_source: data/HPO_with_gene_IC.csv
+pheno_score: IC
 
 ## CAVaLRi SETTINGS ##
 run_mutpredindel: False
 dbNSFP_score: MetaRNN_score
 genome_build: hg38 
 hpo_lower_bound: 1
-hpo_upper_bound: 11
-pheno_score: IC
+hpo_upper_bound: 19
+pheno_root_penalty: 0.1
 phenoLR_scalar: 1
-genoLR_scalar: 1.96953125
-moiLR_scalar: 5.93359375
+genoLR_scalar: 3.85390625
+moiLR_scalar: 12.08984375
 
 ## PATHOGENICITY FILTERS ##
 snv_threshold: 0.5
@@ -37,8 +36,8 @@ mutpredindel_threshold: 0.5
 
 ## VARIANT FILTERING SETTINGS ##
 gnomAD_popmax: 0.01
-quality_minimum: 100
+quality_minimum: 10
 depth_minimum: 10
 
 ## BANDWIDTH SETTINGS ##
-cores: 50
+cores: 1

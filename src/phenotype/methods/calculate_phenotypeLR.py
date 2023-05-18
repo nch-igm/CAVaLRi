@@ -9,9 +9,6 @@ def calculate_phenotypeLR(case):
 
     config = case.cohort.config
 
-    with open('/igm/home/rsrxs003/rnb/output/BL-280/sample.pickle','wb') as f:
-        pickle.dump(case, f)
-
     for gene, gene_diseases in case.case_data['genes'].items():
         for d, d_data in gene_diseases.items():
 
@@ -21,6 +18,7 @@ def calculate_phenotypeLR(case):
 
                 # Get the necessary phenotype rank and LR data
                 pheno_df = pd.DataFrame(d_data['phenotype_scores']).T
+                pheno_df = pheno_df[pheno_df['common_ancestor'].notna()]
                 pheno_rank_df = pd.DataFrame(case.phenotype.phenotypes).T
                 pheno_rank_df = pheno_rank_df.merge(pheno_df, left_index = True, right_index = True)[['rank', 'LR']]
 

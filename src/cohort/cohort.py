@@ -25,6 +25,33 @@ class Cohort:
         # 1) HPO
         # 2) HPOA
         # 3) Propogate frequencies up the tree
+
+        # Create MOI df
+        hpoa_path = os.path.join(self.root_path, self.config['hpoa'])
+        hpoa = pd.read_csv(hpoa_path, sep = '\t', comment = '#').rename(columns = {'database_id':'OMIM'})
+        inherit = {
+            'HP:0000006':'AD', 
+            'HP:0000007':'AR',
+            'HP:0001423':'XLD',
+            'HP:0001419':'XLR',
+            'HP:0001417':'XLD;XLR'
+        }
+
+        moi_df = hpoa[hpoa['hpo_id'].isin(inherit.keys())].rename(columns = {'OMIM':'omimId'})[['omimId','hpo_id']]
+
+        def map_inheritence(row, inherit):
+            return inherit[row['hpo_id']]
+
+        moi_df['moi'] = moi_df.apply(map_inheritence, inherit=inherit, axis = 1)
+        moi_group_df = moi_df[['omimId','moi']].groupby('omimId')['moi'].apply(list).reset_index()
+        moi_group_df = moi_group_df[moi_group_df['omimId'].str.contains('OMIM')]
+
+        def join_inherit(row):
+            res = ';'.join(list(set(row['moi'])))
+            return ';'.join(list(set(res.split(';'))))
+
+        moi_group_df['moi'] = moi_group_df.apply(join_inherit, axis = 1)
+        moi_group_df.to_csv(os.path.join(self.root_path,'data','moi.csv'), index = False)
         
 
     def add_case(self, case):

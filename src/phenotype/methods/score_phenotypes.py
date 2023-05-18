@@ -30,6 +30,7 @@ def get_hpoa_disease_frequency(query_term, F_d, _genes):
             ca_genes = 1 if len(_genes[ca_k]) == 0 else len(_genes[ca_k])
             penalty = query_genes / ca_genes
             score = disease_freq * penalty
+            score = disease_freq
             if score > best_ca_score:
                 best_common_ancestor = ca_k
                 best_ca_score = score
@@ -41,7 +42,16 @@ def get_hpoa_disease_frequency(query_term, F_d, _genes):
 def get_hpoa_background_frequency(pheno, bkgd_freq):
     
     #TODO Add variables that condition on the background frequency
-    return bkgd_freq[pheno]
+    try:
+        return bkgd_freq[pheno]
+
+    except KeyError:
+        print(f"""
+            There is not a background frequency available for {pheno}. Taking
+            the minimum frequency available in the provided background
+            frequencies.
+            """)
+        return 0
 
 
 def score_disease_phenotype(F_d, bkgd_freq, _genes, case):
@@ -51,12 +61,19 @@ def score_disease_phenotype(F_d, bkgd_freq, _genes, case):
     
     # Add each term to the result
     for pheno in case.phenotype.phenotypes:
-        if pheno == 'HP:0011396':
-            phenos[pheno]['common_ancestor'], phenos[pheno]['disease_freq'] = get_hpoa_disease_frequency(pheno, F_d, _genes)
         phenos[pheno]['common_ancestor'], phenos[pheno]['disease_freq'] = get_hpoa_disease_frequency(pheno, F_d, _genes)
-        background_freq = get_hpoa_background_frequency(pheno, bkgd_freq)
+        if phenos[pheno]['common_ancestor'] == 'Ancestraly Closed':
+            background_freq = get_hpoa_background_frequency(pheno, bkgd_freq)
+        elif phenos[pheno]['common_ancestor'] == None:
+            background_freq = 1
+        else:
+            background_freq = get_hpoa_background_frequency(phenos[pheno]['common_ancestor'], bkgd_freq)
         phenos[pheno]['background_freq'] = min([bg for bg in bkgd_freq.values() if bg > 0]) if background_freq == 0 else background_freq
         phenos[pheno]['LR'] = phenos[pheno]['disease_freq'] / phenos[pheno]['background_freq']
+
+        # Impose a penalty if the most recent common ancestor is the root node
+        if phenos[pheno]['common_ancestor'] == 'HP:0000118':
+            phenos[pheno]['LR'] = case.cohort.config['pheno_root_penalty']
 
     return phenos
 
@@ -82,7 +99,7 @@ def score_phenotypes(case):
     gene_disease_path = os.path.join(case.cohort.root_path, config['phenotype_disease_gene'])
 
     # Intialize frequency map
-    F = build_propagated_frequency_map(hpoa_path)  #TODO Find a way to provide HPOA
+    F = build_propagated_frequency_map(hpoa_path)
 
     # Read in information content scores for all phenotypes
     hpo_ic_path = os.path.join(case.cohort.root_path, config['pheno_score_source'])

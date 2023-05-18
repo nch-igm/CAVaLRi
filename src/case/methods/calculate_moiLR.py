@@ -64,7 +64,9 @@ def calculate_moiLR(case):
 
             # Normalize GT by setting all | to /, we don't care about phasing for now
             for gt in ['proband','mother','father']:
-                if gt_data[gt].find('|') != -1:
+                
+                # Hemizygous state
+                if gt_data[gt].find('|') != -1 or gt_data[gt] in [1,'1']:
                     # g = gt_data[gt].split('|')
                     # gt_data[gt] = '/'.join(g)
                     gt_data[gt] = '1/1'

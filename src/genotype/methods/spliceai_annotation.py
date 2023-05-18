@@ -50,10 +50,13 @@ def run_spliceai(genotype):
     p = worker(cmd)
 
     # Read in results
+    try:
+        spliceai_df = pd.read_csv(spliceai_output_vcf, sep = '\t', comment = '#')
+    except:
+        return pd.DataFrame(columns = ['CHROM','POS','REF','ALT','spliceai_score'])
+
     cols = ['CHROM','POS','ID','REF','ALT','QUAL','FILTER','INFO']
-    spliceai_df = pd.read_csv(spliceai_output_vcf, sep = '\t', comment = '#')
     spliceai_df.columns = cols + [i for i in range(len(spliceai_df.columns) - len(cols))]
-    spliceai_df.to_csv('/igm/home/rsrxs003/rnb/notebooks/BL-295/hi.csv')
     
     def parse_info(row):
         try:

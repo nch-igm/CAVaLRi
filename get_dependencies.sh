@@ -16,5 +16,6 @@ dependencies/annovar/annotate_variation.pl -downdb -buildver hg38 -webfrom annov
 # Download other data requirements
 wget https://ftp.ncbi.nih.gov/gene/DATA/mim2gene_medgen -P $dependency_path
 wget https://ftp.ncbi.nih.gov/gene/DATA/GENE_INFO/Mammalia/Homo_sapiens.gene_info.gz -P $dependency_path
+gunzip $dependency_path/Homo_sapiens.gene_info.gz
 wget http://purl.obolibrary.org/obo/hp/hp.obo -P $dependency_path
 wget http://purl.obolibrary.org/obo/hp/hpoa/phenotype.hpoa -P $dependency_path
