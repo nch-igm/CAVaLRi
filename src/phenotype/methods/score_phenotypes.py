@@ -96,7 +96,7 @@ def score_phenotypes(case):
     
     # Read in the HPOA
     hpoa_path = os.path.join(case.cohort.root_path, config['hpoa'])
-    gene_disease_path = os.path.join(case.cohort.root_path, config['phenotype_disease_gene'])
+    gene_disease_path = os.path.join(case.cohort.root_path, config['phenotype_gene'])
 
     # Intialize frequency map
     F = build_propagated_frequency_map(hpoa_path)

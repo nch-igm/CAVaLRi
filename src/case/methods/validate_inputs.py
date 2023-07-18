@@ -61,7 +61,7 @@ def validate_inputs(case):
         sys.exit(1)
 
     elif not samples_pass:
-        print(f"Validation failed: the following samples were not found in the vcf: {samples}")
+        print(f"{case.case_id} Validation failed: the following samples were not found in the vcf ({case.genotype.genotype_path}): {samples}")
         sys.exit(1)
 
     # Add chr if it chr to CHROM

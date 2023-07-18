@@ -19,3 +19,4 @@ wget https://ftp.ncbi.nih.gov/gene/DATA/GENE_INFO/Mammalia/Homo_sapiens.gene_inf
 gunzip $dependency_path/Homo_sapiens.gene_info.gz
 wget http://purl.obolibrary.org/obo/hp/hp.obo -P $dependency_path
 wget http://purl.obolibrary.org/obo/hp/hpoa/phenotype.hpoa -P $dependency_path
+wget http://purl.obolibrary.org/obo/hp/hpoa/phenotype_to_genes.txt -P $dependency_path
