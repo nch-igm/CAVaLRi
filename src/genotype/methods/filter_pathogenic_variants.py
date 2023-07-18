@@ -98,7 +98,6 @@ def filter_pathogenic_variants(genotype):
     splicing_scored_df = splicing_df.merge(genotype.spliceai_annotations, how = 'left', on = ['CHROM','POS','REF','ALT']).fillna(0).rename(columns = {'spliceai_score':'score'})
     bad_splicing_df = splicing_scored_df[splicing_scored_df['score'] >= config['spliceai_threshold']]
 
-
     # Limit inframe indels to only those that look bad
     inframe_indel_df = inframe_indel_df.merge(genotype.mutpredindel_annotations, how = 'left', on = ['CHROM','POS','REF','ALT']).fillna(0).rename(columns = {'mutpred_score':'score'})
     bad_inframe_indel_df = inframe_indel_df[inframe_indel_df['score'] >= config['mutpredindel_threshold']]
@@ -108,11 +107,13 @@ def filter_pathogenic_variants(genotype):
     pathogenic_df = pd.concat([df[index_cols] for df in [null_df, bad_snv_df, bad_splicing_df, bad_inframe_indel_df, clinvar_path_df] if not df.empty])
     pathogenic_df = pathogenic_df.drop_duplicates().reset_index(drop=True)
     pathogenic_df = var_df.merge(pathogenic_df, on = index_cols[:-1])
+    pathogenic_df = pathogenic_df.groupby(list(pathogenic_df.columns[:-1])).max().reset_index()
 
     # Save variants if the top two variants in a gene average above some threshold value
     min_threshold = min([config['snv_threshold'], config['spliceai_threshold'], config['mutpredindel_threshold']])
     scored_df = pd.concat([df[index_cols] for df in [null_df, snv_df, splicing_scored_df, inframe_indel_df, clinvar_path_df] if not df.empty])
     scored_df = var_df.merge(scored_df, on = index_cols[:-1])
+    scored_df = scored_df.groupby(list(scored_df.columns[:-1])).max().reset_index()
     
     # Get disease mode of inheretences
     moi_df = pd.read_csv(os.path.join(genotype.case.cohort.root_path, config['moi_db']))
@@ -127,26 +128,21 @@ def filter_pathogenic_variants(genotype):
     gene_disease_df = gene_df.merge(mim2gene, on = 'GeneID')
     gene_disease_df = gene_disease_df.merge(moi_df, on = 'omimId')
     rd_df = gene_disease_df[gene_disease_df['moi'].str.contains('R')]
-    rd_genes = list(set(gene_disease_df['geneSymbol']))
+    rd_gene_ids = list(set(gene_disease_df['GeneID']))
 
 
     # Add second worst variants to the list if they can be combined with the 
     # highest scoring variant to cause a recessive disease    
     extra_variants = []
-    for g in pathogenic_df['GENE'].to_list():
+    for g in list(pathogenic_df['GENE_ID'].unique()):
         
         # Limit to only variants for gene g
-        scored_g_df = scored_df[scored_df['GENE'] == g]
+        scored_g_df = scored_df[scored_df['GENE_ID'] == g]
         
         # Get second highest values if the gene is associated with a recessive condition
         sorted_scores = sorted(scored_g_df['score'].to_list(), reverse=True)
         highest_score = scored_g_df['score'].max()
-        if len(scored_g_df.index) > 1 and g in rd_genes:
-
-            # Get second
-            # highest_scores = (sorted_scores[0],sorted_scores[1])
-            # score = sum(sorted_scores) / 2
-            # second_worst_pathogenic_df
+        if len(scored_g_df.index) > 1 and g in rd_gene_ids:
 
             second_worst_df = scored_g_df.sort_values('score', ascending = False)
             second_worst_df = second_worst_df.reset_index(drop=True).iloc[:2,:]

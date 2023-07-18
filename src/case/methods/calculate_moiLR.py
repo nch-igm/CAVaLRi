@@ -51,7 +51,7 @@ def calculate_moiLR(case):
     for gene in case.case_data['genes'].keys():
 
         # Intialize dict to store count of alternate alleles
-        g_df = case.genotype.pathogenic_variants[case.genotype.pathogenic_variants['GENE'] == gene]
+        g_df = case.genotype.pathogenic_variants[case.genotype.pathogenic_variants['GENE_ID'] == gene]
         alt_counts = {f"{var['CHROM']}-{var['POS']}-{var['REF']}-{var['ALT']}":{s:0 for s in ['proband', 'mother', 'father']} for idx,var in g_df.iterrows()}
 
         # Go through each variant

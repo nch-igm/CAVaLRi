@@ -9,11 +9,11 @@ def get_diagnostic_df(case):
     if case.cohort.diagnostic_data != '':
         wes_diagnostic_df = pd.read_csv(case.cohort.diagnostic_data)
         wes_diagnostic_df = wes_diagnostic_df[['CASE', 'DIAGNOSTIC_GENE']]
-        wes_diagnostic_df = wes_diagnostic_df.rename(columns=({'CASE':'case_id', 'DIAGNOSTIC_GENE':'gene'}))
+        wes_diagnostic_df = wes_diagnostic_df.rename(columns=({'CASE':'case_id', 'DIAGNOSTIC_GENE':'gene_id'}))
         wes_diagnostic_df = wes_diagnostic_df.drop_duplicates().reset_index(drop=True)
 
     else:
-        wes_diagnostic_df = pd.DataFrame(columns = ['case_id', 'gene'])
+        wes_diagnostic_df = pd.DataFrame(columns = ['case_id', 'gene_id'])
 
     return wes_diagnostic_df
 
@@ -37,7 +37,7 @@ def add_tp(case):
         for d, d_data in g_data.items():
         
             # Check if the disease is related to a true positive gene
-            if len(tp_df.loc[tp_df['gene'] == g].index) != 0:
+            if len(tp_df.loc[tp_df['gene_id'] == g].index) != 0:
                 d_data['isHit'] = 1
                 case.case_data['tpHits'].append(d_data['geneRank'])
             else:

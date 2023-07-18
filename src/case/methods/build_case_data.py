@@ -9,40 +9,49 @@ def build_case_data(case):
     config = case.cohort.config
     root_path = case.cohort.root_path
 
-    # Intialize case data
-    case_data = {'genes': {k:{} for k in case.genotype.pathogenic_variants['GENE'].unique()}}
+    # Get variants
+    var_df = case.genotype.pathogenic_variants.copy()
 
-    with open('/igm/home/rsrxs003/rnb/notebooks/BL-293/cd.json', 'w') as f:
-        json.dump(case_data, f, indent = 4)
+    # Intialize case data
+    case_data = {'genes': {k:{} for k in var_df['GENE_ID'].unique()}}
     
     # Read in gene_disease dataframe
     gene_path = os.path.join(root_path, config['gene_info'])
     gene_disease_path = os.path.join(root_path, config['mim2gene'])
 
-    gene_df = pd.read_csv(gene_path, sep = '\t').astype({'GeneID': str})
+    gene_df = pd.read_csv(gene_path, sep = '\t').astype({'GeneID': str})[['GeneID','Symbol']]
+    gene_lookup = {row['GeneID']:row['Symbol'] for idx, row in gene_df.iterrows()}
     gene_disease_df = pd.read_csv(gene_disease_path, sep = '\t').rename(columns = {'#MIM number':'OMIM'})
-    gene_disease_df = gene_disease_df.merge(gene_df[['GeneID','Symbol']], on = 'GeneID')
+    gene_disease_df = gene_disease_df.merge(gene_df, on = 'GeneID')
     gene_disease_df = gene_disease_df[gene_disease_df['type'] == 'phenotype']
 
     # Remove disease without an annotated mode of inheretence
     moi_df = pd.read_csv(os.path.join(root_path, config['moi_db']))
     moi_diseases = [int(moi[moi.find(':')+1:]) for moi in list(set(moi_df['omimId']))]
     gene_disease_df = gene_disease_df[gene_disease_df['OMIM'].isin(moi_diseases)]
-    gene_disease_df.to_csv('/igm/home/rsrxs003/rnb/notebooks/BL-293/cd.csv', index=False)
 
     for k,v in case_data['genes'].items():
 
-        omim_ids = gene_disease_df[gene_disease_df['Symbol'] == k]['OMIM'].to_list()
+        omim_ids = gene_disease_df[gene_disease_df['GeneID'] == k]['OMIM'].to_list()
         for oi in omim_ids:
-            v[oi] = {}
-
-    with open('/igm/home/rsrxs003/rnb/notebooks/BL-293/cd1.json', 'w') as f:
-        json.dump(case_data, f, indent = 4)
+            v[str(oi)] = {}
     
-    case_data = {'genes': {k:v for k,v in case_data['genes'].items() if len(case_data['genes'][k]) > 0}}
-
-    with open('/igm/home/rsrxs003/rnb/notebooks/BL-293/cd2.json', 'w') as f:
-        json.dump(case_data, f, indent = 4)
+        # Add genotype data
+        g_var_df = var_df[var_df['GENE_ID'] == k].reset_index(drop=True)
+        v['gene_data'] = {
+            'symbol': gene_lookup[k],
+            'variants': [
+                {
+                    'hg38_position': f"{row['CHROM']}:{row['POS']}{row['REF']}>{row['ALT']}",
+                    'score': row['score'],
+                    'clinvar_pathogenic': row['clinvar_path_sig'],
+                    'function': row['func'],
+                    'exon_function': row['exon_func']
+                }
+            for idx,row in g_var_df.iterrows()]
+        }
+    
+    case_data = {'genes': {k:v for k,v in case_data['genes'].items() if len(v.keys()) > 1}}
 
     return case_data
     

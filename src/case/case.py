@@ -32,7 +32,14 @@ class Case:
         self.father = father
         self.mother_affected = int(mother_affected)
         self.father_affected = int(father_affected)
-    
+
+        # Get trio status
+        if self.mother != '' and self.father != '':
+            self.trio_status = 'TRIO'
+        elif (self.mother == '' and self.father != '') & (self.mother != '' and self.father == ''):
+            self.trio_status = 'DUO'
+        else:
+            self.trio_status = 'SINGLETON'
 
     def validate_inputs(self):
         self.genotype.genotype_path = validate_inputs(self)

@@ -11,7 +11,7 @@ def calculate_genoLR(genotype):
     input:
         genotype -- CAVaLRi Genotype type object 
     output:
-        dictionary keyed by gene symbol with a float value corresponding to the 
+        dictionary keyed by NCBI gene ID with a float value corresponding to the 
         log_10 scaled genotype likelihood ratio
     """
 
@@ -33,7 +33,7 @@ def calculate_genoLR(genotype):
     for g in list(genotype.case.case_data['genes'].keys()):
         
         # Get alt allele count
-        g_df = pathogenic_df[pathogenic_df['GENE'] == g]
+        g_df = pathogenic_df[pathogenic_df['GENE_ID'] == g]
         def get_gt(row):
             gt = json.loads(row['proband'])['GT']
             if gt in ['0|1','1|0','1/1','1|1','1',1] or (gt in ['0/1','1/0'] and genotype.case.biological_sex == 'M' and row['CHROM'] == 'X'):

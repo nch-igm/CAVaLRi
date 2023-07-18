@@ -28,7 +28,17 @@ class Cohort:
 
         # Create MOI df
         hpoa_path = os.path.join(self.root_path, self.config['hpoa'])
-        hpoa = pd.read_csv(hpoa_path, sep = '\t', comment = '#').rename(columns = {'database_id':'OMIM'})
+        hpoa = pd.read_csv(
+            hpoa_path,
+            sep = '\t',
+            comment = '#',
+            dtype = {
+                'qualifier': str,
+                'onset': str,
+                'frequency': str,
+                'sex': str,
+                'modifier': str
+            }).rename(columns = {'database_id':'OMIM'})
         inherit = {
             'HP:0000006':'AD', 
             'HP:0000007':'AR',
