@@ -23,9 +23,9 @@ def filter_pathogenic_variants(genotype):
     # Define a refgene functional list to identify null variants according to
     # https://annovar.openbioinformatics.org/en/latest/user-guide/gene/
     null_variants = ['frameshift_elongation','frameshift_truncation',
-                     'frameshift_variant','stopgain','stop_lost',
-                     'frameshift_insertion','frameshift_deletion']
-    snv_variants = ['missense_variant','nonsynonymous_SNV']
+                     'frameshift_variant','stopgain','stop_lost','startloss',
+                     'stoploss','frameshift_insertion','frameshift_deletion']
+    snv_variants = ['missense_variant','nonsynonymous_SNV','unknown']
     inframe_indel_variants = ['nonframeshift_insertion','nonframeshift_deletion',
                           'inframe_insertion','inframe_deletion',
                           'inframe_variant']
@@ -76,7 +76,7 @@ def filter_pathogenic_variants(genotype):
     null_df['score'] = 1
     snv_df = var_df[var_df['exon_func'].isin(snv_variants)]
     inframe_indel_df = var_df[var_df['exon_func'].isin(inframe_indel_variants)]
-    splicing_df = var_df[var_df['func'].isin(splice_variants)]
+    splicing_df = var_df[(var_df['func'].isin(splice_variants)) | (var_df['func'].str.contains('splicing'))]
     clinvar_vus_df = var_df[var_df['clinvar_vus_sig']]
     clinvar_path_df = var_df[var_df['clinvar_path_sig']]
     clinvar_path_df['score'] = 1
@@ -87,7 +87,7 @@ def filter_pathogenic_variants(genotype):
             |
         var_df['exon_func'].isin(inframe_indel_variants)
             |
-        var_df['func'].isin(splice_variants)
+        var_df['func'].isin(splice_variants) | (var_df['func'].str.contains('splicing'))
     )]
 
     # Limit SNVs to only the ones that look bad
@@ -107,13 +107,16 @@ def filter_pathogenic_variants(genotype):
     pathogenic_df = pd.concat([df[index_cols] for df in [null_df, bad_snv_df, bad_splicing_df, bad_inframe_indel_df, clinvar_path_df] if not df.empty])
     pathogenic_df = pathogenic_df.drop_duplicates().reset_index(drop=True)
     pathogenic_df = var_df.merge(pathogenic_df, on = index_cols[:-1])
-    pathogenic_df = pathogenic_df.groupby(list(pathogenic_df.columns[:-1])).max().reset_index()
+    pathogenic_max_df = pathogenic_df.groupby(index_cols[:-1])['score'].max().reset_index()
+    pathogenic_df = pathogenic_df.merge(pathogenic_max_df)
 
     # Save variants if the top two variants in a gene average above some threshold value
     min_threshold = min([config['snv_threshold'], config['spliceai_threshold'], config['mutpredindel_threshold']])
     scored_df = pd.concat([df[index_cols] for df in [null_df, snv_df, splicing_scored_df, inframe_indel_df, clinvar_path_df] if not df.empty])
+    scored_df = scored_df.drop_duplicates().reset_index(drop=True)
     scored_df = var_df.merge(scored_df, on = index_cols[:-1])
-    scored_df = scored_df.groupby(list(scored_df.columns[:-1])).max().reset_index()
+    scored_max_df = scored_df.groupby(index_cols[:-1])['score'].max().reset_index()
+    scored_df = scored_df.merge(scored_max_df)
     
     # Get disease mode of inheretences
     moi_df = pd.read_csv(os.path.join(genotype.case.cohort.root_path, config['moi_db']))
@@ -125,11 +128,10 @@ def filter_pathogenic_variants(genotype):
     mim2gene['omimId'] = mim2gene.apply(map_omim, axis = 1)
     gene_df = pd.read_csv(os.path.join(genotype.case.cohort.root_path, config['gene_info']), sep = '\t')
     gene_df = gene_df[['GeneID','Symbol']].rename(columns = {'Symbol':'geneSymbol'}).astype({'GeneID':str})
-    gene_disease_df = gene_df.merge(mim2gene, on = 'GeneID')
+    gene_disease_df = gene_df.merge(mim2gene, on = 'GeneID').astype({'GeneID':int})
     gene_disease_df = gene_disease_df.merge(moi_df, on = 'omimId')
     rd_df = gene_disease_df[gene_disease_df['moi'].str.contains('R')]
     rd_gene_ids = list(set(gene_disease_df['GeneID']))
-
 
     # Add second worst variants to the list if they can be combined with the 
     # highest scoring variant to cause a recessive disease    
@@ -163,5 +165,9 @@ def filter_pathogenic_variants(genotype):
     all_dir = '/igm/home/rsrxs003/rnb/output/BL-283/clinician/all_variants'
     all_df_path = os.path.join(all_dir, f"{genotype.case.case_id}.csv")
     scored_df.to_csv(all_df_path, index = False)
+
+    var_dir = '/igm/home/rsrxs003/rnb/output/BL-283/clinician/variants'
+    var_df_path = os.path.join(var_dir, f"{genotype.case.case_id}.csv")
+    var_df.to_csv(var_df_path, index = False)
     
     return pathogenic_df

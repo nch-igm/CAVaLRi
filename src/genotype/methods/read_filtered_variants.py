@@ -15,6 +15,18 @@ def worker(cmd):
     return out.decode() if out else err.decode()
 
 
+def get_gene_id(symbol, gene_df): 
+    try:
+        return gene_df[gene_df['geneSymbol'] == symbol].reset_index().loc[0,'GeneID']
+    except:
+        return False 
+
+def get_gene_symbol(gene_id, gene_df_):
+    try:
+        return gene_df_[gene_df_['GeneID'] == gene_id].reset_index().loc[0,'geneSymbol']
+    except:
+        return False   
+
 def read_filtered_variants(genotype):
 
     config = genotype.case.cohort.config
@@ -33,29 +45,41 @@ def read_filtered_variants(genotype):
         'father': genotype.case.father
     }
 
-    # Prepare gene data frame
-    cols = ['GeneID','Symbol','Synonyms']
-    gene_df = pd.read_csv(
-        os.path.join(root_path, config['gene_info']),
-        sep = '\t'
-        )[cols]
+    # Prepare gene data frames
+    gene_df = pd.read_csv(os.path.join(root_path, config['gene_info']), sep = '\t')
+    gene_df = gene_df[['GeneID','Symbol','Synonyms']].rename(columns = {'Symbol':'geneSymbol'}).astype({'GeneID':str})
+    gene_df_ = gene_df.copy()[['GeneID','geneSymbol']].astype({'GeneID':int})
+    gene_df['Synonyms_'] = gene_df['Synonyms'].str.split('|')
+    gene_syn_df = gene_df.explode('Synonyms_', ignore_index=True)[['GeneID','Synonyms_']].rename(columns = {'Synonyms_':'geneSymbol'})
+    gene_syn_df = gene_syn_df[gene_syn_df['geneSymbol'] != '-'].reset_index(drop=True)
+    gene_syn_df = gene_syn_df[~gene_syn_df['geneSymbol'].isin(gene_df['geneSymbol'])]
+    gene_df = pd.concat([gene_df[['GeneID','geneSymbol']], gene_syn_df]).sort_values('GeneID').reset_index(drop=True).astype({'GeneID':int})
+    gene_df = gene_df[~gene_df['geneSymbol'].str.startswith('LOC')].reset_index(drop=True)
+    gene_df = gene_df.groupby('geneSymbol').min().reset_index()
 
-    def re_match(row):
-        return True if row['GeneID'] in row['Synonyms'].split('|') else False
+
+    # def re_match(row, symbol):
+    #     return True if symbol in row['Synonyms'].split('|') else False
     
-    def get_gene_id(symbol, gene_df):
-        gene_match_df = gene_df[gene_df['Symbol'] == symbol]
-        l = len(gene_match_df.index)
-        if l == 1:
-            return str(int(gene_match_df.reset_index(drop=True).loc[0,'GeneID']))
-        elif l == 0:
-            gm = gene_df[gene_df.apply(re_match, axis = 1)]
-            if len(gm.index) > 0:
-                return str(int(gm.reset_index(drop=True).loc[0,'GeneID']))
-            else:
-                return None
-        else:
-            return str(int(gene_match_df.reset_index(drop=True).loc[0,'GeneID']))
+    # def get_gene_id(symbol, gene_df):
+    #     gene_match_df = gene_df[gene_df['Symbol'] == symbol]
+    #     l = len(gene_match_df.index)
+    #     if l == 1:
+    #         return str(int(gene_match_df.reset_index(drop=True).loc[0,'GeneID']))
+    #     elif l == 0:
+    #         gm = gene_df[gene_df.apply(re_match, symbol = symbol, axis = 1)]
+    #         if len(gm.index) > 0:
+    #             return str(int(gm.reset_index(drop=True).loc[0,'GeneID']))
+    #         else:
+    #             return None
+    #     else:
+    #         return str(int(gene_match_df.reset_index(drop=True).loc[0,'GeneID']))
+
+    # Get OMIM disease gene IDs
+    omim_gene_ids = pd.read_csv('/igm/projects/CAVaLRi/dependencies/mim2gene_medgen', sep = '\t')
+    omim_gene_ids = omim_gene_ids[omim_gene_ids['GeneID'] != '-'].astype({'GeneID':int})
+    omim_gene_ids = omim_gene_ids.merge(gene_df, on = 'GeneID')
+    omim_gene_ids = list(set(omim_gene_ids[omim_gene_ids['type'] == 'phenotype']['GeneID']))
 
     for var in vcf_reader:
         
@@ -69,9 +93,54 @@ def read_filtered_variants(genotype):
 
         # Get NCBI Gene ID
         gene = var.INFO['Gene.refGene'][0]
-        gene = gene if not re.search('&', gene) else gene[:gene.find('&')]
-        ncbi_id = get_gene_id(gene, gene_df)
-        var_row = [chrom, pos, ref, alt, gene, ncbi_id, info]
+
+        # One annotated gene
+        if not re.search('x3b', gene):
+            gene_id = get_gene_id(gene, gene_df)
+
+        # More than one annotated gene
+        else:
+            gl_ = []
+            gl = gene.split('\\x3b') # Gene list
+            for gs in gl:
+                gl_id = get_gene_id(gs,gene_df)
+                if gl_id:
+                    gl_.append(gl_id)
+            
+            # Break if there is no match
+            if len(gl_) == 0:
+                continue
+
+            gene_id = gl_[0]
+
+            aa = var.INFO['AAChange.refGene'][0] # First amino acid change listed
+            if aa:
+                aa_pos = aa.find(':')
+                if aa_pos != -1:
+                    aa = aa[:aa_pos]
+                    aa_id = get_gene_id(aa, gene_df)
+                    if aa_id:
+                        print(aa_id, gl_, True if aa_id in omim_gene_ids else False)
+                        if aa_id in gl_ and aa_id in omim_gene_ids:
+                            gene_id = aa_id
+
+            else:
+                omim_ = [g for g in gl_ if g in omim_gene_ids] # OMIM genes
+                gene_id = omim_[0] if len(omim_) > 0 else gl_[0]
+
+
+        # with open('/igm/home/rsrxs003/rnb/output/BL-304/split_gene.txt','a') as f:
+        #         print(f'Gene: {gene}; Gene List {gl}; OMIM Genes: {omim_}', file = f)
+
+        # gene_df.to_csv('/igm/home/rsrxs003/rnb/output/BL-304/gene_df.csv', index = False)
+        # gene_df.to_csv('/igm/home/rsrxs003/rnb/output/BL-304/gene_path_df.csv', index = False)
+
+        if gene_id not in gene_df['GeneID'].to_list():
+            continue
+
+        # ncbi_id = gene_df[gene_df['GeneID'] == gene_id].reset_index().loc[0,'GeneID']
+        gene_symbol = get_gene_symbol(gene_id, gene_df_)
+        var_row = [chrom, pos, ref, alt, gene_symbol, gene_id, info]
         columns = ['CHROM', 'POS', 'REF', 'ALT', 'GENE', 'GENE_ID', 'INFO']
         
 
@@ -109,6 +178,6 @@ def read_filtered_variants(genotype):
         var_list.append(var_row)
     
     df = pd.DataFrame(var_list, columns = columns, dtype=str)
-    df = df[df['GENE_ID'].notna()]
+    df = df[df['GENE_ID'].notna()].astype({'GENE_ID': int})
 
     return df

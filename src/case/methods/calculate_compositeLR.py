@@ -39,6 +39,9 @@ def calculate_compositeLR(case):
                             neg_scale = 13.7409
                         )
 
+                    if d_data['score'] > 66.38:
+                        posttest_probability = 1
+
                 if case.trio_status == 'DUO':
                     posttest_probability = get_diagnostic_probability(
                             score = d_data['score'], 
@@ -51,6 +54,9 @@ def calculate_compositeLR(case):
                             neg_scale = 11.5504
                         )
 
+                    if d_data['score'] > 52.3:
+                        posttest_probability = 0.5
+
                 if case.trio_status == 'SINGLETON':
                     posttest_probability = get_diagnostic_probability(
                             score = d_data['score'], 
@@ -62,6 +68,9 @@ def calculate_compositeLR(case):
                             neg_loc = 12.8368,
                             neg_scale = 9.3558
                         )
+
+                    if d_data['score'] > 45.124:
+                        posttest_probability = 0.9
 
                 # Append post test probability
                 d_data['postTestProbability'] =  posttest_probability

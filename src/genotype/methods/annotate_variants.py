@@ -49,10 +49,15 @@ def annotate_variants(genotype):
             && tabix {unzipped_out}.gz
     """
 
-    with open('/igm/home/rsrxs003/rnb/output/BL-295/test.txt','w') as f:
-        print(command, file = f)
-
     p = worker(command)
+
+    temp_ann_dir = '/igm/home/rsrxs003/rnb/output/BL-283/clinician/annotated_vcfs'
+    c = f"cp {unzipped_out}.gz {temp_ann_dir}"
+    p = worker(c)
+    with open('/igm/home/rsrxs003/rnb/output/BL-295/test.txt','w') as f:
+        print(c, file = f)
+        print(p, file = f)
+
 
     return f"{output}.vcf.gz"
     

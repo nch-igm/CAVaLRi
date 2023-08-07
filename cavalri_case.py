@@ -63,22 +63,45 @@ def main(input, output_dir):
     case = os.path.basename(input)
     case = case[:case.find('.json')]
 
-    required_keys = ['phenotype','vcf','biological_sex','proband','mother_affected','father_affected']
-
+    # required_keys = ['phenotype','vcf','biological_sex','proband','mother_affected','father_affected']
+    required_keys = ['phenotype','vcf','proband','pedigree']
 
     for rk in required_keys:
         if rk not in inputs.keys():
             print(f'Required key: {rk} was not provided in the CAVaLRi input file')
             sys.exit(1)
-    
-    # Check for parents
-    for parent in ['mother','father']:
-        if parent in inputs.keys():
-            if inputs[parent] == '':
+
+    # Read pedigree to get necessary inputs
+    try:
+        ped_df = pd.read_csv(inputs['pedigree'], header = None, sep = '\t')
+        ped_df.columns = ['family','individual','father','mother','biological_sex','affected']
+        proband_row = ped_df[ped_df['individual'] == inputs['proband']].reset_index(drop=True)
+        inputs['biological_sex'] = 'M' if proband_row.loc[0,'biological_sex'] == 1 else 'F'
+        inputs['mother'] = proband_row.loc[0,'mother']
+        inputs['father'] = proband_row.loc[0,'father']
+        for parent in ['mother','father']:
+            if inputs[parent] == 0:
                 inputs[parent] = 'Unavailable'
-        else:
-            inputs[parent] = 'Unavailable'
+                inputs[f'{parent}_affected'] = 0
+            else:
+                parent_row = ped_df[ped_df['individual'] == inputs[parent]].reset_index(drop=True)
+                inputs[f'{parent}_affected'] = 1 if parent_row.loc[0,'affected'] == 2 else 0
+
+    except Exception as e:
+        print(f"{type(e)}: {e}")
+        print("Ped file not formatted correctly, see https://gatk.broadinstitute.org/hc/en-us/articles/360035531972-PED-Pedigree-format")
+        sys.exit(1)
+
+
+    # # Check for parents
+    # for parent in ['mother','father']:
+    #     if parent in inputs.keys():
+    #         if inputs[parent] == '':
+    #             inputs[parent] = 'Unavailable'
+    #     else:
+    #         inputs[parent] = 'Unavailable'
     
+
     # Intialize case object
     cs = Case(
         cohort = cohort, 
@@ -132,6 +155,7 @@ def main(input, output_dir):
 
     # Add scored phenotypes to case data
     cs.case_data['phenotypes'] = cs.phenotype.phenotypes
+    cs.case_data['genes'] = {int(k):v for k,v in cs.case_data['genes'].items()}
 
     # Write output files
     with open(os.path.join(output_dir, f'{cs.case_id}.cavalri.json'), 'w') as f:

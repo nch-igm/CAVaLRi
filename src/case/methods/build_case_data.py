@@ -16,14 +16,21 @@ def build_case_data(case):
     case_data = {'genes': {k:{} for k in var_df['GENE_ID'].unique()}}
     
     # Read in gene_disease dataframe
-    gene_path = os.path.join(root_path, config['gene_info'])
-    gene_disease_path = os.path.join(root_path, config['mim2gene'])
+    gene_df = pd.read_csv(os.path.join(root_path, config['gene_info']), sep = '\t')
+    gene_lookup = {int(row['GeneID']):row['Symbol'] for idx, row in gene_df.iterrows()}
+    gene_df = gene_df[['GeneID','Symbol','Synonyms']].rename(columns = {'Symbol':'geneSymbol'}).astype({'GeneID':str})
+    gene_df['Synonyms_'] = gene_df['Synonyms'].str.split('|')
+    gene_syn_df = gene_df.explode('Synonyms_', ignore_index=True)[['GeneID','Synonyms_']].rename(columns = {'Synonyms_':'geneSymbol'})
+    gene_syn_df = gene_syn_df[gene_syn_df['geneSymbol'] != '-'].reset_index(drop=True)
+    gene_syn_df = gene_syn_df[~gene_syn_df['geneSymbol'].isin(gene_df['geneSymbol'])]
+    gene_df = pd.concat([gene_df[['GeneID','geneSymbol']], gene_syn_df]).sort_values('GeneID').reset_index(drop=True).astype({'GeneID':int})
+    gene_df = gene_df[~gene_df['geneSymbol'].str.startswith('LOC')].reset_index(drop=True)
+    gene_df = gene_df.groupby('geneSymbol').min().reset_index()[['GeneID','geneSymbol']].astype({'GeneID':int})
 
-    gene_df = pd.read_csv(gene_path, sep = '\t').astype({'GeneID': str})[['GeneID','Symbol']]
-    gene_lookup = {row['GeneID']:row['Symbol'] for idx, row in gene_df.iterrows()}
+    gene_disease_path = os.path.join(root_path, config['mim2gene'])
     gene_disease_df = pd.read_csv(gene_disease_path, sep = '\t').rename(columns = {'#MIM number':'OMIM'})
+    gene_disease_df = gene_disease_df[(gene_disease_df['GeneID'] != '-') & (gene_disease_df['type'] == 'phenotype')].astype({'GeneID':int})
     gene_disease_df = gene_disease_df.merge(gene_df, on = 'GeneID')
-    gene_disease_df = gene_disease_df[gene_disease_df['type'] == 'phenotype']
 
     # Remove disease without an annotated mode of inheretence
     moi_df = pd.read_csv(os.path.join(root_path, config['moi_db']))

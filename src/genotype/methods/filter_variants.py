@@ -46,7 +46,7 @@ def clinvar_filter(var):
 
 def exonic_filter(var):
     for func in var.INFO['Func.refGene']:
-        if func in ['exonic','splicing']:
+        if func in ['exonic','splicing'] or re.search('splicing',func) or re.search('exonic',func):
             return True
     return False
 
@@ -119,6 +119,8 @@ def filter_variants(genotype):
                 and
             multiallelic_filter(record, proband_pos)
                 and
+            not common_var_filter(record, common_var_ids)
+                and
                 (
                     (
                         exonic_filter(record)
@@ -126,8 +128,6 @@ def filter_variants(genotype):
                         popmax_filter(record, config['gnomAD_popmax'])
                             and
                         synonymous_filter(record)
-                            and
-                        not common_var_filter(record, common_var_ids)
                     )
                         or 
                     clinvar_filter(record)

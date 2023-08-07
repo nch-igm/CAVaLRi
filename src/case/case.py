@@ -34,9 +34,9 @@ class Case:
         self.father_affected = int(father_affected)
 
         # Get trio status
-        if self.mother != '' and self.father != '':
+        if self.mother != 'Unavailable' and self.father != 'Unavailable':
             self.trio_status = 'TRIO'
-        elif (self.mother == '' and self.father != '') & (self.mother != '' and self.father == ''):
+        elif (self.mother == 'Unavailable' and self.father != 'Unavailable') | (self.mother != 'Unavailable' and self.father == 'Unavailable'):
             self.trio_status = 'DUO'
         else:
             self.trio_status = 'SINGLETON'

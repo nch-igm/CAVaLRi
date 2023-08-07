@@ -6,6 +6,10 @@ import json
 import obonet
 
 
+def non_zero(freq, F_d):
+    return freq if freq != 0 else min([x for x in F_d.values() if x != 0])
+
+
 def get_hpoa_disease_frequency(query_term, F_d, _genes):
     """
     F_d: subset of annotated HPO frequencies in disease d
@@ -14,7 +18,7 @@ def get_hpoa_disease_frequency(query_term, F_d, _genes):
     # First the case when the disease has an associated phenotype at least as 
     # specific as the query term -- term is (an ancestor of) a disease term:
     if query_term in F_d:
-        return 'Ancestraly Closed', F_d[query_term]
+        return 'Ancestraly Closed', non_zero(F_d[query_term], F_d)
 
     # Now suppose query term is not in ancestral closure of disease term set;
     # in this case we'll take the lowest frequency found among the most 
@@ -35,7 +39,7 @@ def get_hpoa_disease_frequency(query_term, F_d, _genes):
                 best_common_ancestor = ca_k
                 best_ca_score = score
         
-        return best_common_ancestor, best_ca_score
+        return best_common_ancestor, non_zero(best_ca_score, F_d)
 
 
 

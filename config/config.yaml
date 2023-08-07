@@ -3,7 +3,7 @@ annovar_scripts: dependencies/annovar
 annovar_db: dependencies/human_db
 reference_path: dependencies/hg38.fa
 hpo_walk_dir: /igm/projects/
-common_variants: data/WES_common_variants.csv
+common_variants: data/DDD_common_variants.csv
 mutpredindel: /igm/home/rsrxs003/mutpred-indel/mutpredindel/
 muptredindel_MCR: /igm/home/rsrxs003/mutpred-indel/mutpredindel/MCR2/v91/
 
