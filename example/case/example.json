@@ -1,10 +1,6 @@
 {
     "phenotype": "example/case/example.pheno.csv",
     "vcf": "example/case/example.vcf.gz",
-    "biological_sex": "M",
-    "proband": "PROBAND",
-    "mother": "MOTHER",
-    "father": "FATHER",
-    "mother_affected": 0,
-    "father_affected": 0
+    "pedigree": "/igm/projects/CAVaLRi/example/case/example.ped",
+    "proband": "PROBAND"
 }
