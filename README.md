@@ -40,21 +40,14 @@ The hg38 reference genome is required to normalize inputted VCF files. This refe
 
 NOTE: The unzipped reference genome requries ~4GB of storage
 
-### LIRICAL
-CAVaLRi extends the LIRICAL likelihood ratio framework, and thus requires LIRICAL to run for each provided case. As such, the dependencies of LIRICAL are inherited by CAVaLRi. These depenencies are downloaded along with the variant annotation databases by the get_dependencies.sh bash script.
-
-NOTE: These LIRICAL dependencies require ~50GB of storage
-
 ## Running CAVaLRi
 Once the necessary dependencies are installed, CAVaLRi can be run via two wrapper scripts that create the necessary CAVaLRi objects to process the inputted cases. Inputted cases are represented via a JSON file with the following structure (see example/example.json).
 ```
 {
-    "phenotype":"example.pheno.tsv",
-    "vcf":"example.vcf.gz",
-    "biological_sex":"M",
-    "proband":"example_proband",
-    "mother":"example_mother",
-    "father":"example_father",
+    "phenotype": "example/case/example.pheno.csv",
+    "vcf": "example/case/example.vcf.gz",
+    "pedigree": "/igm/projects/CAVaLRi/example/case/example.ped",
+    "proband": "PROBAND"
 }
 ```
 
