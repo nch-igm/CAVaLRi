@@ -26,9 +26,11 @@ example/case/*
 !example/case/example.ped
 example/cohort/*
 !example/cohort/example1.json
+!example/cohort/example1.ped
 !example/cohort/example1.pheno.csv
 !example/cohort/example1.vcf.gz
 !example/cohort/example2.json
+!example/cohort/example2.ped
 !example/cohort/example2.pheno.csv
 !example/cohort/example2.vcf.gz
 !example_diagnostic.csv

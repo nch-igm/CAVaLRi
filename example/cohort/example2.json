@@ -1,10 +1,6 @@
 {
     "phenotype": "example/cohort/example2.pheno.csv",
     "vcf": "example/cohort/example2.vcf.gz",
-    "biological_sex": "F",
-    "proband": "PROBAND",
-    "mother": "MOTHER",
-    "father": "FATHER",
-    "mother_affected": 0,
-    "father_affected": 0
+    "pedigree": "example/cohort/example1.ped",
+    "proband": "PROBAND"
 }
