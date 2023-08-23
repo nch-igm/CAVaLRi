@@ -18,6 +18,7 @@ src/workflow/config.yaml
 !data/moi.csv
 !data/template.yaml
 !data/HPO_with_gene_IC.csv
+!data/hpoa_frequencies.json
 example/case/*
 !example/case/example.json
 !example/case/example.pheno.csv
