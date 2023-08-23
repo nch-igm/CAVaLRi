@@ -91,15 +91,6 @@ def main(input, output_dir):
         print(f"{type(e)}: {e}")
         print("Ped file not formatted correctly, see https://gatk.broadinstitute.org/hc/en-us/articles/360035531972-PED-Pedigree-format")
         sys.exit(1)
-
-
-    # # Check for parents
-    # for parent in ['mother','father']:
-    #     if parent in inputs.keys():
-    #         if inputs[parent] == '':
-    #             inputs[parent] = 'Unavailable'
-    #     else:
-    #         inputs[parent] = 'Unavailable'
     
 
     # Intialize case object
@@ -166,7 +157,6 @@ def main(input, output_dir):
     worker(f'rm -Rf {temp_folder}')
 
     # Get versions of dependencies
-    # hpo_version = worker(f"grep #date: {os.path.join(cs.cohort.root_path,  config['lirical_data_path'], 'phenotype.hpoa')}")
     # config['HPOA version'] = hpo_version.split(' ')[-1].strip()
 
     # Create run log

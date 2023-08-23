@@ -51,7 +51,7 @@ def run_mutpredindel(genotype):
         inframe_indel_df = pd.read_csv(mutpred_input_vcf, sep = '\t', comment = '#', header = None).iloc[:,[0,1,3,4]]
         inframe_indel_df.columns = ['CHROM','POS','REF','ALT']
     except:
-        return pd.DataFrame()
+        return pd.DataFrame(columns = ['CHROM','POS','REF','ALT','score'])
 
     if config['run_mutpredindel']:
 

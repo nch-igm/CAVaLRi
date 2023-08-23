@@ -18,6 +18,7 @@ def main(input, output):
 
     # Process variants
     case.validate_inputs()
+    case.genotype.normalize_variants()
     case.genotype.annotate_variants()
     case.genotype.filter_variants()
     case.genotype.read_filtered_variants()
