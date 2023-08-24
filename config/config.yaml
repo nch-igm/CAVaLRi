@@ -2,7 +2,7 @@
 annovar_scripts: dependencies/annovar
 annovar_db: dependencies/human_db
 reference_path: dependencies/hg38.fa
-hpo_walk_dir: /igm/projects/
+# hpo_walk_dir: /igm/projects/
 # common_variants: data/DDD_common_variants.csv
 mutpredindel: /igm/home/rsrxs003/mutpred-indel/mutpredindel/
 muptredindel_MCR: /igm/home/rsrxs003/mutpred-indel/mutpredindel/MCR2/v91/
@@ -13,7 +13,6 @@ gene_info: dependencies/Homo_sapiens.gene_info
 hpo: dependencies/hp.obo
 hpoa: dependencies/phenotype.hpoa
 phenotype_gene: dependencies/phenotype_to_genes.txt
-# hpo_bkgd_frequencies: data/hpoa_frequencies.json
 mim2gene: dependencies/mim2gene_medgen
 pheno_score_source: data/HPO_with_gene_IC.csv
 pheno_score: IC
@@ -23,7 +22,7 @@ run_mutpredindel: False
 dbNSFP_score: MetaRNN_score
 genome_build: hg38 
 hpo_lower_bound: 1
-hpo_upper_bound: 19
+hpo_upper_bound: 18
 pheno_root_penalty: 0.1
 phenoLR_scalar: 1
 genoLR_scalar: 3.85390625

@@ -26,14 +26,17 @@ conda activate cavalri
 NOTE: CAVaLRi will not run to completion if the cavalri conda environment is not active
 
 ### Variant Annotation Databases
-CAVaLRi utilizes the ANNOVAR variant annotation library to functionally annotate inputted genetic variants. The RefSeq, gnomAD, and clinvar databases are required. These databases can be downloaded by running the following command:
+CAVaLRi utilizes the ANNOVAR variant annotation library to functionally annotate inputted genetic variants. ANNOVAR must be requested and downloaded manually, see instructions here:
+https://annovar.openbioinformatics.org/en/latest/user-guide/download/
+
+The RefSeq, gnomAD, and clinvar databases are required. These databases can be downloaded by running the following command:
 ```
 bash get_dependencies.sh
 ```
 
 This script will download not only the ANNOVAR required databases, but all other dependencies as well.
 
-NOTE: These databases require ~80GB of storage
+NOTE: These databases require ~120GB of storage
 
 ### Reference Genome
 The hg38 reference genome is required to normalize inputted VCF files. This reference genome is downloaded from the UCSC servers, and is also included as part of the get_dependencies.sh bash script.

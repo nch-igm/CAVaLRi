@@ -73,11 +73,13 @@ class Cohort:
 
 
         # Create HPO and HPO annotation objects
-        self.hpo = ontology(self.config['hpo'])
-        self.F = build_propagated_frequency_map(self.config['hpoa'], self.hpo, self)
+        self.hpo = ontology(os.path.join(self.root_path,self.config['hpo']))
+        self.F = build_propagated_frequency_map(os.path.join(self.root_path,self.config['hpoa']), self.hpo, self)
         self.F = {k:v for k,v in self.F.items() if re.search('OMIM',k)}
 
 
+
+        # Calculating HPO background frequencies
         # Iterate through diseases to see if a term is annotated
         trouble_terms = set()
         s = set()

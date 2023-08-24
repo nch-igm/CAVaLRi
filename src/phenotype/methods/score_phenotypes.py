@@ -107,8 +107,8 @@ def score_phenotypes(case):
     gene_disease_path = os.path.join(case.cohort.root_path, config['phenotype_gene'])
 
     # Read in information content scores for all phenotypes
-    hpo_ic_path = os.path.join(case.cohort.root_path, config['pheno_score_source'])
-    hpo_ic_df = pd.read_csv(hpo_ic_path)
+    # hpo_ic_path = os.path.join(case.cohort.root_path, config['pheno_score_source'])
+    # hpo_ic_df = pd.read_csv(hpo_ic_path)
 
     # Get gene counts for all HPO terms
     _genes = {x: set() for x in case.cohort.hpo.terms}
