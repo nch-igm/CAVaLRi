@@ -48,19 +48,22 @@ Once the necessary dependencies are installed, CAVaLRi can be run via two wrappe
 ```
 {
     "phenotype": "example/case/example.pheno.csv",
-    "vcf": "example/case/example.vcf.gz",
     "pedigree": "/igm/projects/CAVaLRi/example/case/example.ped",
+    "vcf": "example/case/example.vcf.gz",
     "proband": "PROBAND"
 }
 ```
 
-The "phenotype" file is a one-column csv file with the header "HPO ID" that contains a list of all phenotypes associated with the patient (or proband).
+The "phenotype" argument indicates a one-column csv file with the header "HPO ID" that contains a list of all phenotypes associated with the patient (or proband).
 
-The "vcf" file is a multi-sample vcf file containing genotype information from the proband, the mother, and the father. The "proband", "mother", and "father" input keys designate which sample refers to the proband, the mother, and the father, respectively.
+The "pedigree" argument indicates a .ped file that designates the mother and father samples as well as the affected statuses of each individual in the pedgree. For more details, see https://gatk.broadinstitute.org/hc/en-us/articles/360035531972-PED-Pedigree-format
+
+The "vcf" argument indicates a multi-sample vcf file containing genotype information from the proband, the mother, and the father. The individual identifiers designating which sample refers to the proband, the mother, and the father, should be identified in the provided .ped file.
 
 NOTE: CAVaLRi currently only supports VCF files aligned to hg38. Be sure to liftover hg19 VCFs prior to running CAVaLRi.
 
-The "biological_sex" field indicates the biological sex of the proband (either M or F)
+The "proband" argument indicates the name of the proband sample in the vcf
+
 
 Once these input files are prepared for each case, we are ready to run CAVaLRi
 
