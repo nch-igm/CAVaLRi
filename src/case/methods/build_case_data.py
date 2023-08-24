@@ -33,7 +33,7 @@ def build_case_data(case):
     gene_disease_df = gene_disease_df.merge(gene_df, on = 'GeneID')
 
     # Remove disease without an annotated mode of inheretence
-    moi_df = pd.read_csv(os.path.join(root_path, config['moi_db']))
+    moi_df = case.cohort.moi.copy()
     moi_diseases = [int(moi[moi.find(':')+1:]) for moi in list(set(moi_df['omimId']))]
     gene_disease_df = gene_disease_df[gene_disease_df['OMIM'].isin(moi_diseases)]
 

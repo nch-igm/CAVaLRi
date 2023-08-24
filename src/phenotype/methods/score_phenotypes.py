@@ -4,7 +4,8 @@ import re
 import pandas as pd
 import json
 import obonet
-
+sys.path.append(__file__)
+from .utils import *
 
 def non_zero(freq, F_d):
     return freq if freq != 0 else min([x for x in F_d.values() if x != 0])
@@ -85,35 +86,35 @@ def score_disease_phenotype(F_d, bkgd_freq, _genes, case):
 def score_phenotypes(case):
 
     config = case.cohort.config
-    sys.path.append(config['hpo_walk_dir'])
-    from hpo_walk.dag import ontology
-    from hpo_walk.annotations import get_phenotype_disease_gene_df, build_propagated_frequency_map
+    # sys.path.append(config['hpo_walk_dir'])
+    # from hpo_walk.dag import ontology
+    # from hpo_walk.annotations import get_phenotype_disease_gene_df, build_propagated_frequency_map
 
     # Read in HPO
     global hpo
-    hpo = ontology(os.path.join(case.cohort.root_path, config['hpo']))
+    # hpo = ontology(os.path.join(case.cohort.root_path, config['hpo']))
+    hpo = case.cohort.hpo
 
     # Intialize HPO cohort frequencies
     # with open(os.path.join(case.cohort.root_path, config['hpo_background']), 'r') as json_file:
-    with open(os.path.join(case.cohort.root_path, config['hpo_bkgd_frequencies']), 'r') as json_file:
-        bkgd_freq = json.load(json_file)
+    # with open(os.path.join(case.cohort.root_path, config['hpo_bkgd_frequencies']), 'r') as json_file:
+    #     bkgd_freq = json.load(json_file)
+
+    bkgd_freq = case.cohort.hpo_bkgd_frequencies.copy()
     
     # Read in the HPOA
     hpoa_path = os.path.join(case.cohort.root_path, config['hpoa'])
     gene_disease_path = os.path.join(case.cohort.root_path, config['phenotype_gene'])
-
-    # Intialize frequency map
-    F = build_propagated_frequency_map(hpoa_path)
 
     # Read in information content scores for all phenotypes
     hpo_ic_path = os.path.join(case.cohort.root_path, config['pheno_score_source'])
     hpo_ic_df = pd.read_csv(hpo_ic_path)
 
     # Get gene counts for all HPO terms
-    _genes = {x: set() for x in hpo.terms}
+    _genes = {x: set() for x in case.cohort.hpo.terms}
     pdg = get_phenotype_disease_gene_df(gene_disease_path)
     for x,gene in zip(pdg['hpo_id'],pdg['gene']):
-        for u in hpo.ancestors(x):
+        for u in case.cohort.hpo.ancestors(x):
             try:
                 _genes[u].add(gene)
             except KeyError: 
@@ -124,7 +125,7 @@ def score_phenotypes(case):
         for omim in v.keys():
             
             # Get scores for all phenotype terms
-            if f'OMIM:{omim}' in F.keys():
-                v[omim]['phenotype_scores'] = score_disease_phenotype(F[f'OMIM:{omim}'], bkgd_freq, _genes, case)
+            if f'OMIM:{omim}' in case.cohort.F.keys():
+                v[omim]['phenotype_scores'] = score_disease_phenotype(case.cohort.F[f'OMIM:{omim}'], bkgd_freq, _genes, case)
 
     return case.case_data

@@ -95,15 +95,18 @@ def filter_variants(genotype):
     vcf_writer = vcf.Writer(open(filtered_vcf_path, 'w'), vcf_reader)
 
     # Read in common variants
-    common_var_path = os.path.join(root_path, config['common_variants'])
-    if os.path.exists(common_var_path):
-        common_var_df = pd.read_csv(common_var_path)
-        def get_var_id(row):
-            return f"chr{row['CHROM']}_{row['POS']}_{row['REF']}_{row['ALT']}"
-        common_var_df['var_id'] = common_var_df.apply(get_var_id, axis = 1)
-        common_var_ids = common_var_df['var_id'].to_list()
+    if 'common_variants' in config.keys():
+        common_var_path = os.path.join(root_path, config['common_variants'])
+        if os.path.exists(common_var_path):
+            common_var_df = pd.read_csv(common_var_path)
+            def get_var_id(row):
+                return f"chr{row['CHROM']}_{row['POS']}_{row['REF']}_{row['ALT']}"
+            common_var_df['var_id'] = common_var_df.apply(get_var_id, axis = 1)
+            common_var_ids = common_var_df['var_id'].to_list()
+        else:
+            common_var_ids = []
     else:
-        common_var_ids = []
+            common_var_ids = []
 
     # Get proband position
     proband_pos = get_proband_pos(vcf_reader.samples, genotype.case.proband)

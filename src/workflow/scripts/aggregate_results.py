@@ -40,7 +40,7 @@ def main(input, output):
     pheno_case.moiLRs = moi_case.moiLRs
 
     # Get diseases that lack mendelien inheritance annotations
-    moi_df = pd.read_csv(os.path.join(pheno_case.cohort.root_path, config['moi_db']))
+    moi_df = pheno_case.cohort.moi.copy()
     no_moi_diseases = list(moi_df[moi_df['moi'].isna()]['omimId'].unique())
 
     # Limit cases to only those that have a phenotype likelihood ratio

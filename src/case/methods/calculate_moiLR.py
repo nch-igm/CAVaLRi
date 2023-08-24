@@ -47,7 +47,7 @@ def calculate_moiLR(case):
     res = {}
 
     # Read in inheritance data frame
-    moi_df = pd.read_csv(os.path.join(case.cohort.root_path, config['moi_db']))
+    moi_df = case.cohort.moi.copy()
     for gene in case.case_data['genes'].keys():
 
         # Intialize dict to store count of alternate alleles

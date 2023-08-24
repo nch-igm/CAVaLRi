@@ -23,7 +23,7 @@ def calculate_genoLR(genotype):
     res = {}
 
     # Read in mode of inheritance
-    moi_df = pd.read_csv(os.path.join(root_path, config['moi_db']))
+    moi_df = genotype.case.cohort.moi.copy()
     disease_count = len(moi_df.index)
     dominant_codes = set(['AD','XLD'])
     recessive_codes = set(['AR','XLR'])

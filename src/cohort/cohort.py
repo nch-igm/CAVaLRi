@@ -1,7 +1,15 @@
-from ..workflow import Workflow
-from .methods import *
-import os
 import sys
+import os
+import re
+import pandas as pd
+import obonet
+sys.path.append(__file__)
+from ..workflow import Workflow
+from ..phenotype.methods.utils import *
+from .methods import *
+
+# from hpo_walk.annotations import build_propagated_frequency_map
+# from hpo_walk.dag import ontology
 
 
 class Cohort:
@@ -61,7 +69,30 @@ class Cohort:
             return ';'.join(list(set(res.split(';'))))
 
         moi_group_df['moi'] = moi_group_df.apply(join_inherit, axis = 1)
-        moi_group_df.to_csv(os.path.join(self.root_path,'data','moi.csv'), index = False)
+        self.moi = moi_group_df
+
+
+        # Create HPO and HPO annotation objects
+        self.hpo = ontology(self.config['hpo'])
+        self.F = build_propagated_frequency_map(self.config['hpoa'], self.hpo, self)
+        self.F = {k:v for k,v in self.F.items() if re.search('OMIM',k)}
+
+
+        # Iterate through diseases to see if a term is annotated
+        trouble_terms = set()
+        s = set()
+        counts = {x:0 for x in self.hpo.terms}
+
+        for d, d_data in self.F.items():
+            if re.search('OMIM',d):
+                for x in d_data.keys():
+                    try:
+                        counts[x] += 1
+                    except:
+                        s.add(x)
+
+        total_diseases = len(self.F.keys())
+        self.hpo_bkgd_frequencies = {k:v/total_diseases for k,v in counts.items()}
         
 
     def add_case(self, case):

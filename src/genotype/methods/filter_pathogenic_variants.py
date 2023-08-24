@@ -119,7 +119,7 @@ def filter_pathogenic_variants(genotype):
     scored_df = scored_df.merge(scored_max_df)
     
     # Get disease mode of inheretences
-    moi_df = pd.read_csv(os.path.join(genotype.case.cohort.root_path, config['moi_db']))
+    moi_df = genotype.case.cohort.moi.copy()
     recessive_codes = set(['AR','XLR'])
     mim2gene = pd.read_csv(os.path.join(genotype.case.cohort.root_path, config['mim2gene']), sep = '\t')
     mim2gene = mim2gene.rename(columns = {'#MIM number':'omimId'})[['omimId','GeneID']].astype({'GeneID':str})
