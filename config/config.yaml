@@ -2,7 +2,6 @@
 annovar_scripts: dependencies/annovar
 annovar_db: dependencies/human_db
 reference_path: dependencies/hg38.fa
-# hpo_walk_dir: /igm/projects/
 # common_variants: data/DDD_common_variants.csv
 mutpredindel: /igm/home/rsrxs003/mutpred-indel/mutpredindel/
 muptredindel_MCR: /igm/home/rsrxs003/mutpred-indel/mutpredindel/MCR2/v91/
@@ -25,8 +24,8 @@ hpo_lower_bound: 1
 hpo_upper_bound: 18
 pheno_root_penalty: 0.1
 phenoLR_scalar: 1
-genoLR_scalar: 3.85390625
-moiLR_scalar: 12.08984375
+genoLR_scalar: 4.005859375
+moiLR_scalar: 6.51875
 
 ## PATHOGENICITY FILTERS ##
 snv_threshold: 0.5

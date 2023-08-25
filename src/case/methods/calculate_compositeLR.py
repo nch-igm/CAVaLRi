@@ -30,46 +30,46 @@ def calculate_compositeLR(case):
                 if case.trio_status == 'TRIO':
                     posttest_probability = get_diagnostic_probability(
                             score = d_data['score'], 
-                            prior = 0.02375, 
-                            pos_a = -4.3068,
-                            pos_loc = 58.9998,
-                            pos_scale = 20.9783,
-                            neg_a = 56669107.1977,
-                            neg_loc = 0.7469,
-                            neg_scale = 13.7409
+                            prior = 0.023376039559451566, 
+                            pos_a = -2.5656189133285565,
+                            pos_loc = 52.07742666463085,
+                            pos_scale = 16.347160198789545,
+                            neg_a = 30832529.791864797,
+                            neg_loc = 6.863645946715076,
+                            neg_scale = 11.328256872470757
                         )
 
-                    if d_data['score'] > 66.38:
+                    if d_data['score'] > 61.735:
                         posttest_probability = 1
 
                 if case.trio_status == 'DUO':
                     posttest_probability = get_diagnostic_probability(
                             score = d_data['score'], 
-                            prior = 0.01436, 
-                            pos_a = .0000093,
-                            pos_loc = 34.0425,
-                            pos_scale = 10.0607,
-                            neg_a = 0.6955,
-                            neg_loc = 11.6084,
-                            neg_scale = 11.5504
+                            prior = 0.014383989993746092, 
+                            pos_a = 3.757650075261621,
+                            pos_loc = 21.59155928397092,
+                            pos_scale = 14.189580516852995,
+                            neg_a = 1.9372801615618576,
+                            neg_loc = 11.025804759643592,
+                            neg_scale = 10.129620978366187
                         )
 
-                    if d_data['score'] > 52.3:
+                    if d_data['score'] > 50.357:
                         posttest_probability = 0.5
 
                 if case.trio_status == 'SINGLETON':
                     posttest_probability = get_diagnostic_probability(
                             score = d_data['score'], 
-                            prior = 0.0165, 
-                            pos_a = -265905.7711,
-                            pos_loc = 46.52007,
-                            pos_scale = 7.1597,
-                            neg_a = 13618624.1039,
-                            neg_loc = 12.8368,
-                            neg_scale = 9.3558
+                            prior = 0.017467248908296942, 
+                            pos_a = -34917.468873275546,
+                            pos_loc = 47.51852335253445,
+                            pos_scale = 7.025608415541145,
+                            neg_a = 38763923.22317009,
+                            neg_loc = 13.38239685528061,
+                            neg_scale = 7.58874516104736
                         )
 
-                    if d_data['score'] > 45.124:
+                    if d_data['score'] > 47.517:
                         posttest_probability = 0.9
 
                 # Append post test probability
