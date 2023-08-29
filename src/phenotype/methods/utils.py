@@ -259,11 +259,12 @@ class ontology():
 
 def get_disease_phenotype_frequency_df(
     resource_dir,
-    cohort, # = RESOURCE_DIR,
+    hpo_, # = RESOURCE_DIR,
     normalize_freq = True,
-    # fill_null = 'mean'
+    fill_null = 'mean'
+    # fill_null = 'median'
     # fill_null = 0
-    fill_null = float(1)
+    # fill_null = float(1)
     ):
 
     # Read in the HPOA
@@ -273,7 +274,7 @@ def get_disease_phenotype_frequency_df(
         delimiter = '\t',
         skiprows = 5,
         header = None,
-        low_memory=False)
+        low_memory = False)
     
     # Get the HPOA columns for renaming
     df.columns = ['disease_id','disease_name','qualifier','hpo_id',
@@ -281,14 +282,21 @@ def get_disease_phenotype_frequency_df(
               'sex','modifier','aspect','biocuration'    
     ]
 
+    # Limit to OMIM diseases
+    df = df[df['disease_id'].str.contains('OMIM')] # Has to be an OMIM disease
+
+
     # Normalizing disease-phenotype frequencies
     if normalize_freq:
         
-        df['frequency'] = df['frequency'].apply(normalize_frequency, hpo_ = cohort.hpo)
+        df['frequency'] = df['frequency'].apply(normalize_frequency, hpo_ = hpo_)
         
         # For null values, determine how they are filled based on input.fill_null
         if type(fill_null) == float: 
             fill_freq = fill_null
+            df['frequency'] = df['frequency'].fillna(fill_freq)
+        elif fill_null == 'median':
+            fill_freq = df['frequency'].median() # All defined frequency values
             df['frequency'] = df['frequency'].fillna(fill_freq)
         elif fill_null == 'mean': 
             fill_freq = df['frequency'].mean() # All defined frequency values
@@ -299,10 +307,10 @@ def get_disease_phenotype_frequency_df(
     return df  # Returns normalized HPOA
 
 
-def build_propagated_frequency_map(resource_dir, hpo_, cohort): # = RESOURCE_DIR):
+def build_propagated_frequency_map(resource_dir, hpo_): # = RESOURCE_DIR):
 
     # Get the HPOA with imputed/normalized frequency column (df)
-    df = get_disease_phenotype_frequency_df(resource_dir, cohort)
+    df = get_disease_phenotype_frequency_df(resource_dir, hpo_)
     
     # Intialize disease-phenotype frequency dictionary
     F = dict()
@@ -324,4 +332,7 @@ def build_propagated_frequency_map(resource_dir, hpo_, cohort): # = RESOURCE_DIR
                 f              # if the ancestor frequency larger than current value
             )
             
+    # Get rid of non-OMIM entries
+    F = {k:v for k,v in F.items() if re.search('OMIM',k)}
+
     return F

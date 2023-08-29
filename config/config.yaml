@@ -24,8 +24,8 @@ hpo_lower_bound: 1
 hpo_upper_bound: 18
 pheno_root_penalty: 0.1
 phenoLR_scalar: 1
-genoLR_scalar: 4.005859375
-moiLR_scalar: 6.51875
+genoLR_scalar: 4.0203125
+moiLR_scalar: 7.6484375
 
 ## PATHOGENICITY FILTERS ##
 snv_threshold: 0.5

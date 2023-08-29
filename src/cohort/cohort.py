@@ -74,9 +74,7 @@ class Cohort:
 
         # Create HPO and HPO annotation objects
         self.hpo = ontology(os.path.join(self.root_path,self.config['hpo']))
-        self.F = build_propagated_frequency_map(os.path.join(self.root_path,self.config['hpoa']), self.hpo, self)
-        self.F = {k:v for k,v in self.F.items() if re.search('OMIM',k)}
-
+        self.F = build_propagated_frequency_map(os.path.join(self.root_path,self.config['hpoa']), self.hpo)
 
 
         # Calculating HPO background frequencies
@@ -86,12 +84,11 @@ class Cohort:
         counts = {x:0 for x in self.hpo.terms}
 
         for d, d_data in self.F.items():
-            if re.search('OMIM',d):
-                for x in d_data.keys():
-                    try:
-                        counts[x] += 1
-                    except:
-                        s.add(x)
+            for x in d_data.keys():
+                try:
+                    counts[x] += 1
+                except:
+                    s.add(x)
 
         total_diseases = len(self.F.keys())
         self.hpo_bkgd_frequencies = {k:v/total_diseases for k,v in counts.items()}
