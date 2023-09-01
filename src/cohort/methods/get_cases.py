@@ -1,6 +1,8 @@
+import sys
 import os
+sys.path.append(os.path.join(os.path.dirname(__file__), '..','..','case'))
 import json
-from ...case import Case
+from case import Case
 
 def validate_case(inputs):
 
@@ -40,7 +42,7 @@ def get_cases(cohort):
                 print(f'Removed case: {case}, was on the blacklist')
 
             else:
-                cs = Case(
+                cs = cv.Case(
                     cohort = cohort, 
                     case_id = case,
                     phenotype_path = inputs['phenotype'],

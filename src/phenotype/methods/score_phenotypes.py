@@ -4,8 +4,11 @@ import re
 import pandas as pd
 import json
 import obonet
-sys.path.append(__file__)
-from .utils import *
+sys.path.append(os.path.join(os.path.dirname(__file__)))
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..','..'))
+from utils import *
+from config import *
+
 
 def non_zero(freq, F_d):
     return freq if freq != 0 else min([x for x in F_d.values() if x != 0])
@@ -35,7 +38,7 @@ def get_hpoa_disease_frequency(query_term, F_d, _genes):
             ca_genes = 1 if len(_genes[ca_k]) == 0 else len(_genes[ca_k])
             penalty = query_genes / ca_genes
             score = disease_freq * penalty
-            score = disease_freq
+            # score = disease_freq
             if score > best_ca_score:
                 best_common_ancestor = ca_k
                 best_ca_score = score
@@ -80,6 +83,8 @@ def score_disease_phenotype(F_d, bkgd_freq, _genes, case):
         if phenos[pheno]['common_ancestor'] == 'HP:0000118':
             phenos[pheno]['LR'] = case.cohort.config['pheno_root_penalty']
 
+        # phenos[pheno]['LR'] = max(config['pheno_root_penalty'], phenos[pheno]['LR'])
+
     return phenos
 
 
@@ -117,7 +122,7 @@ def score_phenotypes(case):
         for u in case.cohort.hpo.ancestors(x):
             try:
                 _genes[u].add(gene)
-            except KeyError: 
+            except KeyError:
                 pass
 
     # Score the phenotypes for every disease

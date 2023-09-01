@@ -21,7 +21,7 @@ run_mutpredindel: False
 dbNSFP_score: MetaRNN_score
 genome_build: hg38 
 hpo_lower_bound: 1
-hpo_upper_bound: 18
+# hpo_upper_bound: 30
 pheno_root_penalty: 0.1
 phenoLR_scalar: 1
 genoLR_scalar: 4.0203125

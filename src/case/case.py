@@ -1,8 +1,11 @@
 import sys
-from ..genotype import Genotype
-from ..phenotype import Phenotype
+import os
+# sys.path.append(os.path.dirname(__file__))
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from genotype.genotype import Genotype
+from phenotype.phenotype import Phenotype
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'case'))
 from .methods import *
-
 
 class Case:
     """

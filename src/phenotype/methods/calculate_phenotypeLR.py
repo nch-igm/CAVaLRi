@@ -28,7 +28,8 @@ def calculate_phenotypeLR(case):
                     # Transform to log space
                     pheno_rank_df['log(LR)'] = pheno_rank_df['LR'].apply(math.log, args = (10,))
                     
-                    for hpo_total in range(config['hpo_lower_bound'], config['hpo_upper_bound'] + 1):
+                    # for hpo_total in range(config['hpo_lower_bound'], config['hpo_upper_bound'] + 1):
+                    for hpo_total in range(config['hpo_lower_bound'], len(pheno_rank_df.index) + 1):
                         
                         composite_phenoLR = pheno_rank_df.loc[pheno_rank_df['rank'] <= hpo_total]['log(LR)'].sum()
                         hpo_totals.append(hpo_total)

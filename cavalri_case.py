@@ -1,8 +1,8 @@
-from src.cohort import Cohort
-from src.cohort import Case
 from config import *
 import sys
 import os
+sys.path.append(os.path.join(os.path.dirname(__file__),'..'))
+import CAVaLRi as cv
 import pandas as pd
 import json
 import vcf
@@ -12,9 +12,11 @@ import argparse
 import pickle
 import uuid
 import yaml
+import obonet
+import numpy as np
 
 
-def worker(command):
+def worker(command: str):
     """
     Runs a bash command using subprocess module
     """
@@ -25,8 +27,11 @@ def worker(command):
     return output.decode('utf-8')
 
 
-def update_config(temp_pickle_path, config_template_path, 
-                    root_dir, config_output_path):
+def remove_temp_dir(d):
+    worker(f'rm -Rf {d}')
+
+def update_config(temp_pickle_path: str, config_template_path: str, 
+                    root_dir: str, config_output_path: str):
     """
     inputs:
         temp_pickle_path (str) - filepath to a cavalri.Case object.
@@ -51,11 +56,11 @@ def update_config(temp_pickle_path, config_template_path,
         cfg = yaml.dump(cfg, f)
 
 
-def main(input, output_dir):
+def main(input: str, output_dir: str):
 
     # Parse the input file
     output_dir = os.path.dirname(input) if not output_dir else output_dir
-    cohort = Cohort(os.path.dirname(input), output_dir, '', config)
+    cohort = cv.Cohort(os.path.dirname(input), output_dir, '', config)
 
     # Add case
     with open(input,'r') as d:
@@ -94,7 +99,7 @@ def main(input, output_dir):
     
 
     # Intialize case object
-    cs = Case(
+    cs = cv.Case(
         cohort = cohort, 
         case_id = case,
         phenotype_path = inputs['phenotype'],
@@ -108,21 +113,20 @@ def main(input, output_dir):
     )
 
     # Set up a temporary directory
-    temp_folder = os.path.abspath(os.path.join(output_dir, str(uuid.uuid4())))
-    cs.temp_dir = temp_folder
-    if not os.path.exists(temp_folder):
-        os.mkdir(temp_folder)
+    cs.temp_dir = os.path.abspath(os.path.join(output_dir, str(uuid.uuid4())))
+    if not os.path.exists(cs.temp_dir):
+        os.mkdir(cs.temp_dir)
 
     # cohort.add_case(cs)
 
     # Pickle the case
-    case_pickle_path = os.path.join(temp_folder, f'{cs.case_id}.pickle')
+    case_pickle_path = os.path.join(cs.temp_dir, f'{cs.case_id}.pickle')
     with open(case_pickle_path, 'wb') as f:
         pickle.dump(cs, file = f)
 
     # Run case
-    full_pickle_path = os.path.join(temp_folder, f'{cs.case_id}.full.pickle')
-    script_path = os.path.join(cohort.root_path, 'src/workflow/scripts/run_case.py')
+    full_pickle_path = os.path.join(cs.temp_dir, f'{cs.case_id}.full.pickle')
+    # script_path = os.path.join(cohort.root_path, 'src/workflow/scripts/run_case.py')
     conda_bin = os.path.join(sys.exec_prefix, 'bin')
 
     # Write temp file path to workflow config.yaml
@@ -138,6 +142,7 @@ def main(input, output_dir):
     # Check to see if the pipeline ran successfully
     if not os.path.exists(full_pickle_path):
         print(p)
+        # remove_temp_dir(cs.temp_dir)
         sys.exit(1)
 
     # Load result
@@ -154,7 +159,7 @@ def main(input, output_dir):
     cs.case_summary.to_csv(os.path.join(output_dir, f'{cs.case_id}.cavalri.summary.csv'), index = False)
 
     # Remove temporary directory
-    worker(f'rm -Rf {temp_folder}')
+    remove_temp_dir(cs.temp_dir)
 
     # Get versions of dependencies
     # config['HPOA version'] = hpo_version.split(' ')[-1].strip()

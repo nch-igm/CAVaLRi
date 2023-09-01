@@ -3,10 +3,12 @@ import os
 import re
 import pandas as pd
 import obonet
-sys.path.append(__file__)
-from ..workflow import Workflow
-from ..phenotype.methods.utils import *
-from .methods import *
+sys.path.append(os.path.dirname(__file__))
+# sys.path.append(os.path.join(os.path.dirname(__file__),'..','workflow'))
+# from workflow import Workflow
+sys.path.append(os.path.join(os.path.dirname(__file__),'..','phenotype','methods'))
+from utils import *
+# from methods import *
 
 # from hpo_walk.annotations import build_propagated_frequency_map
 # from hpo_walk.dag import ontology
