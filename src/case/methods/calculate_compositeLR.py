@@ -1,17 +1,20 @@
 import math
 import json
+import pandas as pd
 import numpy as np
 from scipy.stats import norm, skewnorm
 import pickle
 import re
 
 
-def get_diagnostic_probability(score, prior, pos_a, pos_loc, pos_scale, neg_a, neg_loc, neg_scale):
-    pos_prob = skewnorm.pdf(score, pos_a, pos_loc, pos_scale)
-    neg_prob = skewnorm.pdf(score, neg_a, neg_loc, neg_scale)
+def get_diagnostic_probability(row, prior, pos_a, pos_loc, pos_scale, neg_a, neg_loc, neg_scale):
+    pos_prob = skewnorm.pdf(row['score'], pos_a, pos_loc, pos_scale)
+    neg_prob = skewnorm.pdf(row['score'], neg_a, neg_loc, neg_scale)
     odds = (pos_prob/neg_prob) * prior
     probability = odds / (1 + odds)
-    return 0.000001 if np.isnan(probability) else probability
+    if pd.isna(probability):
+        probability = 0
+    return probability
 
 def calculate_compositeLR(case):
 
@@ -27,21 +30,16 @@ def calculate_compositeLR(case):
                 # Append compositeLR
                 d_data['score'] = d_data['phenoLR'] * config['phenoLR_scalar'] + g_data['gene_data']['genoLR'] * config['genoLR_scalar'] + d_data['moiLR'] * config['moiLR_scalar']
 
-                posttest_probability = get_diagnostic_probability(
+                d_data['postTestProbability'] = get_diagnostic_probability(
                         score = d_data['score'],
-                        prior = 0.02347171133298301,
-                        pos_a = -0.8869593350540006,
-                        pos_loc = 45.81326252020713,
-                        pos_scale = 12.450711031834466,
-                        neg_a = 29.78713851278483,
-                        neg_loc = 6.240823088826245,
-                        neg_scale = 12.632499984912275
+                        prior = 0.020734142220857014,
+                        pos_a = 9.629478975883834e-06,
+                        pos_loc = 28.519445004076616,
+                        pos_scale = 8.571725213920333,
+                        neg_a = 10716812.19010363,
+                        neg_loc = 4.438997571267517,
+                        neg_scale = 8.381334068083987
                     )
-
-                if d_data['score'] > 61.197:
-                    posttest_probability = 1
-
-
                 
                 # Calculate post-test probability based on trio status
                 # if case.trio_status == 'TRIO':
@@ -90,7 +88,7 @@ def calculate_compositeLR(case):
                 #         posttest_probability = 0.9
 
                 # Append post test probability
-                d_data['postTestProbability'] =  posttest_probability
+                # d_data['postTestProbability'] =  posttest_probability
 
     # Return the result data frame
     return case.case_data

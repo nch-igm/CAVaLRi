@@ -30,15 +30,13 @@ def get_hpoa_disease_frequency(query_term, F_d, _genes):
     else:
 
         common_ancestors = {ca:F_d[ca] for ca in hpo.lower_boundary( hpo.ancestors(query_term) & set(F_d) )}
-        best_common_ancestor = None
-        best_ca_score = 0
+        best_common_ancestor, best_ca_score = None, 0
         for ca_k, ca_v in common_ancestors.items():
             disease_freq = ca_v
             query_genes = 1 if len(_genes[query_term]) == 0 else len(_genes[query_term])
             ca_genes = 1 if len(_genes[ca_k]) == 0 else len(_genes[ca_k])
             penalty = query_genes / ca_genes
             score = disease_freq * penalty
-            # score = disease_freq
             if score > best_ca_score:
                 best_common_ancestor = ca_k
                 best_ca_score = score
@@ -83,7 +81,7 @@ def score_disease_phenotype(F_d, bkgd_freq, _genes, case):
         if phenos[pheno]['common_ancestor'] == 'HP:0000118':
             phenos[pheno]['LR'] = case.cohort.config['pheno_root_penalty']
 
-        # phenos[pheno]['LR'] = max(config['pheno_root_penalty'], phenos[pheno]['LR'])
+        phenos[pheno]['LR'] = max(config['pheno_root_penalty'], phenos[pheno]['LR'])
 
     return phenos
 

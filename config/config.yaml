@@ -6,7 +6,6 @@ reference_path: dependencies/hg38.fa
 mutpredindel: /igm/home/rsrxs003/mutpred-indel/mutpredindel/
 muptredindel_MCR: /igm/home/rsrxs003/mutpred-indel/mutpredindel/MCR2/v91/
 
-
 ## DATA TABLES ##
 gene_info: dependencies/Homo_sapiens.gene_info
 hpo: dependencies/hp.obo
@@ -20,12 +19,11 @@ pheno_score: IC
 run_mutpredindel: False
 dbNSFP_score: MetaRNN_score
 genome_build: hg38 
-hpo_lower_bound: 1
-# hpo_upper_bound: 30
-pheno_root_penalty: 0.1
+hpo_upper_bound: 19
+pheno_root_penalty: 1
 phenoLR_scalar: 1
-genoLR_scalar: 4.0203125
-moiLR_scalar: 7.6484375
+genoLR_scalar: 3.071484375
+moiLR_scalar: 6.588671875
 
 ## PATHOGENICITY FILTERS ##
 snv_threshold: 0.5

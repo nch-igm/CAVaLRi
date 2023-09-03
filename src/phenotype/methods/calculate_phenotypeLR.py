@@ -29,7 +29,8 @@ def calculate_phenotypeLR(case):
                     pheno_rank_df['log(LR)'] = pheno_rank_df['LR'].apply(math.log, args = (10,))
                     
                     # for hpo_total in range(config['hpo_lower_bound'], config['hpo_upper_bound'] + 1):
-                    for hpo_total in range(config['hpo_lower_bound'], len(pheno_rank_df.index) + 1):
+                    for hpo_total in range(1, config['hpo_upper_bound'] + 1):
+                    # for hpo_total in range(1, len(pheno_rank_df.index) + 1):
                         
                         composite_phenoLR = pheno_rank_df.loc[pheno_rank_df['rank'] <= hpo_total]['log(LR)'].sum()
                         hpo_totals.append(hpo_total)
@@ -41,7 +42,7 @@ def calculate_phenotypeLR(case):
                     max_phenoLR = run_df['phenoLR'].max()
                                     
                     # Get positions where the max phenoLR is occuring
-                    phenoCount = [str(i+config['hpo_lower_bound']) for i, j in enumerate(run_df['phenoLR']) if j == max_phenoLR]
+                    phenoCount = [str(i+1) for i, j in enumerate(run_df['phenoLR']) if j == max_phenoLR]
                     phenoCount = ",".join(phenoCount)
 
                     # Append OMIM ID, PhenoLR and associated HPO set length to result
