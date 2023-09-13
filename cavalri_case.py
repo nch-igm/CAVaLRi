@@ -80,12 +80,13 @@ def main(input: str, output_dir: str):
     try:
         ped_df = pd.read_csv(inputs['pedigree'], header = None, sep = '\t')
         ped_df.columns = ['family','individual','father','mother','biological_sex','affected']
+        ped_df = ped_df.astype({x:str for x in ['individual','father','mother']})
         proband_row = ped_df[ped_df['individual'] == inputs['proband']].reset_index(drop=True)
         inputs['biological_sex'] = 'M' if proband_row.loc[0,'biological_sex'] == 1 else 'F'
         inputs['mother'] = proband_row.loc[0,'mother']
         inputs['father'] = proband_row.loc[0,'father']
         for parent in ['mother','father']:
-            if inputs[parent] == 0:
+            if inputs[parent] == '0':
                 inputs[parent] = 'Unavailable'
                 inputs[f'{parent}_affected'] = 0
             else:

@@ -7,9 +7,9 @@ import pickle
 import re
 
 
-def get_diagnostic_probability(row, prior, pos_a, pos_loc, pos_scale, neg_a, neg_loc, neg_scale):
-    pos_prob = skewnorm.pdf(row['score'], pos_a, pos_loc, pos_scale)
-    neg_prob = skewnorm.pdf(row['score'], neg_a, neg_loc, neg_scale)
+def get_diagnostic_probability(score, prior, pos_a, pos_loc, pos_scale, neg_a, neg_loc, neg_scale):
+    pos_prob = skewnorm.pdf(score, pos_a, pos_loc, pos_scale)
+    neg_prob = skewnorm.pdf(score, neg_a, neg_loc, neg_scale)
     odds = (pos_prob/neg_prob) * prior
     probability = odds / (1 + odds)
     if pd.isna(probability):
@@ -32,13 +32,13 @@ def calculate_compositeLR(case):
 
                 d_data['postTestProbability'] = get_diagnostic_probability(
                         score = d_data['score'],
-                        prior = 0.020734142220857014,
-                        pos_a = 9.629478975883834e-06,
-                        pos_loc = 28.519445004076616,
-                        pos_scale = 8.571725213920333,
-                        neg_a = 10716812.19010363,
-                        neg_loc = 4.438997571267517,
-                        neg_scale = 8.381334068083987
+                        prior = 0.020737327188940093,
+                        pos_a = -1.0596162593085878,
+                        pos_loc = 26.248161123354173,
+                        pos_scale = 7.586363031418264,
+                        neg_a = 13838189.421247452,
+                        neg_loc = 4.534068942435544,
+                        neg_scale = 5.861153463201234
                     )
                 
                 # Calculate post-test probability based on trio status

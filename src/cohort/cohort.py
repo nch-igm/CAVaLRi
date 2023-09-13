@@ -1,6 +1,7 @@
 import sys
 import os
 import re
+import json
 import pandas as pd
 import obonet
 sys.path.append(os.path.dirname(__file__))
@@ -94,6 +95,9 @@ class Cohort:
 
         total_diseases = len(self.F.keys())
         self.hpo_bkgd_frequencies = {k:v/total_diseases for k,v in counts.items()}
+
+        with open('/igm/projects/CAVaLRi/data/bkgd.json','w') as f:
+            json.dump(self.hpo_bkgd_frequencies, f, indent = 4)
         
 
     def add_case(self, case):
