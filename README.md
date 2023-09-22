@@ -6,21 +6,20 @@ CAVaLRi (Clinical Assessment of Variants by Likelihood Ratios) was designed to b
 CAVaLRi requries a series of python packages, variant annotation, and LIRICAL dependencies in order to run properly.
 
 ### Conda
-CAVaLRi utilizes a conda environment to manage Python packages. The following code will download and run the most recent installer for Miniconda. If conda is already installed on your machine, skip this step.
+CAVaLRi utilizes a conda environment to manage Python packages. The following code will download and run the most recent installer for Miniconda, assuming a Linux operating system (see https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html for other operating systems). If conda is already installed on your machine, skip this step.
 ```
-wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
-chmod +x Miniconda3-latest-Linux-x86_64.sh
-Miniconda3-latest-Linux-x86_64.sh
+wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ./miniconda.sh \
+&& bash ./miniconda.sh -b -p ./miniconda3
 ```
 
 Be sure that the conda binary has been added to your path. To create the CAVaLRi conda environment, run the following command from the repository root:
 ```
-conda env create -f dependencies/conda_environment.yml
+./miniconda3/bin/conda env create -f dependencies/conda_environment.yml
 ```
 
 Once this is created, you can activate the conda environment with the following command:
 ```
-conda activate cavalri
+./miniconda3/bin/conda activate cavalri
 ```
 
 NOTE: CAVaLRi will not run to completion if the cavalri conda environment is not active
@@ -36,7 +35,7 @@ bash get_dependencies.sh
 
 This script will download not only the ANNOVAR required databases, but all other dependencies as well.
 
-NOTE: These databases require ~120GB of storage
+NOTE: These databases require ~190GB of storage
 
 ### Reference Genome
 The hg38 reference genome is required to normalize inputted VCF files. This reference genome is downloaded from the UCSC servers, and is also included as part of the get_dependencies.sh bash script.
@@ -48,7 +47,7 @@ Once the necessary dependencies are installed, CAVaLRi can be run via two wrappe
 ```
 {
     "phenotype": "example/case/example.pheno.csv",
-    "pedigree": "/igm/projects/CAVaLRi/example/case/example.ped",
+    "pedigree": "example/case/example.ped",
     "vcf": "example/case/example.vcf.gz",
     "proband": "PROBAND"
 }
