@@ -35,3 +35,6 @@ example/cohort/*
 !example/cohort/example2.vcf.gz
 !example_diagnostic.csv
 .vscode
+miniconda.sh
+miniconda3
+dependencies/annovar

@@ -157,17 +157,5 @@ def filter_pathogenic_variants(genotype):
                 extra_variant_df = pd.concat(extra_variants, axis = 1).T.drop_duplicates().reset_index(drop=True)
                 pathogenic_df = pd.concat([pathogenic_df,extra_variant_df]).drop_duplicates().reset_index(drop=True)
         
-
-    pathogenic_dir = '/igm/home/rsrxs003/rnb/output/BL-283/clinician/pathogenic_variants'
-    path_df_path = os.path.join(pathogenic_dir, f"{genotype.case.case_id}.csv")
-    pathogenic_df.to_csv(path_df_path, index = False)
-
-    all_dir = '/igm/home/rsrxs003/rnb/output/BL-283/clinician/all_variants'
-    all_df_path = os.path.join(all_dir, f"{genotype.case.case_id}.csv")
-    scored_df.to_csv(all_df_path, index = False)
-
-    var_dir = '/igm/home/rsrxs003/rnb/output/BL-283/clinician/variants'
-    var_df_path = os.path.join(var_dir, f"{genotype.case.case_id}.csv")
-    var_df.to_csv(var_df_path, index = False)
     
     return pathogenic_df

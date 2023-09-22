@@ -5,14 +5,12 @@ import json
 import pandas as pd
 import obonet
 sys.path.append(os.path.dirname(__file__))
-# sys.path.append(os.path.join(os.path.dirname(__file__),'..','workflow'))
-# from workflow import Workflow
+sys.path.append(os.path.join(os.path.dirname(__file__),'..','workflow'))
+from workflow import Workflow
 sys.path.append(os.path.join(os.path.dirname(__file__),'..','phenotype','methods'))
-from utils import *
-# from methods import *
+from utils import ontology, build_propagated_frequency_map
+from methods import *
 
-# from hpo_walk.annotations import build_propagated_frequency_map
-# from hpo_walk.dag import ontology
 
 
 class Cohort:
@@ -95,9 +93,6 @@ class Cohort:
 
         total_diseases = len(self.F.keys())
         self.hpo_bkgd_frequencies = {k:v/total_diseases for k,v in counts.items()}
-
-        with open('/igm/projects/CAVaLRi/data/bkgd.json','w') as f:
-            json.dump(self.hpo_bkgd_frequencies, f, indent = 4)
         
 
     def add_case(self, case):

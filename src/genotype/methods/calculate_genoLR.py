@@ -33,14 +33,8 @@ def calculate_genoLR(genotype):
     for g in list(genotype.case.case_data['genes'].keys()):
         
         # Get alt allele count
-        with open('/igm/home/rsrxs003/rnb/output/BL-304/g_type.csv','a') as f:
-            print(f'value: {g}; type: {type(g)}', file = f)
-
         g_df = pathogenic_df[pathogenic_df['GENE_ID'] == g]
-        g_df.to_csv('/igm/home/rsrxs003/rnb/output/BL-304/test.csv')
-        pathogenic_df.to_csv('/igm/home/rsrxs003/rnb/output/BL-304/test_path.csv')
-        pd.DataFrame(g_df.dtypes).to_csv('/igm/home/rsrxs003/rnb/output/BL-304/test_dtypes.csv')
-        pd.DataFrame(pathogenic_df.dtypes).to_csv('/igm/home/rsrxs003/rnb/output/BL-304/test_path_dtypes.csv')
+        
         def get_gt(row):
             gt = json.loads(row['proband'])['GT']
             if gt in ['0|1','1|0','1/1','1|1','1',1] or (gt in ['0/1','1/0'] and genotype.case.biological_sex == 'M' and row['CHROM'] == 'X'):

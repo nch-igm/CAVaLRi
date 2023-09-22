@@ -76,7 +76,7 @@ def read_filtered_variants(genotype):
     #         return str(int(gene_match_df.reset_index(drop=True).loc[0,'GeneID']))
 
     # Get OMIM disease gene IDs
-    omim_gene_ids = pd.read_csv('/igm/projects/CAVaLRi/dependencies/mim2gene_medgen', sep = '\t')
+    omim_gene_ids = pd.read_csv(os.path.join(root_path, config['mim2gene']), sep = '\t')
     omim_gene_ids = omim_gene_ids[omim_gene_ids['GeneID'] != '-'].astype({'GeneID':int})
     omim_gene_ids = omim_gene_ids.merge(gene_df, on = 'GeneID')
     omim_gene_ids = list(set(omim_gene_ids[omim_gene_ids['type'] == 'phenotype']['GeneID']))
@@ -128,12 +128,6 @@ def read_filtered_variants(genotype):
                 omim_ = [g for g in gl_ if g in omim_gene_ids] # OMIM genes
                 gene_id = omim_[0] if len(omim_) > 0 else gl_[0]
 
-
-        # with open('/igm/home/rsrxs003/rnb/output/BL-304/split_gene.txt','a') as f:
-        #         print(f'Gene: {gene}; Gene List {gl}; OMIM Genes: {omim_}', file = f)
-
-        # gene_df.to_csv('/igm/home/rsrxs003/rnb/output/BL-304/gene_df.csv', index = False)
-        # gene_df.to_csv('/igm/home/rsrxs003/rnb/output/BL-304/gene_path_df.csv', index = False)
 
         if gene_id not in gene_df['GeneID'].to_list():
             continue

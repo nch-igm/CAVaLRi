@@ -1,6 +1,6 @@
 {
     "phenotype": "example/case/example.pheno.csv",
     "vcf": "example/case/example.vcf.gz",
-    "pedigree": "/igm/projects/CAVaLRi/example/case/example.ped",
+    "pedigree": "example/case/example.ped",
     "proband": "PROBAND"
 }
