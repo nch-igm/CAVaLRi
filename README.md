@@ -14,12 +14,12 @@ wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ./
 
 Be sure that the conda binary has been added to your path. To create the CAVaLRi conda environment, run the following command from the repository root:
 ```
-conda env create -f dependencies/conda_environment.yml
+./miniconda3/bin/conda env create -f dependencies/conda_environment.yml
 ```
 
 Once this is created, you can activate the conda environment with the following command:
 ```
-conda activate cavalri
+./miniconda3/bin/conda activate cavalri
 ```
 
 NOTE: CAVaLRi will not run to completion if the cavalri conda environment is not active
@@ -35,7 +35,7 @@ bash get_dependencies.sh
 
 This script will download not only the ANNOVAR required databases, but all other dependencies as well.
 
-NOTE: These databases require ~120GB of storage
+NOTE: These databases require ~190GB of storage
 
 ### Reference Genome
 The hg38 reference genome is required to normalize inputted VCF files. This reference genome is downloaded from the UCSC servers, and is also included as part of the get_dependencies.sh bash script.
