@@ -6,11 +6,10 @@ CAVaLRi (Clinical Assessment of Variants by Likelihood Ratios) was designed to b
 CAVaLRi requries a series of python packages, variant annotation, and LIRICAL dependencies in order to run properly.
 
 ### Conda
-CAVaLRi utilizes a conda environment to manage Python packages. The following code will download and run the most recent installer for Miniconda. If conda is already installed on your machine, skip this step.
+CAVaLRi utilizes a conda environment to manage Python packages. The following code will download and run the most recent installer for Miniconda, assuming a Linux operating system (see https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html for other operating systems). If conda is already installed on your machine, skip this step.
 ```
-wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
-chmod +x Miniconda3-latest-Linux-x86_64.sh
-Miniconda3-latest-Linux-x86_64.sh
+wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ./miniconda.sh \
+&& bash ./miniconda.sh -b -p ./miniconda3
 ```
 
 Be sure that the conda binary has been added to your path. To create the CAVaLRi conda environment, run the following command from the repository root:
@@ -48,7 +47,7 @@ Once the necessary dependencies are installed, CAVaLRi can be run via two wrappe
 ```
 {
     "phenotype": "example/case/example.pheno.csv",
-    "pedigree": "/igm/projects/CAVaLRi/example/case/example.ped",
+    "pedigree": "example/case/example.ped",
     "vcf": "example/case/example.vcf.gz",
     "proband": "PROBAND"
 }
