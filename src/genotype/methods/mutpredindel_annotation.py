@@ -56,20 +56,19 @@ def run_mutpredindel(genotype):
     if config['run_mutpredindel']:
 
         # Create a .avinput file to send to get fasta changes
-        annovar_path = os.path.join(root_path, config['annovar_scripts'])
+        annovar_path = config['annovar_scripts']
         avinput = os.path.join(input_folder, f"{genotype.case.case_id}.mutpredindel.avinput")
         cmd = f"{os.path.join(annovar_path,'convert2annovar.pl')} -format vcf4 {mutpred_input_vcf} > {avinput}"
         p = worker(cmd)
 
         # Annotate the .avinput file with exonic functional annotations
-        annovar_db = os.path.join(root_path, config['annovar_db'])
-        cmd = f"{os.path.join(annovar_path, 'annotate_variation.pl')} -build hg38 {avinput} {annovar_db}"
+        cmd = f"{os.path.join(annovar_path, 'annotate_variation.pl')} -build hg38 {avinput} {config['annovar_db']}"
         p = worker(cmd)
 
         # Create a fasta input file to send to mutpredindel
         exon_avinput = f"{avinput}.exonic_variant_function"
-        refgene_dna = os.path.join(root_path, config['annovar_db'], 'hg38_refGene.txt')
-        refgene_mrna = os.path.join(root_path, config['annovar_db'], 'hg38_refGeneMrna.fa')
+        refgene_dna = os.path.join(config['annovar_db'], 'hg38_refGene.txt')
+        refgene_mrna = os.path.join(config['annovar_db'], 'hg38_refGeneMrna.fa')
         mutpred_input_fasta = os.path.join(input_folder, f'{genotype.case.case_id}.input.fasta')
         cmd = f"{os.path.join(annovar_path,'coding_change.pl')} {exon_avinput} {refgene_dna} {refgene_mrna} > {mutpred_input_fasta}"
         p = worker(cmd)

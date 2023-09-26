@@ -43,9 +43,9 @@ def get_snv_scores(genotype):
     snv_annotated_vcf = os.path.join(input_folder, f"{genotype.case.case_id}.snv.annotated.vcf")
     cmd = f"""
             {os.path.join(conda_bin, 'perl')} \
-            {os.path.join(os.path.join(root_path, config['annovar_scripts']),'table_annovar.pl')} \
+            {os.path.join(config['annovar_scripts'],'table_annovar.pl')} \
             -vcfinput {snv_input_vcf} \
-            {os.path.join(root_path, config['annovar_db'])} \
+            {config['annovar_db']} \
             -buildver {config['genome_build']} \
             --out {snv_annotated_vcf} \
             -remove \

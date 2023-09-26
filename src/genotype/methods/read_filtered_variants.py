@@ -46,7 +46,7 @@ def read_filtered_variants(genotype):
     }
 
     # Prepare gene data frames
-    gene_df = pd.read_csv(os.path.join(root_path, config['gene_info']), sep = '\t')
+    gene_df = pd.read_csv(config['gene_info'], sep = '\t')
     gene_df = gene_df[['GeneID','Symbol','Synonyms']].rename(columns = {'Symbol':'geneSymbol'}).astype({'GeneID':str})
     gene_df_ = gene_df.copy()[['GeneID','geneSymbol']].astype({'GeneID':int})
     gene_df['Synonyms_'] = gene_df['Synonyms'].str.split('|')
@@ -76,7 +76,7 @@ def read_filtered_variants(genotype):
     #         return str(int(gene_match_df.reset_index(drop=True).loc[0,'GeneID']))
 
     # Get OMIM disease gene IDs
-    omim_gene_ids = pd.read_csv(os.path.join(root_path, config['mim2gene']), sep = '\t')
+    omim_gene_ids = pd.read_csv(config['mim2gene'], sep = '\t')
     omim_gene_ids = omim_gene_ids[omim_gene_ids['GeneID'] != '-'].astype({'GeneID':int})
     omim_gene_ids = omim_gene_ids.merge(gene_df, on = 'GeneID')
     omim_gene_ids = list(set(omim_gene_ids[omim_gene_ids['type'] == 'phenotype']['GeneID']))
@@ -120,7 +120,6 @@ def read_filtered_variants(genotype):
                     aa = aa[:aa_pos]
                     aa_id = get_gene_id(aa, gene_df)
                     if aa_id:
-                        print(aa_id, gl_, True if aa_id in omim_gene_ids else False)
                         if aa_id in gl_ and aa_id in omim_gene_ids:
                             gene_id = aa_id
 

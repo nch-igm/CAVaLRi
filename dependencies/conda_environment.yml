@@ -1,10 +1,10 @@
-name: cavalri_3.6
+name: cavalri
 channels:
   - defaults
   - bioconda
   - conda-forge
 dependencies:
-  - python=3.6.5
+  - python=3.10.8
   - snakemake
   - ca-certificates
   - certifi
@@ -17,3 +17,6 @@ dependencies:
   - matplotlib
   - seaborn
   - spliceai
+  - gsl=2.5
+  - bcftools
+  - tabix

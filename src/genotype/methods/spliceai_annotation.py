@@ -45,8 +45,7 @@ def run_spliceai(genotype):
 
     # Run spliceai
     spliceai_output_vcf = os.path.join(output_folder, f"{genotype.case.case_id}.spliceai_annotated.vcf")
-    reference = os.path.join(root_path,config['reference_path'])
-    cmd = f"{os.path.join(conda_bin,'spliceai')} -I {spliceai_input_vcf} -O {spliceai_output_vcf} -R {reference} -A grch38"
+    cmd = f"{os.path.join(conda_bin,'spliceai')} -I {spliceai_input_vcf} -O {spliceai_output_vcf} -R {config['reference_path']} -A grch38"
     p = worker(cmd)
 
     # Read in results

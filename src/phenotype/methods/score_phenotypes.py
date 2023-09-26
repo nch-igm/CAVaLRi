@@ -106,8 +106,7 @@ def score_phenotypes(case):
     bkgd_freq = case.cohort.hpo_bkgd_frequencies.copy()
     
     # Read in the HPOA
-    hpoa_path = os.path.join(case.cohort.root_path, config['hpoa'])
-    gene_disease_path = os.path.join(case.cohort.root_path, config['phenotype_gene'])
+    gene_disease_path = os.path.join(config['phenotype_gene'])
 
     # Read in information content scores for all phenotypes
     # hpo_ic_path = os.path.join(case.cohort.root_path, config['pheno_score_source'])

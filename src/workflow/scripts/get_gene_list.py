@@ -25,10 +25,8 @@ def main(input, output):
     case.genotype.score_pathogenicity()
     case.genotype.filter_pathogenic_variants()
 
-
     # Build case data
     case.build_case_data()
-
 
     # Save the processed case object
     with open(output, 'wb') as f:

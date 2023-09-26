@@ -1,4 +1,3 @@
-from .methods import *
 import os
 import uuid
 import subprocess
@@ -10,7 +9,7 @@ import shlex
 import re
 import sys
 import time
-fo = '/Users/rsrxs003/projects/CAVaLRi_/catch_some_output___.txt'
+
 
 class Workflow:
     """
@@ -65,8 +64,6 @@ class Workflow:
         
         # time.sleep(10)
         # parse_qstat()
-
-        print(f'Snakemake complete {res} {time.strftime("%H:%M:%S", time.localtime())}', file = open(fo, 'a'))
 
         # Read in populated case data
         for case in self.cohort.cases:

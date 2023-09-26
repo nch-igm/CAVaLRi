@@ -93,6 +93,16 @@ class Cohort:
 
         total_diseases = len(self.F.keys())
         self.hpo_bkgd_frequencies = {k:v/total_diseases for k,v in counts.items()}
+
+        # Set config paths
+        path_vars = ['annovar_scripts','annovar_db','reference_path',
+                  'common_variants','mutpredindel','muptredindel_MCR',
+                  'gene_info','hpo','hpoa','phenotype_gene','mim2gene',
+                  'pheno_score_source']
+        path_vars = [ pv for pv in path_vars if pv in self.config.keys() ]
+        for pv in path_vars:
+            if not self.config[pv].startswith('/'):
+                self.config[pv] = os.path.join(self.root_path,self.config[pv])
         
 
     def add_case(self, case):

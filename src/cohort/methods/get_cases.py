@@ -42,7 +42,7 @@ def get_cases(cohort):
                 print(f'Removed case: {case}, was on the blacklist')
 
             else:
-                cs = cv.Case(
+                cs = Case(
                     cohort = cohort, 
                     case_id = case,
                     phenotype_path = inputs['phenotype'],

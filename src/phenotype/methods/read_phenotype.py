@@ -14,7 +14,7 @@ def read_phenotypes(case):
     res = {}
 
     # Read in default HPO scores
-    ic_df = pd.read_csv(os.path.join(root_path, config['pheno_score_source']))
+    ic_df = pd.read_csv(config['pheno_score_source'])
 
     # Read in phenotypes stored as csvs with custom IC score, if available
     pheno_df = pd.read_csv(case.phenotype.phenotype_path)

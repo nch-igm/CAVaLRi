@@ -96,9 +96,8 @@ def filter_variants(genotype):
 
     # Read in common variants
     if 'common_variants' in config.keys():
-        common_var_path = os.path.join(root_path, config['common_variants'])
-        if os.path.exists(common_var_path):
-            common_var_df = pd.read_csv(common_var_path)
+        if os.path.exists(config['common_variants']):
+            common_var_df = pd.read_csv(config['common_variants'])
             def get_var_id(row):
                 return f"chr{row['CHROM']}_{row['POS']}_{row['REF']}_{row['ALT']}"
             common_var_df['var_id'] = common_var_df.apply(get_var_id, axis = 1)

@@ -34,7 +34,8 @@ def get_phenotype_disease_gene_df(
         'hpo_id',
         'hpo_name',
         'ncbi_gene_id',
-        'gene']
+        'gene',
+        'disease_id']
     return pdg_df
 
 

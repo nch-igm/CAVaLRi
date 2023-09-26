@@ -44,16 +44,16 @@ def get_case_output(path):
         return True if not pd.isna(row['gene']) else False
 
     case_df['isTp'] = case_df.apply(istp, axis = 1)
-    demo_df = pd.read_excel(os.path.join(config['project_root'], config['demographic_data']))
-    diag_df = pd.read_csv(case.cohort.diagnostic_data).rename(columns = {'CASE':'CoPath.Number'})
-    demo_df = demo_df.merge(diag_df, right_on = 'MRN', left_on = 'MRN')[['CoPath.Number', 'MRN', 'RACE', 'ETHNICITY']].drop_duplicates().reset_index(drop = True)
-    for col in ['RACE', 'ETHNICITY']:
-        for nv in ['No Information', '<null>', 'Refuse to answer', pd.NA, np.NaN, 'nan']:
-            demo_df.loc[demo_df[col] == nv, col] = 'Unknown'
-    case_df = case_df.merge(demo_df, right_on = 'CoPath.Number', left_on = 'copath', how = 'left')
-    for col in ['RACE', 'ETHNICITY']:
-        case_df.loc[case_df[col].isna(), col] = 'Unknown'
-    case_df = case_df.drop(columns = ['MRN', 'subjectId', 'CoPath.Number'])
+    # demo_df = pd.read_excel(os.path.join(config['project_root'], config['demographic_data']))
+    # diag_df = pd.read_csv(case.cohort.diagnostic_data).rename(columns = {'CASE':'CoPath.Number'})
+    # demo_df = demo_df.merge(diag_df, right_on = 'MRN', left_on = 'MRN')[['CoPath.Number', 'MRN', 'RACE', 'ETHNICITY']].drop_duplicates().reset_index(drop = True)
+    # for col in ['RACE', 'ETHNICITY']:
+    #     for nv in ['No Information', '<null>', 'Refuse to answer', pd.NA, np.NaN, 'nan']:
+    #         demo_df.loc[demo_df[col] == nv, col] = 'Unknown'
+    # case_df = case_df.merge(demo_df, right_on = 'CoPath.Number', left_on = 'copath', how = 'left')
+    # for col in ['RACE', 'ETHNICITY']:
+    #     case_df.loc[case_df[col].isna(), col] = 'Unknown'
+    # case_df = case_df.drop(columns = ['MRN', 'subjectId', 'CoPath.Number'])
 
     return case_df
 

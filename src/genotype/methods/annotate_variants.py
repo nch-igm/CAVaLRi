@@ -36,9 +36,9 @@ def annotate_variants(genotype):
     # Run annovar
     command = f"""
             {os.path.join(conda_bin, 'perl')} \
-            {os.path.join(os.path.join(root_path, config['annovar_scripts']),'table_annovar.pl')} \
+            {os.path.join(config['annovar_scripts'],'table_annovar.pl')} \
             -vcfinput {genotype.genotype_path} \
-            {os.path.join(root_path, config['annovar_db'])} \
+            {config['annovar_db']} \
             -buildver {config['genome_build']} \
             --out {output} \
             -remove \
