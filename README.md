@@ -7,31 +7,29 @@ CAVaLRi (Clinical Assessment of Variants by Likelihood Ratios) was designed to b
 CAVaLRi requries a series of python packages, variant annotation, and LIRICAL dependencies in order to run properly.
 
 ### Conda
-CAVaLRi utilizes a conda environment to manage Python packages. The following code will download and run the most recent installer for Miniconda, assuming a Linux operating system (see https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html for other operating systems). If conda is already installed on your machine, skip this step.
+CAVaLRi utilizes a conda environment to manage Python packages. Conda takes quite a long time to install dependencies, so we recommend utilizng mamba instead (micromamba for minimal installation). The following code will download and run the most recent installer for micromamba [see micromamba configuration instructions](https://mamba.readthedocs.io/en/latest/micromamba-installation.html).
 ```
-wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ./miniconda.sh \
-&& bash ./miniconda.sh -b -p ./miniconda3
+"${SHELL}" <(curl -L micro.mamba.pm/install.sh)
 ```
 
-Be sure that the conda binary has been added to your path. To create the CAVaLRi conda environment, run the following command from the repository root:
+Once configured, create the CAVaLRi conda environment by running the following command from the repository root:
 ```
-./miniconda3/bin/conda env create -f dependencies/conda_environment.yml
+mamba env create -f dependencies/conda_environment.yml
 ```
 
 Once this is created, you can activate the conda environment with the following command:
 ```
-./miniconda3/bin/conda activate cavalri
+mamba activate cavalri
 ```
 
 NOTE: CAVaLRi will not run to completion if the cavalri conda environment is not active
 
 ### Variant Annotation Databases
-CAVaLRi utilizes the ANNOVAR variant annotation library to functionally annotate inputted genetic variants. ANNOVAR must be requested and downloaded manually, see instructions here:
-https://annovar.openbioinformatics.org/en/latest/user-guide/download/
+CAVaLRi utilizes the ANNOVAR variant annotation library to functionally annotate inputted genetic variants. ANNOVAR must be requested and downloaded manually, see instructions [here](https://annovar.openbioinformatics.org/en/latest/user-guide/download/).
 
-The RefSeq, gnomAD, and clinvar databases are required. These databases can be downloaded by running the following command:
+The RefSeq, gnomAD, ClinVar, and dbNSFP databases are required. These databases can be downloaded by running the following command:
 ```
-bash get_dependencies.sh
+bash get_dependencies.sh -a /path/to/annovar
 ```
 
 This script will download not only the ANNOVAR required databases, but all other dependencies as well.
