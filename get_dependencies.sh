@@ -91,7 +91,7 @@ if [ -f "$config_file" ]; then
   sed "s|phenotype_gene:.*|phenotype_gene: $output_dir/phenotype_to_genes.txt|" |
   sed "s|mim2gene:.*|mim2gene: $output_dir/mim2gene_medgen|" |
   sed "s|common_variants:.*|common_variants: $data_dir/common_variants.csv|" |
-  sed "s|pheno_score_source:.*|pheno_score_source: $output_dir/HPO_with_gene_IC.csv|" > "$temp_file"
+  sed "s|pheno_score_source:.*|pheno_score_source: $data_dir/HPO_with_gene_IC.csv|" > "$temp_file"
 
   # Replace the original config file with the temporary file
   mv "$temp_file" "$config_file"
