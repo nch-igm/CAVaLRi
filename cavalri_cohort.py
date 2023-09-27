@@ -39,12 +39,6 @@ def main(input_dir, output_dir, diagnostic_data):
     # Run CAVaLRi workflow for each case in the cohort
     cohort.run()
 
-    # Get LIRICAL and HPOA version
-    lirical_version = worker(f"java -jar {os.path.join(cohort.root_path,  config['lirical_executable'])} --version")
-    hpo_version = worker(f"grep #date: {os.path.join(cohort.root_path,  config['lirical_data_path'], 'phenotype.hpoa')}")
-    config['LIRICAL version'] = lirical_version.strip()
-    config['HPOA version'] = hpo_version.split(' ')[-1].strip()
-
     # Create run log
     log_path = os.path.join(output_dir, 'summary', 'config.json')
     with open(log_path, 'w') as f:
