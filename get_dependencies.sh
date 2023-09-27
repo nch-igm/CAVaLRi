@@ -53,24 +53,24 @@ echo "Output directory: $output_dir"
 echo "Annovar Human DB: $humandb"
 echo "Config File: $config_file"
 
-# # Download reference
-# wget https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.fa.gz -P $output_dir
-# gunzip $output_dir/hg38.fa.gz
-# samtools faidx $output_dir/hg38.fa
+# Download reference
+wget https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.fa.gz -P $output_dir
+gunzip $output_dir/hg38.fa.gz
+samtools faidx $output_dir/hg38.fa
 
-# # Download other data requirements
-# wget https://ftp.ncbi.nih.gov/gene/DATA/mim2gene_medgen -P $output_dir
-# wget https://ftp.ncbi.nih.gov/gene/DATA/GENE_INFO/Mammalia/Homo_sapiens.gene_info.gz -P $output_dir
-# gunzip $output_dir/Homo_sapiens.gene_info.gz
-# wget http://purl.obolibrary.org/obo/hp/hp.obo -P $output_dir
-# wget http://purl.obolibrary.org/obo/hp/hpoa/phenotype.hpoa -P $output_dir
-# wget http://purl.obolibrary.org/obo/hp/hpoa/phenotype_to_genes.txt -P $output_dir
+# Download other data requirements
+wget https://ftp.ncbi.nih.gov/gene/DATA/mim2gene_medgen -P $output_dir
+wget https://ftp.ncbi.nih.gov/gene/DATA/GENE_INFO/Mammalia/Homo_sapiens.gene_info.gz -P $output_dir
+gunzip $output_dir/Homo_sapiens.gene_info.gz
+wget http://purl.obolibrary.org/obo/hp/hp.obo -P $output_dir
+wget http://purl.obolibrary.org/obo/hp/hpoa/phenotype.hpoa -P $output_dir
+wget http://purl.obolibrary.org/obo/hp/hpoa/phenotype_to_genes.txt -P $output_dir
 
-# # Download annovar databases
-# $annovar/annotate_variation.pl -downdb -buildver hg38 -webfrom annovar refGene $humandb
-# $annovar/annotate_variation.pl -downdb -buildver hg38 -webfrom annovar gnomad30_genome $humandb
-# $annovar/annotate_variation.pl -downdb -buildver hg38 -webfrom annovar clinvar_20220320 $humandb
-# $annovar/annotate_variation.pl -downdb -buildver hg38 -webfrom annovar dbnsfp42a $humandb
+# Download annovar databases
+$annovar/annotate_variation.pl -downdb -buildver hg38 -webfrom annovar refGene $humandb
+$annovar/annotate_variation.pl -downdb -buildver hg38 -webfrom annovar gnomad30_genome $humandb
+$annovar/annotate_variation.pl -downdb -buildver hg38 -webfrom annovar clinvar_20220320 $humandb
+$annovar/annotate_variation.pl -downdb -buildver hg38 -webfrom annovar dbnsfp42a $humandb
 
 
 # Update the YAML config file with absolute paths
