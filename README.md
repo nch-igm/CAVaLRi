@@ -14,12 +14,12 @@ CAVaLRi utilizes a conda environment to manage Python packages. Conda takes quit
 
 Once configured, create the CAVaLRi conda environment by running the following command from the repository root:
 ```
-mamba env create -f dependencies/conda_environment.yml
+micromamba env create -f dependencies/conda_environment.yml
 ```
 
 Once this is created, you can activate the conda environment with the following command:
 ```
-mamba activate cavalri
+micromamba activate cavalri
 ```
 
 NOTE: CAVaLRi will not run to completion if the cavalri conda environment is not active
