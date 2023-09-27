@@ -6,7 +6,7 @@ CAVaLRi (Clinical Assessment of Variants by Likelihood Ratios) was designed to b
 ## Dependencies
 CAVaLRi requries a series of python packages, variant annotation, and LIRICAL dependencies in order to run properly.
 
-### Conda
+### Conda (or Mamba)
 CAVaLRi utilizes a conda environment to manage Python packages. Conda takes quite a long time to install dependencies, so we recommend utilizng mamba instead (micromamba for minimal installation). The following code will download and run the most recent installer for micromamba [see micromamba configuration instructions](https://mamba.readthedocs.io/en/latest/micromamba-installation.html).
 ```
 "${SHELL}" <(curl -L micro.mamba.pm/install.sh)
@@ -54,7 +54,7 @@ Once the necessary dependencies are installed, CAVaLRi can be run via two wrappe
 
 The "phenotype" argument indicates a one-column csv file with the header "HPO ID" that contains a list of all phenotypes associated with the patient (or proband).
 
-The "pedigree" argument indicates a .ped file that designates the mother and father samples as well as the affected statuses of each individual in the pedgree. For more details, see https://gatk.broadinstitute.org/hc/en-us/articles/360035531972-PED-Pedigree-format
+The "pedigree" argument indicates a .ped file that designates the mother and father samples as well as the affected statuses of each individual in the pedgree. For more details, see [.PED formatting](https://gatk.broadinstitute.org/hc/en-us/articles/360035531972-PED-Pedigree-format).
 
 The "vcf" argument indicates a multi-sample vcf file containing genotype information from the proband, the mother, and the father. The individual identifiers designating which sample refers to the proband, the mother, and the father, should be identified in the provided .ped file.
 
