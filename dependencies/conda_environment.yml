@@ -20,3 +20,4 @@ dependencies:
   - gsl=2.5
   - bcftools
   - tabix
+  - samtools
