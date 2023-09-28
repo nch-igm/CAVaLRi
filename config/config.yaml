@@ -1,18 +1,18 @@
 ## DEPENDENCIES ##
-annovar_scripts: dependencies/annovar
-annovar_db: dependencies/human_db
-reference_path: dependencies/hg38.fa
-# common_variants: data/common_variants.csv
-mutpredindel: mutpred-indel/mutpredindel/
-muptredindel_MCR: mutpredindel/MCR2/v91/
+annovar_scripts: /Users/rsrxs003/projects/annovar
+annovar_db: /Users/rsrxs003/projects/CAVaLRi/dependencies
+reference_path: /Users/rsrxs003/projects/CAVaLRi/dependencies/hg38.fa
+# common_variants: /Users/rsrxs003/projects/CAVaLRi/data/common_variants.csv
+mutpredindel: /Users/rsrxs003/projects/CAVaLRi/dependencies/mutpredindel
+muptredindel_MCR: /Users/rsrxs003/projects/CAVaLRi/dependencies/mutpred-indel-mcr
 
 ## DATA TABLES ##
-gene_info: dependencies/Homo_sapiens.gene_info
-hpo: dependencies/hp.obo
-hpoa: dependencies/phenotype.hpoa
-phenotype_gene: dependencies/phenotype_to_genes.txt
-mim2gene: dependencies/mim2gene_medgen
-pheno_score_source: data/HPO_with_gene_IC.csv
+gene_info: /Users/rsrxs003/projects/CAVaLRi/dependencies/Homo_sapiens.gene_info
+hpo: /Users/rsrxs003/projects/CAVaLRi/dependencies/hp.obo
+hpoa: /Users/rsrxs003/projects/CAVaLRi/dependencies/phenotype.hpoa
+phenotype_gene: /Users/rsrxs003/projects/CAVaLRi/dependencies/phenotype_to_genes.txt
+mim2gene: /Users/rsrxs003/projects/CAVaLRi/dependencies/mim2gene_medgen
+pheno_score_source: /Users/rsrxs003/projects/CAVaLRi/data/HPO_with_gene_IC.csv
 pheno_score: IC
 
 ## CAVaLRi SETTINGS ##

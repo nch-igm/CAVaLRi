@@ -74,7 +74,7 @@ def validate_inputs(case):
     if not re.search('chr', chrom):
 
         # Add chr to a temp file
-        o = os.path.join(case.temp_dir, os.path.basename(case.genotype.genotype_path))
+        o = os.path.join(case.cohort.temp_dir, os.path.basename(case.genotype.genotype_path))
         o = o[:o.find('.gz')]
         awk = '{if($0 !~ /^#/) print "chr"$0; else print $0}'
         cmd = f"gunzip -c {case.genotype.genotype_path} | awk '{awk}' > {o}"
@@ -87,8 +87,8 @@ def validate_inputs(case):
     else:
 
         # Copy the vcf into the temp directory
-        o = os.path.join(case.temp_dir, os.path.basename(case.genotype.genotype_path))
+        o = os.path.join(case.cohort.temp_dir, os.path.basename(case.genotype.genotype_path))
         cmd = f"cp {case.genotype.genotype_path} {o}"
         p = worker(cmd)
 
-    return os.path.join(case.temp_dir, os.path.basename(case.genotype.genotype_path))
+    return os.path.join(case.cohort.temp_dir, os.path.basename(case.genotype.genotype_path))

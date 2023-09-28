@@ -23,7 +23,7 @@ def get_snv_scores(genotype):
     # snpdogg_parquet_path = os.path.join(genotype.case.cohort.root_path, config['snpdogg'])
 
     # Set up directories
-    wrk_dir = os.path.join(genotype.case.temp_dir, 'snv')
+    wrk_dir = os.path.join(genotype.case.cohort.temp_dir, 'snv')
     input_folder = os.path.join(wrk_dir, 'input')
     output_folder = os.path.join(wrk_dir, 'output')
 
@@ -32,7 +32,7 @@ def get_snv_scores(genotype):
             os.mkdir(dir)
 
     # Reduce the vcf to only include splice variants
-    vcf_path = os.path.join(genotype.case.temp_dir, f'{genotype.case.case_id}.filtered.vcf.gz')
+    vcf_path = os.path.join(genotype.case.cohort.temp_dir, f'{genotype.case.case_id}.filtered.vcf.gz')
     snv_input_vcf = os.path.join(input_folder, f"{genotype.case.case_id}.snv.vcf")
     snv_variants = ['missense_variant','nonsynonymous_SNV']
     exp = ' | '.join([f'INFO/ExonicFunc.refGene==\"{x}\"' for x in snv_variants])

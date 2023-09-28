@@ -29,7 +29,7 @@ def annotate_variants(genotype):
     root_path = genotype.case.cohort.root_path
 
     # Determine output path
-    output = os.path.join(genotype.case.temp_dir, f"{genotype.case.case_id}.annotated")
+    output = os.path.join(genotype.case.cohort.temp_dir, f"{genotype.case.case_id}.annotated")
     temp_out = os.path.abspath(f'{output}.hg38_multianno.vcf')
     unzipped_out = os.path.abspath(f'{output}.vcf')
 

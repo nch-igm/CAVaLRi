@@ -21,7 +21,7 @@ def normalize_variants(genotype):
     conda_bin = genotype.case.cohort.conda_bin
 
     # Normalize the vcf
-    normalized_vcf_dir = os.path.join(genotype.case.temp_dir, 'normalized_vcfs')
+    normalized_vcf_dir = os.path.join(genotype.case.cohort.temp_dir, 'normalized_vcfs')
     if not os.path.exists(normalized_vcf_dir):
         os.mkdir(normalized_vcf_dir)
     norm_vcf = os.path.join(normalized_vcf_dir, f'{genotype.case.case_id}.norm.vcf.gz')

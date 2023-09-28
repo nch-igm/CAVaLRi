@@ -31,22 +31,17 @@ class Workflow:
     def run(self):
 
         config = self.cohort.config
+        temp_dir = self.cohort.temp_dir
         
-        # Set up temporary directory
-        temp_folder = os.path.abspath(self.cohort.input_path) if os.path.isdir(self.cohort.input_path) else os.path.abspath(os.path.dirname(self.cohort.input_path))
-        temp_folder = os.path.join(temp_folder, str(uuid.uuid4()))
-        if not os.path.exists(temp_folder):
-            os.mkdir(temp_folder)
 
         # Add temp directory to a snakemake yaml file
         snakemake_yaml_path = os.path.join(self.cohort.root_path, 'src/workflow', 'config.yaml')
         with open(snakemake_yaml_path,'w') as f:
-            print(f'tmp_dir: {os.path.abspath(temp_folder)}', file = f)
+            print(f'tmp_dir: {temp_dir}', file = f)
 
         # Create case pickle input files
         for case in self.cohort.cases:
-            case.temp_dir = temp_folder
-            case_plan_path = os.path.join(case.temp_dir, f'{case.case_id}.pickle')
+            case_plan_path = os.path.join(temp_dir, f'{case.case_id}.pickle')
             with open(case_plan_path, 'wb') as f:
                 pickle.dump(case, file = f)
 
@@ -67,8 +62,7 @@ class Workflow:
 
         # Read in populated case data
         for case in self.cohort.cases:
-            case.temp_folder = temp_folder
-            with open(os.path.join(case.temp_folder, f'{case.case_id}.full.pickle'), 'rb') as f:
+            with open(os.path.join(temp_dir, f'{case.case_id}.full.pickle'), 'rb') as f:
                 c = pickle.load(f)
             case.case_data = c.case_data
             case.case_summary = c.case_summary
@@ -98,5 +92,5 @@ class Workflow:
         self.cohort.topn_data.to_csv(os.path.join(summary_dir, 'topn_data.csv'), index=False)
             
         # Remove temporary directory
-        self.worker(f'rm -Rf {temp_folder}')
+        # self.worker(f'rm -Rf {temp_dir}')
         self.worker(f"rm {os.path.join(self.cohort.root_path, 'src/workflow/cavalri/cavalri_scheduler.o*')}")

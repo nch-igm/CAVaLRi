@@ -25,7 +25,7 @@ def run_spliceai(genotype):
     root_path = genotype.case.cohort.root_path
 
     """Run spliceAI predictions pipeline."""
-    wrk_dir = os.path.join(genotype.case.temp_dir, 'spliceAI')
+    wrk_dir = os.path.join(genotype.case.cohort.temp_dir, 'spliceAI')
 
     # Set up directories
     input_folder = os.path.join(wrk_dir, 'input')
@@ -38,7 +38,7 @@ def run_spliceai(genotype):
             os.mkdir(dir)
 
     # Reduce the vcf to only include splice variants
-    vcf_path = os.path.join(genotype.case.temp_dir, f'{genotype.case.case_id}.filtered.vcf.gz')
+    vcf_path = os.path.join(genotype.case.cohort.temp_dir, f'{genotype.case.case_id}.filtered.vcf.gz')
     spliceai_input_vcf = os.path.join(input_folder, f"{genotype.case.case_id}.spliceai.vcf")
     cmd = f"{os.path.join(conda_bin,'bcftools')} filter -i 'INFO/Func.refGene==\"splicing\"' -Ov -o {spliceai_input_vcf} {vcf_path}"
     p = worker(cmd)

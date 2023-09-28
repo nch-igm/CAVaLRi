@@ -1,9 +1,7 @@
 import sys
 import os
-import re
-import json
 import pandas as pd
-import obonet
+import uuid
 sys.path.append(os.path.dirname(__file__))
 sys.path.append(os.path.join(os.path.dirname(__file__),'..','workflow'))
 from workflow import Workflow
@@ -19,13 +17,12 @@ class Cohort:
     the user
     """
 
-    def __init__(self, input_dir, output_dir, diagnostic_data, config):
+    def __init__(self, input_dir, output_dir, config):
         
         self.conda_bin = os.path.join(sys.exec_prefix, 'bin')
         self.cases = set()
         self.input_path = input_dir
         self.output_path = output_dir
-        self.diagnostic_data = diagnostic_data
         self.root_path = os.path.dirname(__file__)
         self.root_path = self.root_path[:self.root_path.find('/src')]
         self.config = config
@@ -106,6 +103,13 @@ class Cohort:
 
     def add_case(self, case):
        self.cases.add(case)
+
+    def make_temp_dir(self):
+        self.temp_dir = os.path.abspath(os.path.join(self.output_path, str(uuid.uuid4())))
+        os.system(f'mkdir {self.temp_dir}')
+    
+    def remove_temp_dir(self):
+        os.system(f'rm -Rf {self.temp_dir}')
     
     def remove_case(self, case):
         self.cases.remove(case)

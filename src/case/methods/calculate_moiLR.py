@@ -9,7 +9,7 @@ import time
 def get_trio_genotype(case, chrom, pos):
 
     proband, mother, father = 0, 0, 0
-    vcf_reader = vcf.Reader(filename = os.path.join(case.temp_dir, f'{case.case_id}.filtered.vcf.gz'), compressed=True, encoding='ISO-8859-1')
+    vcf_reader = vcf.Reader(filename = os.path.join(case.cohort.temp_dir, f'{case.case_id}.filtered.vcf.gz'), compressed=True, encoding='ISO-8859-1')
     for i, s in enumerate(vcf_reader.samples):
         parent_patterns = {
             'proband': case.proband,

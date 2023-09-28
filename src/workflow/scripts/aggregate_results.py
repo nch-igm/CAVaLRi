@@ -54,7 +54,7 @@ def main(input, output):
 
     # Run aggregate methods
     pheno_case.calculate_compositeLR()
-    pheno_case.add_tp()
+    # pheno_case.add_tp()
     pheno_case.add_rankings()
     pheno_case.build_case_summary()
 

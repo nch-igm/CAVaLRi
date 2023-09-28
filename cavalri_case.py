@@ -5,15 +5,11 @@ sys.path.append(os.path.join(os.path.dirname(__file__),'..'))
 import CAVaLRi as cv
 import pandas as pd
 import json
-import vcf
 import subprocess
-import shlex
 import argparse
 import pickle
 import uuid
 import yaml
-import obonet
-import numpy as np
 
 
 def worker(command: str):
@@ -27,8 +23,6 @@ def worker(command: str):
     return output.decode('utf-8')
 
 
-def remove_temp_dir(d):
-    worker(f'rm -Rf {d}')
 
 def update_config(temp_pickle_path: str, config_template_path: str, 
                     root_dir: str, config_output_path: str):
@@ -60,7 +54,9 @@ def main(input: str, output_dir: str):
 
     # Parse the input file
     output_dir = os.path.dirname(input) if not output_dir else output_dir
-    cohort = cv.Cohort(os.path.dirname(input), output_dir, '', config)
+    cohort = cv.Cohort(os.path.dirname(input), output_dir, config)
+
+    cohort.make_temp_dir()
 
     # Add case
     with open(input,'r') as d:
@@ -68,7 +64,6 @@ def main(input: str, output_dir: str):
     case = os.path.basename(input)
     case = case[:case.find('.json')]
 
-    # required_keys = ['phenotype','vcf','biological_sex','proband','mother_affected','father_affected']
     required_keys = ['phenotype','vcf','proband','pedigree']
 
     for rk in required_keys:
@@ -113,27 +108,21 @@ def main(input: str, output_dir: str):
         father_affected = inputs['father_affected']
     )
 
-    # Set up a temporary directory
-    cs.temp_dir = os.path.abspath(os.path.join(output_dir, str(uuid.uuid4())))
-    if not os.path.exists(cs.temp_dir):
-        os.mkdir(cs.temp_dir)
-
     # cohort.add_case(cs)
 
     # Pickle the case
-    case_pickle_path = os.path.join(cs.temp_dir, f'{cs.case_id}.pickle')
+    case_pickle_path = os.path.join(cs.cohort.temp_dir, f'{cs.case_id}.pickle')
     with open(case_pickle_path, 'wb') as f:
         pickle.dump(cs, file = f)
 
     # Run case
-    full_pickle_path = os.path.join(cs.temp_dir, f'{cs.case_id}.full.pickle')
-    # script_path = os.path.join(cohort.root_path, 'src/workflow/scripts/run_case.py')
+    full_pickle_path = os.path.join(cs.cohort.temp_dir, f'{cs.case_id}.full.pickle')
     conda_bin = os.path.join(sys.exec_prefix, 'bin')
 
     # Write temp file path to workflow config.yaml
     workflow_path = os.path.join(cohort.root_path, 'src/workflow')
     workflow_config_path = os.path.join(workflow_path, 'config.yaml')
-    config_output_path = os.path.join(cs.temp_dir, 'config.yaml')
+    config_output_path = os.path.join(cs.cohort.temp_dir, 'config.yaml')
     update_config(case_pickle_path, workflow_config_path, cohort.root_path, config_output_path)
     
     # Run snakemake pipeline
@@ -143,7 +132,6 @@ def main(input: str, output_dir: str):
     # Check to see if the pipeline ran successfully
     if not os.path.exists(full_pickle_path):
         print(p)
-        # remove_temp_dir(cs.temp_dir)
         sys.exit(1)
 
     # Load result
@@ -160,7 +148,7 @@ def main(input: str, output_dir: str):
     cs.case_summary.to_csv(os.path.join(output_dir, f'{cs.case_id}.cavalri.summary.csv'), index = False)
 
     # Remove temporary directory
-    remove_temp_dir(cs.temp_dir)
+    cs.cohort.remove_temp_dir()
 
     # Get versions of dependencies
     # config['HPOA version'] = hpo_version.split(' ')[-1].strip()

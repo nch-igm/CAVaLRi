@@ -26,7 +26,7 @@ def run_mutpredindel(genotype):
     root_path = genotype.case.cohort.root_path
 
     # Set up directories
-    wrk_dir = os.path.join(genotype.case.temp_dir, 'mutpredindel')
+    wrk_dir = os.path.join(genotype.case.cohort.temp_dir, 'mutpredindel')
     input_folder = os.path.join(wrk_dir, 'input')
     vc_folder = os.path.join(wrk_dir, 'predictions')
     resource_folder = os.path.join(wrk_dir, 'resource')
@@ -37,7 +37,7 @@ def run_mutpredindel(genotype):
             os.mkdir(dir)
 
     # Reduce the vcf to only include splice variants
-    vcf_path = os.path.join(genotype.case.temp_dir, f'{genotype.case.case_id}.filtered.vcf.gz')
+    vcf_path = os.path.join(genotype.case.cohort.temp_dir, f'{genotype.case.case_id}.filtered.vcf.gz')
     mutpred_input_vcf = os.path.join(input_folder, f"{genotype.case.case_id}.mutpredindel.vcf")
     inframe_indel_variants = ['nonframeshift_insertion','nonframeshift_deletion',
                         'inframe_insertion','inframe_deletion',

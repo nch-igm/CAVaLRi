@@ -58,8 +58,8 @@ class Case:
     def add_rankings(self):
         self.case_data = add_rankings(self)
 
-    def add_tp(self):
-        self.case_data = add_tp(self)
+    # def add_tp(self):
+    #     self.case_data = add_tp(self)
 
     def build_case_summary(self):
         self.case_summary = build_case_summary(self)
