@@ -15,7 +15,7 @@ def worker(command):
 def test_case():
     conda_bin = os.path.join(sys.exec_prefix, 'bin')
     root_path = os.path.join(os.path.dirname(__file__),'..')
-    cmd = f"{os.path.join(conda_bin, 'python')} {os.path.join(root_path,'cavalri_case.py')} --input {os.path.join(root_path,'example/case/example.json')}"
-    print(cmd)
+    cmd = f"cd {root_path} && {os.path.join(conda_bin, 'python')} cavalri_case.py --input {os.path.join(root_path,'example/case/example.json')}"
+    worker(cmd)
 
 test_case()

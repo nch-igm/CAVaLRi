@@ -38,3 +38,4 @@ example/cohort/*
 miniconda.sh
 miniconda3
 dependencies/annovar
+*.pytest*

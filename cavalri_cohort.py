@@ -1,14 +1,14 @@
 from config import *
 import sys
 import os
-sys.path.append(os.path.join(os.path.dirname(__file__),'..'))
-import CAVaLRi as cv
+import pickle
 import pandas as pd
 import json
 import subprocess
 import argparse
 import yaml
-
+sys.path.append(os.path.join(os.path.dirname(__file__),'..'))
+import CAVaLRi as cv
 
 def worker(cmd):
     """
@@ -48,11 +48,13 @@ def update_config(temp_pickle_path: str, config_template_path: str,
         cfg = yaml.dump(cfg, f)
 
 
-def main(input_dir, output_dir, diagnostic_data):
+def main(input_dir, output_dir):
 
     # Validate input and output directories
     output_dir = input_dir if not output_dir else output_dir
-    for dir in [input_dir,output_dir]:
+    case_output_dir = os.path.join(output_dir, 'cases')
+
+    for dir in [input_dir,output_dir,case_output_dir]:
         try:
             if not os.path.exists(dir):
                 os.mkdir(dir)
@@ -60,22 +62,22 @@ def main(input_dir, output_dir, diagnostic_data):
             print(f'{dir} is not a valid directory')
             sys.exit(1)
     
-    cohort = cv.Cohort(os.path.dirname(input), output_dir, config)
+    cohort = cv.Cohort(input_dir, output_dir, config)
 
     cohort.make_temp_dir()
 
     required_keys = ['phenotype','vcf','proband','pedigree']
 
     # Add cases
-    for entry in os.scandir(input_dir):
-         
+    for entry in [ e for e in os.scandir(input_dir) if e.name.endswith('.json')]:
+                 
         # Intialize remove case flag
         rm_case = 0
 
         # Read in input file
         with open(os.path.join(input_dir, entry.name),'r') as d:
             inputs = json.load(d)
-        case = os.path.basename(input)
+        case = os.path.basename(entry.name)
         case = case[:case.find('.json')]
 
         # Check required keys
@@ -84,7 +86,7 @@ def main(input_dir, output_dir, diagnostic_data):
                 print(f'Required key: {rk} was not provided in the CAVaLRi input file')
                 print(f'Removing {case}')
                 rm_case = 1
-                continue
+                break
         if rm_case == 1:
             continue
 
@@ -127,7 +129,16 @@ def main(input_dir, output_dir, diagnostic_data):
             father_affected = inputs['father_affected']
         )
 
+        # Pickle case
+        case_pickle_path = os.path.join(cs.cohort.temp_dir, f'{cs.case_id}.pickle')
+        with open(case_pickle_path, 'wb') as f:
+            pickle.dump(cs, file = f)
+
+        # Set finished pickle path
+        cs.full_pickle_path = os.path.join(cs.cohort.temp_dir, f'{cs.case_id}.full.pickle')
+
         cohort.add_case(cs)
+
     
     # Validate diagnostic data
     # if diagnostic_data:
@@ -137,13 +148,65 @@ def main(input_dir, output_dir, diagnostic_data):
     #         print(f"'CASE' and 'DIAGNOSTIC_GENE' columns were not found in {diagnostic_data}")
 
 
-    # Run CAVaLRi workflow for each case in the cohort
-    cohort.run()
+    # Run cohort
+    conda_bin = os.path.join(sys.exec_prefix, 'bin')
 
-    # Create run log
-    log_path = os.path.join(output_dir, 'summary', 'config.json')
-    with open(log_path, 'w') as f:
+    # Write temp file path to workflow config.yaml
+    workflow_path = os.path.join(cohort.root_path, 'src/workflow')
+    workflow_config_path = os.path.join(workflow_path, 'config.yaml')
+    config_output_path = os.path.join(cohort.temp_dir, 'config.yaml')
+    update_config(case_pickle_path, workflow_config_path, cohort.root_path, config_output_path)
+ 
+    # Run snakemake pipeline
+    cmd = f"cd {workflow_path} && {os.path.join(conda_bin, 'snakemake')} --cores {config['cores']} --configfile {config_output_path}"
+    p = worker(cmd)
+
+    # Check to see if the pipeline ran successfully
+    failed_cases = []
+    successful_cases = []
+    for k,v in cohort.cases.items():
+        if not os.path.exists(v.full_pickle_path):
+            failed_cases.append(k)
+        else:
+            successful_cases.append(k)
+    
+    if len(failed_cases) != 0:
+        print(f'The following cases failed to execute: {";".join(failed_cases)}')
+        for fc in failed_cases:
+            cohort.remove_case(fc)
+
+    print(f'Successfully generated input for {len(successful_cases)} cases: ({", ".join(successful_cases)})')
+
+    # Create output
+    cohort_summary = []
+
+    for k,v in cohort.cases.items():
+
+        # Load result
+        with open(v.full_pickle_path, 'rb') as f:
+            c = pickle.load(f)
+
+        # Add scored phenotypes to case data
+        c.case_data['phenotypes'] = c.phenotype.phenotypes
+        c.case_data['genes'] = {int(k):v_ for k,v_ in c.case_data['genes'].items()}
+
+        # Write output files
+        with open(os.path.join(case_output_dir, f'{k}.cavalri.json'), 'w') as f:
+            json.dump(c.case_data, f, indent = 4)
+        c.case_summary.to_csv(os.path.join(case_output_dir, f'{k}.cavalri.summary.csv'), index = False)
+        c.case_summary['case'] = k
+        cohort_summary.append(c.case_summary)
+    
+    summary_path = os.path.join(output_dir, 'gene_summary.csv')
+    pd.concat(cohort_summary).sort_values('postTestProbability', ascending=False).to_csv(summary_path, index = False)
+
+    with open(os.path.join(output_dir, 'config.json'), 'w') as f:
         json.dump(config, f, indent=4)
+
+    # Remove temporary directory
+    cohort.remove_temp_dir()
+
+    print(f"Output written to {output_dir}")
 
 if __name__ == '__main__':
 
@@ -151,7 +214,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='')
     parser.add_argument('--input_dir', '-i', type=str, help='Directory where CAVaLRi subject input files are stored')
     parser.add_argument('--output_dir', '-o', type=str, help='Directory where CAVaLRi output files are written')
-    parser.add_argument('--diagnostic_data', '-d', type=str, help='File containing two columns, CASE and DIAGNOSTIC_GENE indicating diagnostic genes for cases provided in the cohort')
     args = parser.parse_args()
 
-    main(args.input_dir, args.output_dir, args.diagnostic_data)
+    main(args.input_dir, args.output_dir)

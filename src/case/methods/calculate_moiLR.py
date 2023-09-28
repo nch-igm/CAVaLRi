@@ -66,7 +66,7 @@ def calculate_moiLR(case):
             for gt in ['proband','mother','father']:
                 
                 # Hemizygous state
-                if gt_data[gt].find('|') != -1 or gt_data[gt] in [1,'1']:
+                if (gt_data[gt].find('|') != -1 and gt_data[gt] != '0|0') or gt_data[gt] in [1,'1']:
                     # g = gt_data[gt].split('|')
                     # gt_data[gt] = '/'.join(g)
                     gt_data[gt] = '1/1'

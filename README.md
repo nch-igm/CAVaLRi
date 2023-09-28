@@ -24,6 +24,10 @@ micromamba activate cavalri
 
 NOTE: CAVaLRi will not run to completion if the cavalri conda environment is not active
 
+### Reference Genome
+The hg38 reference genome is required to normalize inputted VCF files. This reference genome is downloaded from the UCSC servers, and is also included as part of the get_dependencies.sh bash script.
+
+
 ### Variant Annotation Databases
 CAVaLRi utilizes the ANNOVAR variant annotation library to functionally annotate inputted genetic variants. ANNOVAR must be requested and downloaded manually, see instructions [here](https://annovar.openbioinformatics.org/en/latest/user-guide/download/).
 
@@ -34,12 +38,7 @@ bash get_dependencies.sh -a /path/to/annovar
 
 This script will download not only the ANNOVAR required databases, but all other dependencies as well.
 
-NOTE: These databases require ~190GB of storage
-
-### Reference Genome
-The hg38 reference genome is required to normalize inputted VCF files. This reference genome is downloaded from the UCSC servers, and is also included as part of the get_dependencies.sh bash script.
-
-NOTE: The unzipped reference genome requries ~4GB of storage
+NOTE: These dependencies together require ~120GB of storage
 
 ## Running CAVaLRi
 Once the necessary dependencies are installed, CAVaLRi can be run via two wrapper scripts that create the necessary CAVaLRi objects to process the inputted cases. Inputted cases are represented via a JSON file with the following structure (see example/example.json).
@@ -80,14 +79,14 @@ To run CAVaLRi on multiple subjects at once, the cavalri.py script should be uti
 python cavalri_cohort.py -h
 ```
 
-Three arguments are available, --input_dir, --output_dir, and --diagnostic_data. The --input_dir argument is required, and should indicate a path where multiple CAVaLRi json input files are located. The --output_dir argument is optional. If provided, the output files from the case will be redirected to the indicated directory. Otherwise, the output will be saved in the same directory indicated by the --input_dir argument. The --diagnostic_data is optional, and is meant to provide diagnostic data in cases where the diagnostic gene is known. This file is to be formatted as a csv file with two columns with headers 'CASE' and 'DIAGNOSTIC_GENE'. This diagnostic data will be used to build accuracy metrics and plots at the end of the cohort pipeline.
+Two arguments are available, --input_dir and --output_dir. The --input_dir argument is required, and should indicate a path where multiple CAVaLRi json input files are located. The --output_dir argument is optional. If provided, the output files from the case will be redirected to the indicated directory. Otherwise, the output will be saved in the same directory indicated by the --input_dir argument.
 
 ## Interpreting the output
 CAVaLRi outputs two files per case,
-1. A JSON file containing all data used in calculating the CAVaLRi post-test probability. This JSON file is keyed by disease, and contains the associated phenotype, genotype, and mode of inhertence likelihood ratios.
-2. A csv summary file ranking the candidate disease genes by diagnostic post-test probability. This file is meant for variant scientists and clinicians to prioritize likely diagnostic variants.
+1. A JSON file containing all data used in calculating the CAVaLRi posterior probability. This JSON file is keyed by disease, and contains the associated phenotype, genotype, and mode of inhertence likelihood ratios.
+2. A csv summary file ranking the candidate disease genes by diagnostic posterior probability. This file is meant for variant scientists and clinicians to prioritize likely diagnostic variants.
 
-When running cavalri_cohort.py, additional summary files are provided, including a cohort_summary.csv file. If any known diagnostic variants are provided, plots are generated to visualize CAVaLRi performance.
+When running cavalri_cohort.py, an additional summary file is generated that sorts all candidate genes in the cohort by diagnostic posterior probability
 
 ## Examples
 To get familiarized with CAVaLRi case output
@@ -97,5 +96,5 @@ python cavalri_case.py --input example/case/example.json
 
 To get familiarized with CAVaLRi cohort output
 ```
-python cavalri_cohort.py --input_dir example/cohort/ --diagnostic_data example/cohort/example_diagnostic.csv
+python cavalri_cohort.py --input_dir example/cohort/ --output_dir example/cohort/output
 ```

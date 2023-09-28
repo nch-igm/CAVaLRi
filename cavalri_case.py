@@ -108,8 +108,6 @@ def main(input: str, output_dir: str):
         father_affected = inputs['father_affected']
     )
 
-    # cohort.add_case(cs)
-
     # Pickle the case
     case_pickle_path = os.path.join(cs.cohort.temp_dir, f'{cs.case_id}.pickle')
     with open(case_pickle_path, 'wb') as f:

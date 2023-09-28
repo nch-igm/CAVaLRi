@@ -20,7 +20,7 @@ class Cohort:
     def __init__(self, input_dir, output_dir, config):
         
         self.conda_bin = os.path.join(sys.exec_prefix, 'bin')
-        self.cases = set()
+        self.cases = {}
         self.input_path = input_dir
         self.output_path = output_dir
         self.root_path = os.path.dirname(__file__)
@@ -102,7 +102,7 @@ class Cohort:
         
 
     def add_case(self, case):
-       self.cases.add(case)
+       self.cases[case.case_id] = case
 
     def make_temp_dir(self):
         self.temp_dir = os.path.abspath(os.path.join(self.output_path, str(uuid.uuid4())))
@@ -111,8 +111,8 @@ class Cohort:
     def remove_temp_dir(self):
         os.system(f'rm -Rf {self.temp_dir}')
     
-    def remove_case(self, case):
-        self.cases.remove(case)
+    def remove_case(self, case_id):
+        self.cases = {k:v for k,v in self.cases if k != case_id}
     
     # def retrieve_annotated_variants(self):
     #     self.annotated_variants = retrieve_annotated_variants(self)
