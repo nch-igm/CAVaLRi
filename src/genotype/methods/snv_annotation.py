@@ -90,8 +90,8 @@ def get_snv_scores(genotype):
         scored_snv_df = scored_snv_df.astype({'snv_score':float,'CHROM':str})
         scored_snv_df['CHROM'] = scored_snv_df['CHROM'].str[3:]
     
-    except:
-        scored_snv_df = pd.DataFrame()
+    except Exception as e:
+        return pd.DataFrame(columns = ['CHROM','POS','REF','ALT','score'])
 
     return scored_snv_df
     
