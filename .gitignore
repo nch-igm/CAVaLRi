@@ -13,7 +13,7 @@ output/*
 dependencies/*
 data/*
 src/workflow/config.yaml
-!dependencies/conda_environment.yml
+!dependencies/conda_environment*
 !data/Homo_sapiens_gene_info.tsv
 !data/moi.csv
 !data/template.yaml

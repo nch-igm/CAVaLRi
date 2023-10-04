@@ -1,0 +1,25 @@
+name: cavalri
+channels:
+  - conda-forge
+  - bioconda
+  - defaults  
+dependencies:
+  - python=3.8
+  - snakemake
+  - ca-certificates
+  - certifi
+  - openssl
+  - scipy
+  - scikit-learn
+  - pyvcf
+  - obonet
+  - tqdm
+  - matplotlib
+  - seaborn
+  - spliceai
+  - gsl=2.5
+  - bcftools
+  - tabix
+  - samtools
+  - pysam
+  - htslib
