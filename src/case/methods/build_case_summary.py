@@ -6,7 +6,8 @@ def build_case_summary(case):
     config = case.cohort.config
 
     # Initialize result data frame
-    res_df = pd.DataFrame(columns=['geneRank', 'entrezId', 'geneSymbol', 'postTestProbability', 'phenoLR', 'geneLR', 'moiLR', 'cavalriScore','hpoCount','variants'])
+    # res_df = pd.DataFrame(columns=['geneRank', 'entrezId', 'geneSymbol', 'postTestProbability', 'phenoLR', 'geneLR', 'moiLR', 'cavalriScore','hpoCount','variants'])
+    res_df = pd.DataFrame(columns=['geneRank', 'entrezId', 'geneSymbol', 'postTestProbability', 'phenoLR', 'geneLR', 'moiLR', 'cavalriScore','variants'])
 
     for g, g_data in case.case_data['genes'].items():
         for d, d_data in g_data.items():
@@ -23,7 +24,7 @@ def build_case_summary(case):
                         'geneLR': g_data['gene_data']['genoLR'] * config['genoLR_scalar'],
                         'moiLR': d_data['moiLR'] * config['moiLR_scalar'],
                         'cavalriScore': d_data['score'],
-                        'hpoCount': d_data['phenoCount'],
+                        # 'hpoCount': d_data['phenoCount'],
                         'variants': ';'.join([ v['hg38_position'] for v in g_data['gene_data']['variants'] ])
                     }, index = [0])
                 ])

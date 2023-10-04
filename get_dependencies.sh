@@ -69,9 +69,8 @@ wget http://purl.obolibrary.org/obo/hp/hpoa/phenotype_to_genes.txt -P $output_di
 # Download annovar databases
 $annovar/annotate_variation.pl -downdb -buildver hg38 -webfrom annovar refGene $humandb
 $annovar/annotate_variation.pl -downdb -buildver hg38 -webfrom annovar gnomad30_genome $humandb
-$annovar/annotate_variation.pl -downdb -buildver hg38 -webfrom annovar clinvar_20220320 $humandb
+$annovar/annotate_variation.pl -downdb -buildver hg38 -webfrom annovar clinvar_20221231 $humandb
 $annovar/annotate_variation.pl -downdb -buildver hg38 -webfrom annovar dbnsfp42a $humandb
-
 
 # Update the YAML config file with absolute paths
 if [ -f "$config_file" ]; then

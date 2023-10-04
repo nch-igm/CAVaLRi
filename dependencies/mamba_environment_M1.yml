@@ -4,20 +4,20 @@ channels:
   - bioconda
   - defaults  
 dependencies:
-  - python=3.8
+  - python=3.10.8
   - snakemake
   - ca-certificates
   - certifi
   - openssl
   - scipy
   - scikit-learn
-  - pyvcf
+  - pyvcf3
   - obonet
   - tqdm
   - matplotlib
   - seaborn
   - spliceai
-  - gsl=2.5
+  - gsl
   - bcftools
   - tabix
   - samtools

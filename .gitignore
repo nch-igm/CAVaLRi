@@ -38,4 +38,5 @@ example/cohort/*
 miniconda.sh
 miniconda3
 dependencies/annovar
+!dependencies/mamba_environment*.yml
 *.pytest*

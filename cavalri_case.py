@@ -54,6 +54,14 @@ def main(input: str, output_dir: str):
 
     # Parse the input file
     output_dir = os.path.dirname(input) if not output_dir else output_dir
+    for dir in [input_dir,output_dir,case_output_dir]:
+        try:
+            if not os.path.exists(dir):
+                os.mkdir(dir)
+        except:
+            print(f'{dir} is not a valid directory')
+            sys.exit(1)
+            
     cohort = cv.Cohort(os.path.dirname(input), output_dir, config)
 
     cohort.make_temp_dir()
