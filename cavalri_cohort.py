@@ -156,6 +156,8 @@ def main(input_dir, output_dir):
     workflow_config_path = os.path.join(workflow_path, 'config.yaml')
     config_output_path = os.path.join(cohort.temp_dir, 'config.yaml')
     update_config(case_pickle_path, workflow_config_path, cohort.root_path, config_output_path)
+
+    print(f'Running CAVaLRi for {len(cohort.cases.keys())} cases: ({", ".join(cohort.cases.keys())})')
  
     # Run snakemake pipeline
     cmd = f"cd {workflow_path} && {os.path.join(conda_bin, 'snakemake')} --cores {config['cores']} --configfile {config_output_path}"
@@ -174,8 +176,6 @@ def main(input_dir, output_dir):
         print(f'The following cases failed to execute: {";".join(failed_cases)}')
         for fc in failed_cases:
             cohort.remove_case(fc)
-
-    print(f'Successfully generated input for {len(successful_cases)} cases: ({", ".join(successful_cases)})')
 
     # Create output
     cohort_summary = []
@@ -196,7 +196,9 @@ def main(input_dir, output_dir):
         c.case_summary.to_csv(os.path.join(case_output_dir, f'{k}.cavalri.summary.csv'), index = False)
         c.case_summary['case'] = k
         cohort_summary.append(c.case_summary)
-    
+
+    print(f'Writing output to {output_dir}')
+
     summary_path = os.path.join(output_dir, 'gene_summary.csv')
     pd.concat(cohort_summary).sort_values('postTestProbability', ascending=False).to_csv(summary_path, index = False)
 
@@ -206,7 +208,6 @@ def main(input_dir, output_dir):
     # Remove temporary directory
     cohort.remove_temp_dir()
 
-    print(f"Output written to {output_dir}")
 
 if __name__ == '__main__':
 

@@ -10,7 +10,6 @@ from utils import ontology, build_propagated_frequency_map
 from methods import *
 
 
-
 class Cohort:
     """
     This class is meant to summarize a cohort consisting of cases inputted by

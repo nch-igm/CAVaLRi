@@ -54,13 +54,12 @@ def main(input: str, output_dir: str):
 
     # Parse the input file
     output_dir = os.path.dirname(input) if not output_dir else output_dir
-    for dir in [input_dir,output_dir,case_output_dir]:
-        try:
-            if not os.path.exists(dir):
-                os.mkdir(dir)
-        except:
-            print(f'{dir} is not a valid directory')
-            sys.exit(1)
+    try:
+        if not os.path.exists(output_dir):
+            os.mkdir(output_dir)
+    except:
+        print(f'{output_dir} is not a valid directory')
+        sys.exit(1)
             
     cohort = cv.Cohort(os.path.dirname(input), output_dir, config)
 
@@ -130,6 +129,8 @@ def main(input: str, output_dir: str):
     workflow_config_path = os.path.join(workflow_path, 'config.yaml')
     config_output_path = os.path.join(cs.cohort.temp_dir, 'config.yaml')
     update_config(case_pickle_path, workflow_config_path, cohort.root_path, config_output_path)
+
+    print(f'Running CAVaLRi for case: {cs.case_id}')
     
     # Run snakemake pipeline
     cmd = f"cd {workflow_path} && {os.path.join(conda_bin, 'snakemake')} --cores {config['cores']} --configfile {config_output_path}"
@@ -143,6 +144,8 @@ def main(input: str, output_dir: str):
     # Load result
     with open(full_pickle_path, 'rb') as f:
         cs = pickle.load(f)
+
+    print(f'Writing output to {output_dir}')
 
     # Add scored phenotypes to case data
     cs.case_data['phenotypes'] = cs.phenotype.phenotypes
@@ -164,7 +167,6 @@ def main(input: str, output_dir: str):
     with open(log_path, 'w') as f:
         json.dump(config, f, indent=4)
 
-        
 
 if __name__ == '__main__':
 
