@@ -2,7 +2,8 @@ name: cavalri
 channels:
   - conda-forge
   - bioconda
-  - defaults  
+  - defaults
+  - nanoporetech
 dependencies:
   - python=3.10.8
   - snakemake
