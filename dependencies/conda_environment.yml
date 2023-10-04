@@ -1,8 +1,8 @@
 name: cavalri
 channels:
-  - defaults
-  - bioconda
   - conda-forge
+  - bioconda
+  - defaults  
 dependencies:
   - python=3.10.8
   - snakemake
@@ -21,3 +21,5 @@ dependencies:
   - bcftools
   - tabix
   - samtools
+  - pysam
+  - htslib
