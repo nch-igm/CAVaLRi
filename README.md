@@ -118,5 +118,18 @@ CAVaLRi outputs two files per case,
 
 When running cavalri_cohort.py, an additional summary file is generated that sorts all candidate genes in the cohort by diagnostic posterior probability.
 
+## Configuration settings
+The following configuration settings can be changed to alter CAVaLRi's default behavior (term: default_value):
+- run_mutpredindel: False  // mutpredindel and mutpredindel_MCR need to be configured as well if set to True. Purposefully set to False due to long run times
+- dbNSFP_score: MetaRNN_score // MetaRNN was shown to be the most accurate SNV pathogenicity score. Other scores can be selected
+- genome_build: hg38  // no other genome builds are currently supported
+- hpo_upper_bound: 19 // determined empirically to maximize diagnostic variant classification. Can be altered to determine maximum length of truncated patient phenotype set.
+- pheno_root_penalty: 1 // floor value that limits the penalty caused by a single phenotype term. Lowering this value will allow unrelated phenotype terms to penalize phenotype set score
+- pheno_root_penalty: 1; genoLR_scalar: 2.2914306640625; moiLR_scalar: 3.6929443359375 // determined from statistical learning procedure. Alterations to these values will likely diminish performance.
+- snv_threshold: 0.5; spliceai_threshold: 0.5; mutpredindel_threshold: 0.5 // suggested pathogenicity thresholds. Can be modulated to limit or expand candidate variant list
+- gnomAD_popmax: 0.01; quality_minimum: 50; depth_minimum: 10 // suggested thresholds for limiting candidate variant list to likely pathogenic variants. Can be modulated to limit or expand candidate variant list.
+
+common_variants can also be provided if known artifactual genomic coordinates are known. The value should point to a .csv file with CHROM,POS,REF,ALT as headers. Using 1-based hg38 coordinates, add a row for each variant that should be omitted from the candidate variant list.
+
 ## References
 1. Robinson PN, Haendel MA. Ontologies, Knowledge Representation, and Machine Learning for Translational Research: Recent Contributions. Yearb Med Inform. 2020;29:159–62.
