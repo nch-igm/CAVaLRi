@@ -1,10 +1,10 @@
 ## DEPENDENCIES ##
-annovar_scripts: dependencies/annovar
-annovar_db: dependencies/human_db
+annovar_scripts: annovar
+annovar_db: annovar/humandb
 reference_path: dependencies/hg38.fa
 # common_variants: data/common_variants.csv
 mutpredindel: dependencies/mutpredindel
-muptredindel_MCR: dependencies/mutpred-indel-mcr
+mutpredindel_MCR: dependencies/mutpred-indel-mcr
 
 ## DATA TABLES ##
 gene_info: dependencies/Homo_sapiens.gene_info
@@ -32,8 +32,8 @@ mutpredindel_threshold: 0.5
 
 ## VARIANT FILTERING SETTINGS ##
 gnomAD_popmax: 0.01
-quality_minimum: 500
-depth_minimum: 1
+quality_minimum: 50
+depth_minimum: 10
 
 ## BANDWIDTH SETTINGS ##
 cores: 1
