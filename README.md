@@ -119,7 +119,7 @@ CAVaLRi outputs two files per case,
 When running cavalri_cohort.py, an additional summary file is generated that sorts all candidate genes in the cohort by diagnostic posterior probability.
 
 ## Configuration settings
-The following configuration settings can be changed to alter CAVaLRi's default behavior (term: default_value):
+The following configuration settings can be changed to alter CAVaLRi's default behavior by editing CAVaLRi/config/config.yaml (term: default_value):
 - run_mutpredindel: False  // mutpredindel and mutpredindel_MCR need to be configured as well if set to True. Purposefully set to False due to long run times
 - dbNSFP_score: MetaRNN_score // MetaRNN was shown to be the most accurate SNV pathogenicity score. Other scores can be selected
 - genome_build: hg38  // no other genome builds are currently supported
