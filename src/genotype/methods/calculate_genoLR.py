@@ -37,9 +37,9 @@ def calculate_genoLR(genotype):
         
         def get_gt(row):
             gt = json.loads(row['proband'])['GT']
-            if gt in ['0|1','1|0','1/1','1|1','1',1] or (gt in ['0/1','1/0'] and genotype.case.biological_sex == 'M' and row['CHROM'] == 'X'):
+            if gt in ['1/1','1|1','1',1] or (gt in ['0/1','1/0','0|1','1|0'] and genotype.case.biological_sex == 'M' and row['CHROM'] == 'X'):
                 return 2
-            elif gt in ['0/1','1/0']:
+            elif gt in ['0/1','1/0','0|1','1|0']:
                 return 1
             else:
                 return 0

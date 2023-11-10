@@ -66,11 +66,17 @@ def calculate_moiLR(case):
             for gt in ['proband','mother','father']:
                 
                 # Hemizygous state
-                if (gt_data[gt].find('|') != -1 and gt_data[gt] != '0|0') or gt_data[gt] in [1,'1']:
-                    # g = gt_data[gt].split('|')
-                    # gt_data[gt] = '/'.join(g)
+                if gt_data[gt] in [1,'1']:
                     gt_data[gt] = '1/1'
-                if gt_data[gt].find('/') != -1:
+
+                # Phased genotype
+                if re.search('|', gt_data[gt]):
+                    g = [int(a) if a != '.' else 0 for a in gt_data[gt].split('|')]
+                    g.sort()
+                    gt_data[gt] = '/'.join([str(a) for a in g])
+
+                # Unphased genotype
+                if re.search('/', gt_data[gt]):
                     g = [int(a) if a != '.' else 0 for a in gt_data[gt].split('/')]
                     g.sort()
                     gt_data[gt] = '/'.join([str(a) for a in g])
