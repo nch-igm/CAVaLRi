@@ -70,7 +70,7 @@ def calculate_moiLR(case):
                     gt_data[gt] = '1/1'
 
                 # Phased genotype
-                if re.search('|', gt_data[gt]):
+                if re.search('\|', gt_data[gt]):
                     g = [int(a) if a != '.' else 0 for a in gt_data[gt].split('|')]
                     g.sort()
                     gt_data[gt] = '/'.join([str(a) for a in g])

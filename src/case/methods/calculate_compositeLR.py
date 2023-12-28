@@ -32,13 +32,13 @@ def calculate_compositeLR(case):
 
                 d_data['postTestProbability'] = get_diagnostic_probability(
                         score = d_data['score'],
-                        prior = 0.020737327188940093,
-                        pos_a = -1.0596162593085878,
-                        pos_loc = 26.248161123354173,
-                        pos_scale = 7.586363031418264,
-                        neg_a = 13838189.421247452,
-                        neg_loc = 4.534068942435544,
-                        neg_scale = 5.861153463201234
+                        prior = 0.01709628842235805,
+                        pos_a = -2.0843884246537003,
+                        pos_loc = 29.263967196059717,
+                        pos_scale = 9.717944984416341,
+                        neg_a = 8328388.726935215,
+                        neg_loc = 2.689869947646148,
+                        neg_scale = 6.9385360657731425
                     )
                 
                 # Calculate post-test probability based on trio status
