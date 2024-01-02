@@ -43,7 +43,6 @@ def build_case_data(case):
 
     # Remove disease without an annotated mode of inheretence
     moi_df = case.cohort.moi.copy()
-    moi_df.to_csv('/igm/projects/CAVaLRi/example/case/moi.csv', index = False)
     moi_diseases = [int(moi[moi.find(':')+1:]) for moi in list(set(moi_df['omimId']))]
     gene_disease_df = gene_disease_df[gene_disease_df['OMIM'].isin(moi_diseases)]
 
