@@ -69,5 +69,5 @@ def run_spliceai(genotype):
     spliceai_df['spliceai_score'] = spliceai_df.apply(parse_info, axis = 1)
     spliceai_df = spliceai_df[['CHROM','POS','REF','ALT','spliceai_score']].astype({'spliceai_score':float,'POS':str,'CHROM':str})
     spliceai_df['CHROM'] = spliceai_df['CHROM'].str[3:]
-    return spliceai_df
+    genotype.spliceai_annotations = spliceai_df
     

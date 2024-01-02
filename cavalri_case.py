@@ -78,6 +78,13 @@ def main(input: str, output_dir: str):
             print(f'Required key: {rk} was not provided in the CAVaLRi input file')
             sys.exit(1)
 
+    for k in ['phenotype','vcf','pedigree']:
+        if not inputs[k].startswith('/'):
+            inputs[k] = os.path.join(os.path.dirname(__file__),inputs[k])
+
+    if 'cnv' not in inputs.keys():
+        inputs['cnv'] = 'Unavailable'
+
     # Read pedigree to get necessary inputs
     try:
         ped_df = pd.read_csv(inputs['pedigree'], header = None, sep = '\t')
@@ -106,7 +113,7 @@ def main(input: str, output_dir: str):
         cohort = cohort, 
         case_id = case,
         phenotype_path = inputs['phenotype'],
-        genotype_path = inputs['vcf'],
+        vcf_path = inputs['vcf'],
         biological_sex = inputs['biological_sex'],
         proband = inputs['proband'],
         mother = inputs['mother'],
@@ -145,7 +152,7 @@ def main(input: str, output_dir: str):
     with open(full_pickle_path, 'rb') as f:
         cs = pickle.load(f)
 
-    print(f'Writing output to {output_dir}')
+    print(f'Writing output files to {output_dir}')
 
     # Add scored phenotypes to case data
     cs.case_data['phenotypes'] = cs.phenotype.phenotypes

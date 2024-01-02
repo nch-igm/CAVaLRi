@@ -46,4 +46,4 @@ def add_rankings(case):
                 d_data['geneRank'] = gene_rank # Step can be duplicated, but that's okay
                 d_data['diseaseRank'] = disease_rank
 
-    return case.case_data
+    # return case.case_data

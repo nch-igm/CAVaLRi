@@ -25,7 +25,7 @@ def normalize_variants(genotype):
     if not os.path.exists(normalized_vcf_dir):
         os.mkdir(normalized_vcf_dir)
     norm_vcf = os.path.join(normalized_vcf_dir, f'{genotype.case.case_id}.norm.vcf.gz')
-    p = worker(f"{os.path.join(conda_bin, 'bcftools')} norm -f {config['reference_path']} -Oz -o {norm_vcf} {genotype.genotype_path}")
+    p = worker(f"{os.path.join(conda_bin, 'bcftools')} norm -f {config['reference_path']} -Oz -o {norm_vcf} {genotype.short_variant_path}")
     p = worker(f"{os.path.join(conda_bin, 'tabix')} {norm_vcf}")
 
-    return norm_vcf
+    genotype.short_variant_path = norm_vcf

@@ -118,5 +118,5 @@ def run_mutpredindel(genotype):
     mutpred_score_df = mutpred_score_df.rename(columns = {'score':'mutpred_score'})
     mutpred_score_df = mutpred_score_df[['CHROM','POS','REF','ALT','mutpred_score']].astype({'mutpred_score':float,'POS':str,'CHROM':str})
     mutpred_score_df['CHROM'] = mutpred_score_df['CHROM'].str[3:]
-    return mutpred_score_df
+    genotype.mutpredindel_annotations = mutpred_score_df
     

@@ -34,4 +34,4 @@ def build_case_summary(case):
     res_df = res_df.merge(compositLR_max_df)
     res_df = res_df.loc[res_df['postTestProbability'] == res_df['max_postTestProbability']].reset_index(drop=True).drop(columns=['max_postTestProbability']).drop_duplicates()
 
-    return res_df.sort_values('geneRank')
+    case.case_summary = res_df.sort_values('geneRank')

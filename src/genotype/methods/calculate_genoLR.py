@@ -29,12 +29,27 @@ def calculate_genoLR(genotype):
     recessive_codes = set(['AR','XLR'])
 
     pathogenic_df = genotype.pathogenic_variants.copy()
+    pathogenic_cnv_df = genotype.pathogenic_cnvs.copy()
 
     for g in list(genotype.case.case_data['genes'].keys()):
         
         # Get alt allele count
-        g_df = pathogenic_df[pathogenic_df['GENE_ID'] == g]
-        
+        g_short_df = pathogenic_df[pathogenic_df['GENE_ID'] == g]
+        g_cnv_df = pathogenic_cnv_df[pathogenic_cnv_df['INTERSECTING_GENES'].apply(lambda x: g in x)]
+        g_cnv_df = g_cnv_df.rename(columns = {'CHROMOSOME':'CHROM', 'PATHOGENIC':'score'})
+        g_cnv_df['clinvar_path_sig'] = False
+        cols = ['CHROM','proband','score','clinvar_path_sig']
+
+        if len(g_short_df.index) > 0 and len(g_cnv_df.index) == 0:
+            g_df = g_short_df.copy()
+        elif len(g_short_df.index) == 0 and len(g_cnv_df.index) > 0:
+            g_df = g_cnv_df.copy()
+        elif len(g_short_df.index) > 0 and len(g_cnv_df.index) > 0:
+            g_df = pd.concat([g_short_df[cols],g_cnv_df[cols]])
+        else:
+            print('No pathogenic variants')
+            sys.exit(1)
+
         def get_gt(row):
             gt = json.loads(row['proband'])['GT']
             if gt in ['1/1','1|1','1',1,2,3] or (gt in ['0/1','1/0','0|1','1|0'] and genotype.case.biological_sex == 'M' and row['CHROM'] == 'X'):
@@ -66,7 +81,7 @@ def calculate_genoLR(genotype):
         elif len(recessive_codes & mois) >= 1 and var_count >= 2:
             sorted_scores = sorted(var_scores, reverse=True)
             highest_scores = (sorted_scores[0],sorted_scores[1])
-            score = sum(highest_scores) / 2
+            score = sum(highest_scores) / 2 # Could also use a floor function here (return highest_score[1])
         else:
             score = 0
 
@@ -80,4 +95,4 @@ def calculate_genoLR(genotype):
 
         res[g] = 0 if score == 0 else math.log(score, 10)
 
-    return res
+    genotype.genotype_LR = res

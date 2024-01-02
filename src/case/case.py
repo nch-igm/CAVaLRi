@@ -19,14 +19,14 @@ class Case:
     """
 
     # INITIALIZE
-    def __init__(self, cohort, case_id, genotype_path, phenotype_path, 
+    def __init__(self, cohort, case_id, vcf_path, phenotype_path, 
                  biological_sex, proband, mother, father, mother_affected, 
                  father_affected, genome_build='hg38'):
         
         self.cohort = cohort
         self.case_id = case_id
         self.genome_build = genome_build
-        self.genotype = Genotype(self, genotype_path)
+        self.genotype = Genotype(self, vcf_path)
         self.phenotype = Phenotype(self, phenotype_path)
         self.biological_sex = biological_sex
         self.proband = proband
@@ -44,23 +44,20 @@ class Case:
             self.trio_status = 'SINGLETON'
 
     def validate_inputs(self):
-        self.genotype.genotype_path = validate_inputs(self)
+        validate_inputs(self)
 
     def build_case_data(self):
-        self.case_data = build_case_data(self)
+        build_case_data(self)
 
     def calculate_moiLR(self):
-        self.moiLRs = calculate_moiLR(self)
+        calculate_moiLR(self)
 
     def calculate_compositeLR(self):
-        self.case_data = calculate_compositeLR(self)
+        calculate_compositeLR(self)
     
     def add_rankings(self):
-        self.case_data = add_rankings(self)
-
-    # def add_tp(self):
-    #     self.case_data = add_tp(self)
+        add_rankings(self)
 
     def build_case_summary(self):
-        self.case_summary = build_case_summary(self)
+        build_case_summary(self)
         

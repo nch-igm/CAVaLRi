@@ -87,11 +87,10 @@ def filter_variants(genotype):
     root_path = genotype.case.cohort.root_path
 
     # Set paths
-    input_vcf_path = os.path.join(genotype.case.cohort.root_path, genotype.genotype_path)
     filtered_vcf_path = os.path.join(genotype.case.cohort.temp_dir, f"{genotype.case.case_id}.filtered.vcf")
     
     # Read in the vcf
-    vcf_reader = vcf.Reader(filename = input_vcf_path, compressed=True, encoding='ISO-8859-1')
+    vcf_reader = vcf.Reader(filename = genotype.short_variant_path, compressed=True, encoding='ISO-8859-1')
     vcf_writer = vcf.Writer(open(filtered_vcf_path, 'w'), vcf_reader)
 
     # Read in common variants
@@ -142,4 +141,4 @@ def filter_variants(genotype):
 
     worker(f"{os.path.join(conda_bin, 'bgzip')} {filtered_vcf_path}")
     worker(f"{os.path.join(conda_bin, 'tabix')} {filtered_vcf_path}.gz")
-    return f"{filtered_vcf_path}.gz"
+    genotype.short_variant_path = f"{filtered_vcf_path}.gz"

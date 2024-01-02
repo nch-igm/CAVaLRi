@@ -33,7 +33,7 @@ def read_filtered_variants(genotype):
     root_path = genotype.case.cohort.root_path
 
     # Read in vcf
-    vcf_reader = vcf.Reader(filename = genotype.genotype_path, compressed=True, encoding='ISO-8859-1')
+    vcf_reader = vcf.Reader(filename = genotype.short_variant_path, compressed=True, encoding='ISO-8859-1')
 
     # Initialize list to capture variants
     var_list = []
@@ -173,4 +173,4 @@ def read_filtered_variants(genotype):
     df = pd.DataFrame(var_list, columns = columns, dtype=str)
     df = df[df['GENE_ID'].notna()].astype({'GENE_ID': int})
 
-    return df
+    genotype.variants = df

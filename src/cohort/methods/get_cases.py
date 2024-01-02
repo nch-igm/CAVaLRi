@@ -46,7 +46,7 @@ def get_cases(cohort):
                     cohort = cohort, 
                     case_id = case,
                     phenotype_path = inputs['phenotype'],
-                    genotype_path = inputs['vcf'],
+                    vcf_path = inputs['vcf'],
                     biological_sex = inputs['biological_sex'],
                     proband = inputs['proband'],
                     mother = inputs['mother'],

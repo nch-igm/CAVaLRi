@@ -6,37 +6,40 @@ import vcf
 import time
 
 
-def get_trio_genotype(case, chrom, pos):
+# def get_trio_genotype(case, chrom, start, end):
 
-    proband, mother, father = 0, 0, 0
-    vcf_reader = vcf.Reader(filename = os.path.join(case.cohort.temp_dir, f'{case.case_id}.filtered.vcf.gz'), compressed=True, encoding='ISO-8859-1')
-    for i, s in enumerate(vcf_reader.samples):
-        parent_patterns = {
-            'proband': case.proband,
-            'mother': case.mother,
-            'father': case.father
-            }
-        if re.search(parent_patterns['proband'].lower(), s.lower()):  
-            proband = (i, s)
-        if re.search(parent_patterns['mother'].lower(), s.lower()):
-            mother = (i, s)
-        if re.search(parent_patterns['father'].lower(), s.lower()):
-            father = (i, s)
-    res = []
-    query = vcf_reader.fetch(chrom = chrom, start = pos - 1, end = pos)
-    for q in query:
-        for col in [proband, mother, father]:
-            if col != 0:
-                res.append(q.samples[col[0]]['GT'])
-            else:
-                res.append('Unavailable')
-        break
+#     proband, mother, father = 0, 0, 0
+#     vcf_reader = vcf.Reader(filename = os.path.join(case.cohort.temp_dir, f'{case.case_id}.filtered.vcf.gz'), compressed=True, encoding='ISO-8859-1')
+#     for i, s in enumerate(vcf_reader.samples):
+#         parent_patterns = {
+#             'proband': case.proband,
+#             'mother': case.mother,
+#             'father': case.father
+#             }
+#         if re.search(parent_patterns['proband'].lower(), s.lower()):  
+#             proband = (i, s)
+#         if re.search(parent_patterns['mother'].lower(), s.lower()):
+#             mother = (i, s)
+#         if re.search(parent_patterns['father'].lower(), s.lower()):
+#             father = (i, s)
+#     res = []
+#     query = vcf_reader.fetch(chrom = chrom, start = start - 1, end = end)
+#     for q in query:
+#         if (start != end and start == q.POS and end == q.INFO['END']) or start == end:
 
-    return {
-        'proband': res[0],
-        'mother': res[1],
-        'father': res[2]
-    }
+#             for col in [proband, mother, father]:
+#                 if col != 0:
+#                     res.append(q.samples[col[0]]['GT'])
+#                 else:
+#                     res.append('Unavailable')
+#             break
+
+#     return {
+#         'proband': res[0],
+#         'mother': res[1],
+#         'father': res[2]
+#     }
+
 
 
 def calculate_moiLR(case):
@@ -46,24 +49,52 @@ def calculate_moiLR(case):
     # Intialize result dict
     res = {}
 
+    pathogenic_df = case.genotype.pathogenic_variants.copy()
+    pathogenic_df['TYPE'] = 'SHORT'
+    pathogenic_cnv_df = case.genotype.pathogenic_cnvs.copy()
+    pathogenic_cnv_df['TYPE'] = 'CNV'
+    pathogenic_cnv_df = pathogenic_cnv_df.rename(columns = {'CHROMOSOME':'CHROM'})
+    pathogenic_cnv_df['REF'] = pathogenic_cnv_df['END']
+    pathogenic_cnv_df['ALT'] = pathogenic_cnv_df['CHANGE']
+
+    # Determine parent status
+    parents = [k for k,v in {'mother':case.mother,'father':case.father}.items() if v != 'Unavailable']
+    family = ['proband'] + parents
+
     # Read in inheritance data frame
     moi_df = case.cohort.moi.copy()
     for gene in case.case_data['genes'].keys():
 
         # Intialize dict to store count of alternate alleles
-        g_df = case.genotype.pathogenic_variants[case.genotype.pathogenic_variants['GENE_ID'] == gene]
-        alt_counts = {f"{var['CHROM']}-{var['POS']}-{var['REF']}-{var['ALT']}":{s:0 for s in ['proband', 'mother', 'father']} for idx,var in g_df.iterrows()}
+        g_short_df = pathogenic_df[pathogenic_df['GENE_ID'] == gene].reset_index(drop=True)
+        g_cnv_df = pathogenic_cnv_df[pathogenic_cnv_df['INTERSECTING_GENES'].apply(lambda x: gene in x)].reset_index(drop=True)
+        g_cnv_df = g_cnv_df.rename(columns = {'START':'POS','PATHOGENIC':'score'})
+        cols = ['CHROM','POS','REF','ALT','proband','score','TYPE']
+        cols = cols + parents
+        if len(g_short_df.index) > 0 and len(g_cnv_df.index) == 0:
+            g_df = g_short_df.copy()
+        elif len(g_short_df.index) == 0 and len(g_cnv_df.index) > 0:
+            g_df = g_cnv_df.copy()
+        elif len(g_short_df.index) > 0 and len(g_cnv_df.index) > 0:
+            g_df = pd.concat([g_short_df[cols],g_cnv_df[cols]], ignore_index=True)
+        else:
+            print('No pathogenic variants')
+            sys.exit(1)
+        alt_counts = {f"{var['CHROM']}-{var['POS']}-{var['REF']}-{var['ALT']}":{s:0 for s in family} for idx,var in g_df.iterrows()}
+        gts = {f"{var['CHROM']}-{var['POS']}-{var['REF']}-{var['ALT']}":{s:json.loads(var[s])['GT'] for s in family} for idx,var in g_df.iterrows()}
 
         # Go through each variant
         for chrom_pos, s_counts in alt_counts.items():
 
-            chrom, pos = f"chr{chrom_pos.split('-')[0]}", chrom_pos.split('-')[1]
+            chrom, pos1, pos2 = f"chr{chrom_pos.split('-')[0]}", int(chrom_pos.split('-')[1]), chrom_pos.split('-')[2]
+            pos2 = pos1 if not pos2.isnumeric() else int(pos2)
 
             # Get trio genotypes
-            gt_data = get_trio_genotype(case, chrom, int(pos))
+            # gt_data = get_trio_genotype(case, chrom, pos1, pos2)
+            gt_data = { x: gts[chrom_pos][x] for x in family }
 
             # Normalize GT by setting all | to /, we don't care about phasing for now
-            for gt in ['proband','mother','father']:
+            for gt in family:
                 
                 # Hemizygous state
                 if gt_data[gt] in [1,'1']:
@@ -82,7 +113,7 @@ def calculate_moiLR(case):
                     gt_data[gt] = '/'.join([str(a) for a in g])
             
             # Account for genotype edge cases
-            for gt in ['proband','mother','father']:
+            for gt in family:
                 if chrom == 'chrX' or chrom == 'X':
                     if len(gt_data[gt]) == 1:
                         if gt_data[gt] == 0:
@@ -111,8 +142,14 @@ def calculate_moiLR(case):
             
         #TODO Add logic to return variants that agree with mode of inheritance if applicable
         proband_alt_count = sum([var['proband'] for var in alt_counts.values()])
-        mother_alt_count = sum([var['mother'] for var in alt_counts.values()])
-        father_alt_count = sum([var['father'] for var in alt_counts.values()])
+        if 'mother' in family:
+            mother_alt_count = sum([var['mother'] for var in alt_counts.values()])
+        else:
+            mother_alt_count = 0
+        if 'father' in family:
+            father_alt_count = sum([var['father'] for var in alt_counts.values()])
+        else:
+            father_alt_count = 0
 
         # Go through each disaese assocaited with the gene
         for d in case.case_data['genes'][gene].keys():
@@ -509,4 +546,4 @@ def calculate_moiLR(case):
             d_scores = [v for v in moi.values() if v != None]
             res[d] = 0 if len(d_scores) == 0 else max(d_scores)
 
-    return res
+    case.moiLRs = res

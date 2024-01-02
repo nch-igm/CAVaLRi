@@ -24,7 +24,6 @@ def annotate_variants(genotype):
     config = genotype.case.cohort.config
 
     # Get genotype path
-    genotype_basename = os.path.basename(genotype.genotype_path)
     conda_bin = genotype.case.cohort.conda_bin
     root_path = genotype.case.cohort.root_path
 
@@ -37,7 +36,7 @@ def annotate_variants(genotype):
     command = f"""
             {os.path.join(conda_bin, 'perl')} \
             {os.path.join(config['annovar_scripts'],'table_annovar.pl')} \
-            -vcfinput {genotype.genotype_path} \
+            -vcfinput {genotype.short_variant_path} \
             {config['annovar_db']} \
             -buildver {config['genome_build']} \
             --out {output} \
@@ -51,5 +50,5 @@ def annotate_variants(genotype):
 
     p = worker(command)
 
-    return f"{output}.vcf.gz"
+    genotype.short_variant_path = f"{output}.vcf.gz"
     

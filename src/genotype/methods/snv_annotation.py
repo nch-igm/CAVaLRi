@@ -93,5 +93,5 @@ def get_snv_scores(genotype):
     except Exception as e:
         return pd.DataFrame(columns = ['CHROM','POS','REF','ALT','score'])
 
-    return scored_snv_df
+    genotype.snv_annotations = scored_snv_df
     

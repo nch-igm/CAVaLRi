@@ -90,5 +90,5 @@ def calculate_compositeLR(case):
                 # Append post test probability
                 # d_data['postTestProbability'] =  posttest_probability
 
-    # Return the result data frame
-    return case.case_data
+    # # Return the result data frame
+    # case.case_data
